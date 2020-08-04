@@ -7,7 +7,7 @@ about:
   button:
     enable : true
     label : "了解详情"
-    link : "about"
+    link : "me"
 
 ######################## Try #############################
 try:
