@@ -1,0 +1,177 @@
+baseURL = "/"
+languageCode = "zh"
+title = "Guo Xudong's Blog"
+theme = ["docsy"]
+description = "郭旭东的博客"
+Paginate = 10
+# publishDir = "docs"
+
+# SEO
+enableRobotsTXT = true
+
+# Docsy: Gives values to .Lastmod etc.
+enableGitInfo = true
+
+# Docsy: Language settings
+contentDir = "content/zh"
+defaultContentLanguage = "zh"
+# Tell Hugo not to include the /en/ element in the URL path for English docs:
+defaultContentLanguageInSubdir = false
+# Docsy: Useful when translating.
+enableMissingTranslationPlaceholders = true
+
+# disableKinds = ["taxonomy", "taxonomyTerm"]
+
+# Docsy: Highlighting config
+pygmentsCodeFences = true
+pygmentsUseClasses = false
+# Use the new Chroma Go highlighter in Hugo.
+pygmentsUseClassic = true
+#pygmentsOptions = "linenos=table"
+# See https://help.farbox.com/pygments.html
+pygmentsStyle = "tango"
+
+ # Docsy: First one is picked as the Twitter card image if not set on page.
+images = ["img/logo-head.png"]
+
+# Top-level navigation (horizontal)
+
+# Docsy: Configure the format of URLs per section.
+# [permalinks]
+# blog = "/:section/:year/:month/:day/:slug/"
+
+# Docsy: Configuration for Goldmark markdown parser, which is default from 
+# Hugo 0.60 onwards. https://github.com/yuin/goldmark/
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+# Allow Goldmark to render raw HTML:
+      unsafe = true
+[markup.highlight]
+      # See a complete list of available styles at https://xyproto.github.io/splash/docs/all.html
+      style = "native"
+
+# Docsy: Image processing configuration.
+[imaging]
+resampleFilter = "CatmullRom"
+quality = 75
+anchor = "smart"
+
+# [services]
+# [services.googleAnalytics]
+id = "UA-173948186-1"
+
+# Docsy: Language configuration
+
+[languages]
+[languages.zh]
+title = "Guo Xudong's Blog·郭旭东的博客"
+description = "郭旭东的博客，分享云原生、devops干货文章。"
+languageName ="简体中文"
+contentDir = "content/zh"
+time_format_default = "2006年01月02日"
+time_format_blog = "2006年01月02日"
+weight = 1
+
+[[menu.main]]
+    name = "主页"
+    weight = 1
+    url = "/"
+
+# [languages.en]
+# title = "Guo Xudong's Blog"
+# description = "Guo Xudong's Blog"
+# languageName ="English"
+# # Weight used for sorting in the language menu:
+# weight = 2
+# contentDir = "content/en"
+# time_format_default = "02.01.2006"
+# time_format_blog = "02.01.2006"
+
+
+
+# Site params
+[params]
+
+# GitHub repository for in-page links to editing a page and opening and issues.
+# github_repo = "https://github.com/sunny0826/guoxudong.github.io"
+# An optional link to a related project repo. For example, the sibling repository where your product code lives.
+# github_project_repo = "https://github.com/sunny0826/guoxudong.github.io"
+
+RSSLink = "/index.xml"
+author = "guoxudong.io" # add your company name
+github = "sunny0826" # add your github profile name
+twitter = "GuoXudong2" # add your twitter profile
+#email = "myemail@myaddress.xxx"
+
+copyright = "guoxudong.io"
+# privacy_policy = "https://policies.google.com/privacy"
+
+# Docsy: Google Custom Search Engine ID. Remove or comment out to disable search.
+gcs_engine_id = "000891850077446260437:bhwy2nhukpg"
+
+#Enable offline search with Lunr.js
+# offlineSearch = false
+# offlineSearchSummaryLength = 200
+# offlineSearchMaxResults = 25
+
+# Text label for the version menu in the top bar of the website.
+version_menu = "v0.3.0"
+
+# The major.minor version tag for the version of the docs represented in this
+# branch of the repository. Used in the "version-banner" partial to display a
+# version number for this doc set.
+version = "v0.3.0"
+
+# Flag used in the "version-banner" partial to decide whether to display a 
+# banner on every page indicating that this is an archived version of the docs.
+archived_version = false
+
+# A link to latest version of the docs. Used in the "version-banner" partial to
+# point people to the main doc site.
+url_latest_version = "https://guoxudong.io"
+
+# Docsy: User interface configuration
+[params.ui]
+# Docsy: Enable to show the side bar menu in its compact state.
+sidebar_menu_compact = true
+# Docsy: Disable the search box in the side bar.
+sidebar_search_disable = true
+#  Docsy: Set to true to disable breadcrumb navigation.
+breadcrumb_disable = false
+
+# Adds a H2 section titled "Feedback" to the bottom of each doc. The responses are sent to Google Analytics as events.
+# This feature depends on [services.googleAnalytics] and will be disabled if "services.googleAnalytics.id" is not set.
+# If you want this feature, but occasionally need to remove the "Feedback" section from a single page,
+# add "hide_feedback: true" to the page's front matter.
+[params.ui.feedback]
+enable = true
+# The responses that the user sees after clicking "yes" (the page was helpful) or "no" (the page was not helpful).
+yes = 'Glad to hear it! Please <a href="https://github.com/sunny0826/guoxudong.github.io/issues/new">tell me how I can improve</a>.'
+no = 'Sorry to hear that. Please <a href="https://github.com/sunny0826/guoxudong.github.io/issues/new">tell me how I can improve</a>.'
+
+
+[params.links]
+# Docsy: "User" links will show on left side of footer and in the community page if you have one.
+[[params.links.user]]
+	name ="Twitter"
+	url = "https://twitter.com/GuoXudong2"
+	icon = "fab fa-twitter"
+        desc = "Follow us on Twitter to get the latest news"
+[[params.links.user]]
+	name = "GitHub"
+	url = "https://github.com/sunny0826"
+	icon = "fab fa-github"
+        desc = "Development takes place here!"
+[[params.links.user]]
+	name = "Email"
+	url = "Mailto:sunnydog0826@gmail.com"
+	icon = "fa fa-envelope"
+        desc = "Discussion and help from your fellow users"
+
+disqusShortname = "gxd"
+
+# Taxonomies.
+[taxonomies]
+  tag = "tags"
+  category = "categories"

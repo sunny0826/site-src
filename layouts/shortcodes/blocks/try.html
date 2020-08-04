@@ -1,0 +1,21 @@
+{{ $data := index .Site.Data .Site.Language.Lang }}
+
+{{ with $data.homepage.try }}
+<section class="row section bg-cover td-box td-box--gradient" style="background: url({{ .bg_image | relURL }});">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6 col-sm-4" style="display: flex; align-items: center;">
+        <a class="button button-3d button-action button-pill" href="{{ `/try` | relLangURL }}">
+          <i class="fas fa-play ml-2 "></i>
+        </a>
+      </div>
+      <div class="col-lg-6 col-sm-8">
+        <div class="bg-white p-5">
+          <h2 class="section-title">{{ .title | markdownify }}</h2>
+          <p>{{ .content | markdownify }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

@@ -1,0 +1,63 @@
+{{ $query := where site.RegularPages "Type" "blog" }}
+{{ $sort_by := "Date" }}
+{{ $count := len $query }}
+{{ $items_count := 3}}
+{{ $items_type := "blog"}}
+{{ $items_sort := "desc" }}
+{{ $query = sort $query $sort_by $items_sort }}
+{{ $query = first $items_count $query }}
+{{ $archive_page := site.GetPage "Section" $items_type }}
+{{ $col_id := .Get "color" | default "dark" }}
+{{ $height := .Get "height" | default "auto"  }}
+{{ $name   := .Get "name" | default "info" }} 
+{{ $subtitle   := .Get "subtitle" | default "" }} 
+
+<!-- blogs -->
+<section class="section">
+    <div class="container">
+        <h1 class="text-center">·{{ $name }}·</h1>
+		<p class="text-center">{{ $subtitle }}</p><br>
+        <div class="col-12 order-2 order-lg-1">
+          <div class="row">
+            <!-- blog post -->
+            {{ range $item := $query}}
+            <div class="col-lg-4 col-sx-12 mb-0">
+              <article
+                class="card rounded-0 border-bottom border-top-0 border-left-0 border-right-0 hover-shadow">
+                <a href="{{ $item.RelPermalink | relURL }}">
+                  <img class="card-img-top rounded-0" src="{{ $item.Params.image.url | relURL }}" alt="{{ $item.LinkTitle }}">
+                </a>
+                
+                <div class="card-body">
+                  <h4 class="card-title"><a href="{{ $item.RelPermalink | relURL }}">{{ .Title }}</a></h4>
+                  <!-- post meta -->
+                  <ul class="list-inline mb-2">
+                    <!-- post date -->
+                    <li class="list-inline-item mr-3 ml-0"><time>{{ .Date.Format $.Site.Params.time_format_blog  }}</time></li>·
+                    <!-- author -->
+                    <li class="list-inline-item mr-6 ml-0 text-muted">
+                        <span><i class="ti-user"></i>
+                         {{ range $index, $elements:= $item.Params.authors }}
+                         {{ if ne $index 0 }}, {{ end }}{{ . | title }}
+                        </span>{{ end}}
+                    </li>·
+                    <li class="list-inline-item mr-6 ml-0 text-muted">
+                      {{ range $index, $elements:= $item.Params.Categories }}
+                      <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}">{{ if ne $index 0 }}, {{ end }}
+                        {{ . | title }}</a>
+					            {{ end }}
+                    </li>
+                  </ul>
+                  {{ range $item.Params.tags}}
+                  <a class="button button-glow button-rounded button-primary button-tiny mb-1" href="{{ `tags/` | relLangURL }}{{ . | urlize | lower }}">#{{ . }}</a>
+                  {{ end }}
+                  <p class="card-text text-muted">{{ $item.Summary | truncate 50 }}</p>
+                </div>
+              </article>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+    </div>
+  </section>
+  <!-- /blogs -->

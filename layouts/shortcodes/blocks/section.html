@@ -1,0 +1,16 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+{{ $col_id := .Get "color" | default .Ordinal }}
+{{ $height := .Get "height" | default "auto"  }}
+{{ $type   := .Get "type" | default "" }} 
+{{ $name   := .Get "name" | default "info" }} 
+{{ $subtitle   := .Get "subtitle" | default "" }} 
+<a id="td-block-{{ .Ordinal }}" class="td-offset-anchor"></a>
+<section class="row td-box td-box--{{ $col_id }} td-box--gradient td-box--height-{{ $height }}">
+	<div class="col">
+		<h1 class="text-center" style="margin-top: -120px;">·{{ $name }}·</h1>
+		<p class="text-center">{{ $subtitle }}</p><br>
+		<div class="row {{ $type }}">
+			{{ .Inner | markdownify}}
+		</div>
+	</div>
+</section>

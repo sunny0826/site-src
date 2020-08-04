@@ -1,0 +1,40 @@
+{{ define "main" }}
+
+<!-- blogs -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+          <!-- blog post -->
+          {{ $paginator := .Paginate ( where .Data.Pages "Type" "blog") }}
+          <div class="col-12 mb-5">
+              <h2>{{ T "tags" }} : {{ .Title }}</h2>
+              <ul class="list-unstyled mt-4">
+                {{ range $paginator.Pages }}
+                <li class="media mb-4">
+                  <div class="media-body">
+                    <h5 class="mt-0 mb-1"><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h5>
+                    <p class="mb-2 mb-md-3"><small class="text-muted">{{ .Date.Format ($.Param "time_format_blog") }}</small></p>
+                    {{ partial "featured-image.html" (dict "p" . "w" 250 "h" 125 "class" "float-left mr-3 pt-1 d-none d-md-block") }}
+                    <p class="pt-0 mt-0 .-text-primary">{{ T "authors"}}：{{ range .Params.authors }} {{ . }} {{ end}}</p>
+                    <p class="pt-0 mt-0">{{ T "categories"}}：
+                      {{ range $index, $elements:= .Params.Categories }}
+                      <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}">{{ if ne $index 0 }}, {{ end }}
+                        {{ . | title }}</a>
+                      {{ end }}
+                    </p>
+                    <p class="pt-0 mt-0">{{ T "summary"}}：{{ .Summary }}</p>
+                    <p class="pt-0"><a href="{{ .RelPermalink }}">{{ T "ui_read_more"}}</a></p>
+                  </div>
+                  
+                </li>
+                <hr>
+                {{ end }}
+              </ul>
+          </div>
+          {{ template "_internal/pagination.html" . }}
+    </div>
+  </div>
+</section>
+<!-- /blogs -->
+
+{{ end }}

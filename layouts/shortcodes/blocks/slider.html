@@ -1,0 +1,73 @@
+{{ $data := index .Site.Data .Site.Language.Lang }}
+{{ $hash_id := "slider" }}
+{{ $col_id := .Get "color" | default "primary" }}
+{{ $height := .Get "height" | default "auto"  }}
+{{ with $data.homepage.slides }}
+<link rel="stylesheet" href="/css/swiper.min.css">
+<link rel="stylesheet" href="/css/animate.min.css">
+<section class="row td-box td-box--{{ $col_id }} position-relative td-box--gradient td-box--height-{{ $height }}" id="slider">
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      {{ range $index, $item := $data.homepage.slides.items }}
+      <div class="swiper-slide carousel-inner" width="100%">
+        <div class="wg-hero" style="{{with $data.homepage.slides.height}}{{printf "height: %s;" . | safeCSS}}{{end}}; background-size: 100% auto;
+          background-position: center;
+          {{ if $item.overlay_color }}
+          background-color: {{ $item.overlay_color | default "transparent" }};
+          {{ end }}
+          {{ if $item.overlay_img }}
+          background-image:
+          {{ if $item.overlay_filter }}linear-gradient(rgba(0, 0, 0, {{ $item.overlay_filter }}), rgba(0, 0, 0, {{ $item.overlay_filter }})), {{ end }}
+          url('{{ printf "img/%s" $item.overlay_img | absURL }}');
+          {{ end }}"
+          >
+          <div class="container" style="text-align: {{$item.align | default "left"}};">
+            <h1 class="hero-title" itemprop="headline">
+              {{ with $item.title }}{{ . | markdownify | emojify }}{{ end }}
+            </h1>
+
+            {{ with $item.content }}
+            <p class="hero-lead"
+              style="{{if eq $item.align "center"}}margin: 0 auto 0 auto;{{else if eq $item.align "right"}}margin-left: auto; margin-right: 0{{end}}">
+              {{ . | markdownify | emojify }}
+            </p>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+      {{ end }}
+    </div>
+    <div class="swiper-button-prev swiper-button-white"></div>
+    <div class="swiper-button-next swiper-button-white"></div>
+  </div>
+  <script src="/js/swiper.min.js"></script>
+  <script src="/js/swiper.animate.min.js"></script>
+  <script>
+    var mySwiper = new Swiper('.swiper-container', {
+      loop: true, // 循环模式选项
+      width: window.innerWidth,
+      height: 300,
+      autoplay: {
+        delay: 8000,
+        stopOnLastSlide: false,
+        disableOnInteraction: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      on: {
+        init: function () {
+          swiperAnimateCache(this); //隐藏动画元素 
+          this.emit('slideChangeTransitionEnd');//在初始化时触发一次slideChangeTransitionEnd事件
+        },
+        slideChangeTransitionEnd: function () {
+          swiperAnimate(this); //每个slide切换结束时运行当前slide动画
+          this.slides.eq(this.activeIndex).find('.ani').removeClass('ani');//动画只展示一次
+        }
+      }
+    });
+
+  </script>
+</section>
+{{ end }}

@@ -1,0 +1,47 @@
+{{ $url := .Permalink}}
+{{ $title := .Name }}
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    <li>
+      <a href="https://twitter.com/intent/tweet?url={{ $url }}&amp;text={{ $title }}" target="_blank" rel="noopener" class="share-btn-twitter">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+    <li>
+      <a href="https://www.facebook.com/sharer.php?u={{ $url }}&amp;t={{ $title }}" target="_blank" rel="noopener" class="share-btn-facebook">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+    </li>
+    <li>
+      <a href="mailto:?subject={{ $title }}&amp;body={{ $url }}" target="_blank" rel="noopener" class="share-btn-email">
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+    <li>
+      <a href="https://www.linkedin.com/shareArticle?url={{ $url }}&amp;title={{ $title }}" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <i class="fab fa-linkedin-in"></i>
+      </a>
+    </li>
+    <li>
+      <a href="https://web.whatsapp.com/send?text={{ $title }}{{ $url }}/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+    </li>
+    <li>
+      <a href="https://service.weibo.com/share/share.php?url={{ $url }}&amp;title={{ $title }}" target="_blank" rel="noopener" class="share-btn-weibo">
+        <i class="fab fa-weibo"></i>
+      </a>
+    </li>
+    <li>
+      <a href="https://reddit.com/submit?url={{ $url }}&amp;title={{ $title }}" target="_blank" rel="noopener" class="share-btn-reddit">
+        <i class="fab fa-reddit-alien"></i>
+      </a>
+    </li>
+    <li>
+      <a href=# onClick="javascript:window.open('/wechart?url={{ $url }}','weixin','height=560, width=470, top=100, location=no, toolbar=no, menubar=no, status=no')" target="_blank" rel="noopener" class="share-btn-weixin">
+        <i class="fab fa-weixin"></i>
+      </a>
+    </li>
+</ul>
+</div>
+

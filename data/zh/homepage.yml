@@ -1,0 +1,49 @@
+############################## about ##################################
+about:
+  enable : true
+  title : "关于"
+  image : "https://tva3.sinaimg.cn/large/ad5fbf65ly1ghds6bthggj21dv0rsb29.jpg"
+  content : "郭旭东，宠物达人，柴猫双全，[阿里云MVP](https://mvp.aliyun.com/mvp/detail/426)，CCF 会员，现任凯京科技研发中心技术支持部运维负责人。"
+  button:
+    enable : true
+    label : "了解详情"
+    link : "about"
+
+######################## Try #############################
+try:
+  enable : true
+  bg_image : "https://tva3.sinaimg.cn/large/ad5fbf65ly1ge3if5zqkzj21qq15ojvp.jpg"
+  title : "交互教程"
+  content : "Katacoda 是一个面向软件工程师的交互式学习和培训平台，可在浏览器中使用真实环境学习和测试新技术，帮助开发人员学习，并掌握最佳实践。这里有一些博主制作的交互教程[点击了解更多...](https://katacoda.com/guoxudong)"
+
+######################## Slides #############################
+slides:
+  height: "500px"
+  items:
+  - title: "公众号全新上线！"
+    content: "【云原生之路】  全新上线!<br>博客与公众号实时同步<br>[精选文章](https://yq.aliyun.com/users/qobuwfliws7q2)同步上传云栖社区&阿里云开发者社区<br>依托阿里云生态 交流&分享:heart:"
+    align: "left"
+    overlay_color: "#555"  # An HTML color value.
+    overlay_img: "wechat_home.png"  # Image path relative to your `static/img/` folder.
+    overlay_filter: 0  # Darken the image. Value in range 0-1.
+
+  - title: "KubeCon 2019"
+    content: "上海世博中心 |   中国上海<br>ServiceMesher 社区代表团合影<br>Kubernetes 正当时<br>Cloud Native 未来可期:smile:"
+    align: "center"
+    overlay_color: "#333"  # An HTML color value.
+    overlay_img: "kubecon.jpg"  # Image path relative to your `static/img/` folder.
+    overlay_filter: 0.5  # Darken the image. Value in range 0-1.
+
+  - title: "毛线"
+    content: "代码小助手一号<br>也是域名：[maoxianplay.com](https://blog.maoxianplay.com)的来源<br>没错，我就是给我的猫买了域名:smile:"
+    align: "left"
+    overlay_color: "#333"  # An HTML color value.
+    overlay_img: "maoxian.png"  # Image path relative to your `static/img/` folder.
+    overlay_filter: 0.5  # Darken the image. Value in range 0-1.
+
+  - title: "Sunny"
+    content: "代码小助手二号<br>日本柴犬<br>GitHub ID:[sunny0826](https://github.com/sunny0826)的来源<br>没错，他的生日是8月26日:smile:"
+    align: "right"
+    overlay_color: "#333"  # An HTML color value.
+    overlay_img: "sunny.png"  # Image path relative to your `static/img/` folder.
+    overlay_filter: 0.5  # Darken the image. Value in range 0-1.

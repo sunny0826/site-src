@@ -1,0 +1,55 @@
+{{ $page := .Page }}
+<div class="td-content">
+	<h1>{{ .Title }}</h1>
+	{{ with .Params.description }}<div class="lead">{{ . | markdownify }}</div>{{ end }}
+	<div class="td-byline mb-4">
+		<span>{{ T "post_byline_by" }} {{ range .Params.authors }} <b>{{ . }}</b> {{ end}}</span> ·
+		<span>
+			{{ $page.ReadingTime }} {{ T "minute_read" }}
+		</span> ·
+		<span>{{ T "last_updated" }} </span><time datetime="{{  $.Lastmod.Format "2006-01-02" }}"
+			class="text-muted">{{ $.Date.Format $.Site.Params.time_format_blog  }}</time> ·
+		{{ range $index, $elements:= .Params.Categories }}
+		<a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}">{{ if ne $index 0 }}, {{ end }}
+			{{ . | title }}</a>
+		{{ end }}
+	</div>
+
+	{{ partial "share.html" $page }}
+	<div class="alert alert-primary mb-4" role="alert">
+		<h4 class="alert-heading">摘要</h4>
+		<span class="text-muted">{{ .Summary | markdownify }}</span>
+	</div>
+	<img src="{{ $.Params.image.url }}" alt="" style="max-width: 80%;">
+
+	{{ .Content }}
+	<br>
+	<!-- Tags -->
+	{{ range $page.Params.tags}}
+	<a class="button button-glow button-rounded button-royal button-tiny mb-2"
+		href="{{ `tags/` | relLangURL }}{{ . | urlize | lower }}">#{{ . }}</a>
+	{{ end }}
+	<!-- 赞赏 -->
+	{{ partial "zanshang.html" }}
+	{{ $related := site.RegularPages.Related . | first 5 }}
+	{{ with $related }}
+	<hr>
+	<div class="article-widget">
+		<div class="hr-light"></div>
+		<h3>{{ T "related" }}</h3>
+		<ul>
+			{{ range . }}
+			<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+			{{ end }}
+		</ul>
+	</div>
+	{{ end }}
+	{{ if (.Site.Params.DisqusShortname) }}
+	<br />
+	{{ partial "disqus-comment.html" . }}
+	<br />
+	{{ end }}
+
+	{{ partial "pager.html" . }}
+
+</div>

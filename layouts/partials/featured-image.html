@@ -1,0 +1,16 @@
+{{ $w := .w | default 680 }}
+{{ $h := .h | default 380 }}
+{{ $p := .p }}
+{{ $class := .class | default "ml-3" }}
+{{ $image := $p.Params.image }}
+<!-- <script>console.log({{ $p.Params.image }})</script> -->
+{{ with $image }}
+<figure class="{{ $class }}" style="width: {{ $w }}px">
+    <img src="{{ $image.url }}" alt="Featured Image for {{ $p.Title }}" width="{{ $w }}" height="{{ $h }}">
+    <figcaption class="mt-2 mb-0">
+        {{ range $p.Params.tags}}
+        <a class="button button-glow button-rounded button-royal button-tiny mb-2" href="{{ `tags/` | relLangURL }}{{ . | urlize | lower }}">#{{ . }}</a>
+        {{ end }}
+    </figcaption>
+</figure>
+{{ end }}
