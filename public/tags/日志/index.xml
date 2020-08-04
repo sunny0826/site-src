@@ -1,0 +1,225 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 日志</title>
+    <link>/tags/%E6%97%A5%E5%BF%97/</link>
+    <description>Recent content in 日志 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Mon, 02 Mar 2020 15:29:16 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/%E6%97%A5%E5%BF%97/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 阿里云日志服务采集k8s日志并实现livetail功能</title>
+      <link>/post/dashboard-k8s/</link>
+      <pubDate>Thu, 14 Feb 2019 14:07:06 +0800</pubDate>
+      
+      <guid>/post/dashboard-k8s/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;目前的项目日志都是通过Logtail直接采集，投递到OSS持久化，同时可以通过阿里云日志服务、devops自建平台进行查看（虽然大部分人是直接登录ECS查看=。=），
+在开始进行容器化之后，同样遇到日志的问题，目前的解决方案是阿里云日志服务持久化和展现格式化后的日志、使用rancher查看实时日志，
+但是之前由于rancher平台出现一些问题，导致不能及时查看日志的情况，在这个背景下对阿里云日志服务采集k8s日志和livetail进行搭建并调研此方案是否可行。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;简介转自阿里云官方文档&#34;&gt;简介（转自阿里云官方文档）&lt;/h1&gt;
+&lt;p&gt;日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，在阿里巴巴集团经历大量大数据场景锤炼而成。您无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。&lt;/p&gt;
+&lt;h1 id=&#34;kubernetes日志采集组件安装&#34;&gt;kubernetes日志采集组件安装&lt;/h1&gt;
+&lt;h2 id=&#34;安装logtail&#34;&gt;安装Logtail&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;进入阿里云容器服务找到集群id
+&lt;img src=&#34;/images/source/log_ser.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;通过ssh登录master节点，或者任意安装了kubectl并配置了该集群kubeconfig的服务器&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;执行命令，将${your_k8s_cluster_id}替换为集群id&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;wget http://logtail-release-cn-hangzhou.oss-cn-hangzhou.aliyuncs.com/kubernetes/alicloud-log-k8s-install.sh -O alicloud-log-k8s-install.sh; chmod &lt;span style=&#34;color:#3677a9&#34;&gt;744&lt;/span&gt; ./alicloud-log-k8s-install.sh; sh ./alicloud-log-k8s-install.sh &lt;span style=&#34;color:#ed9d13&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#40ffff&#34;&gt;your_k8s_cluster_id&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Project k8s-log-${your_k8s_cluster_id}下会自动创建名为config-operation-log的Logstore，用于存储alibaba-log-controller的运行日志。请勿删除此Logstore，否则无法为alibaba-log-controller排查问题。&lt;/li&gt;
+&lt;li&gt;若您需要将日志采集到已有的Project，请执行安装命令sh ./alicloud-log-k8s-install.sh${your_k8s_cluster_id} ${your_project_name} ，并确保日志服务Project和您的Kubernetes集群在同一地域。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;该条命令其实就是执行了一个shell脚本，使用helm安装了采集kubernetes集群日志的组件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-vim&#34; data-lang=&#34;vim&#34;&gt;#!&lt;span style=&#34;color:#ed9d13&#34;&gt;/bin/&lt;/span&gt;bash&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $# -eq &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ] ; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[Invalid Param], use sudo ./install-k8s-log.sh {your-k8s-cluster-id}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;clusterName=$(echo $&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt; | tr &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;[A-Z]&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;[a-z]&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;curl --connect-timeout &lt;span style=&#34;color:#3677a9&#34;&gt;5&lt;/span&gt;  http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/region-id&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $? != &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] ECS meta server connect fail, only support alibaba cloud k8s service&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;regionId=`curl http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/region-id`&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;aliuid=`curl http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/owner-account-id`&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;helmPackageUrl=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;http://logtail-release-$regionId.oss-$regionId.aliyuncs.com/kubernetes/alibaba-cloud-log.tgz&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;wget $helmPackageUrl -O alibaba-cloud-log.tgz&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $? != &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] download alibaba-cloud-log.tgz from $helmPackageUrl failed&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;project=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;k8s-log-&amp;#34;&lt;/span&gt;$clusterName&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $# -ge &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    project=$&lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;echo [INFO] your k8s is using project : $project&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;helm install alibaba-cloud-log.tgz --name alibaba-log-controller \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set ProjectName=$project \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set RegionId=$regionId \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set InstallParam=$regionId \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set MachineGroupId=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;k8s-group-&amp;#34;&lt;/span&gt;$clusterName \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set Endpoint=$regionId&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;-intranet.log.aliyuncs.com&amp;#34;&lt;/span&gt; \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set AlibabaCloudUserId=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;:&amp;#34;&lt;/span&gt;$aliuid \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set LogtailImage.Repository=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry.$regionId.aliyuncs.com/log-service/logtail&amp;#34;&lt;/span&gt; \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set ControllerImage.Repository=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry.$regionId.aliyuncs.com/log-service/alibabacloud-log-controller&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;installRst=$?&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $installRst -eq &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[SUCCESS] install helm package : alibaba-log-controller success.&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;else&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] install helm package failed, errno &amp;#34;&lt;/span&gt; $installRst&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;命令执行后，会在kubernetes集群中的每个节点运行一个日志采集的pod：logatail-ds，该pod位于kube-system&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/log_detail.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;安装完成后，可使用以下命令来查看pod状态，若状态全部成功后，则表示安装完成&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ helm status alibaba-log-controller
+LAST DEPLOYED: Thu Nov &lt;span style=&#34;color:#3677a9&#34;&gt;22&lt;/span&gt; 15:09:35 &lt;span style=&#34;color:#3677a9&#34;&gt;2018&lt;/span&gt;
+NAMESPACE: default
+STATUS: DEPLOYED
+  
+RESOURCES:
+==&amp;gt; v1/ServiceAccount
+NAME                    SECRETS  AGE
+alibaba-log-controller  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/CustomResourceDefinition
+NAME                                   AGE
+aliyunlogconfigs.log.alibabacloud.com  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/ClusterRole
+alibaba-log-controller  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/ClusterRoleBinding
+NAME                    AGE
+alibaba-log-controller  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/DaemonSet
+NAME        DESIRED  CURRENT  READY  UP-TO-DATE  AVAILABLE  NODE SELECTOR  AGE
+logtail-ds  &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;       &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;       &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;     &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;          &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;         &amp;lt;none&amp;gt;         &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/Deployment
+NAME                    DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+alibaba-log-controller  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;           &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;          &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1/Pod(related)
+NAME                                     READY  STATUS   RESTARTS  AGE
+logtail-ds-2fqs4                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-4bz7w                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;         6d
+logtail-ds-6vg88                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-7tp6v                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-9575c                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-bgq84                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-kdlhr                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-lknxw                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-pdxfk                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-pf4dz                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-rzsnw                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-sqhbv                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-vvtwn                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-wwmhg                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-xbp4j                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-zpld9                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+alibaba-log-controller-85f8fbb498-nzhc8  1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;配置日志组件展示&#34;&gt;配置日志组件展示&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在集群内安装好日志组件后，登录阿里云日志服务控制台，就会发现有一个新的project，名称为k8s-log-{集群id}
+&lt;img src=&#34;/images/source/log_src_de.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;创建Logstore
+&lt;img src=&#34;/images/source/log-1.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据导入
+&lt;img src=&#34;/images/source/log-2.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;选择数据类型中选择docker标准输出
+&lt;img src=&#34;/images/source/log-3.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据源配置，这里可以使用默认的
+&lt;img src=&#34;/images/source/log-4.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;选择数据源
+&lt;img src=&#34;/images/source/log-5.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置好之后等待1-2分钟，日志就会进来了
+&lt;img src=&#34;/images/source/log-6.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;为了快速查询和过滤，需要配置索引
+&lt;img src=&#34;/images/source/log-7.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;添加容器名称、命名空间、pod名称作为索引（后续使用livetail需要）
+&lt;img src=&#34;/images/source/log-8.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;这样就完成了一个k8s集群日志采集和展示的基本流程了&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;livetail功能使用&#34;&gt;livetail功能使用&lt;/h1&gt;
+&lt;h2 id=&#34;背景介绍&#34;&gt;背景介绍&lt;/h2&gt;
+&lt;p&gt;在线上运维的场景中，往往需要对日志队列中进入的数据进行实时监控，从最新的日志数据中提取出关键的信息进而快速地分析出异常原因。在传统的运维方式中，如果需要对日志文件进行实时监控，需要到服务器上对日志文件执行命令tail -f，如果实时监控的日志信息不够直观，可以加上grep或者grep -v进行关键词过滤。日志服务在控制台提供了日志数据实时监控的交互功能LiveTail，针对线上日志进行实时监控分析，减轻运维压力。&lt;/p&gt;
+&lt;h2 id=&#34;使用方法&#34;&gt;使用方法&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;这里选择来源类型为kubernetes，命名空间、pod名称、容器名称为上一步新建的3个索引的内容，过滤关键字的功劳与tail命令后加的grep命令是一样的，用于关键词过滤
+&lt;img src=&#34;/images/source/log-9.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;点击开启livetail，这时就有实时日志展示出来了
+&lt;img src=&#34;/images/source/log-10.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;以上就是阿里云livetail日志服务功能&lt;/strong&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

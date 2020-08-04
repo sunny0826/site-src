@@ -1,0 +1,60 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – GitHub</title>
+    <link>/tags/github/</link>
+    <description>Recent content in GitHub on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Mon, 22 Apr 2019 09:11:24 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/github/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: GitHub 黑话指南</title>
+      <link>/post/cant/</link>
+      <pubDate>Mon, 22 Apr 2019 09:11:24 +0800</pubDate>
+      
+      <guid>/post/cant/</guid>
+      <description>
+        
+        
+        &lt;p&gt;这里的&lt;strong&gt;黑话&lt;/strong&gt;，其实就是 GitHub 上的一些&lt;strong&gt;迷之缩写&lt;/strong&gt;，这些歪果老司机们在 GitHub 上肆无忌惮的使用着他们的“黑话”，让我们这些非英语母语国家的新司机在 code review 时经常是一脸懵逼 + 黑人问好&amp;hellip;&lt;/p&gt;
+&lt;h2 id=&#34;preview_only-false&#34;&gt;image:
+caption: &amp;ldquo;Image from: &lt;a href=&#34;https://www.pexels.com&#34;&gt;&lt;strong&gt;Pexels&lt;/strong&gt;&lt;/a&gt;&amp;rdquo;
+focal_point: &amp;quot;&amp;rdquo;
+preview_only: false&lt;/h2&gt;
+&lt;center&gt;
+![image](https://wx3.sinaimg.cn/thumb180/ad5fbf65gy1g2b5dhfuqqj206506cq2t.jpg)
+![image](https://ws1.sinaimg.cn/thumb180/ad5fbf65gy1g2b5dvubm6j2069050a9x.jpg)
+![image](https://ws1.sinaimg.cn/thumb180/ad5fbf65gy1g2b5fe5ahmj20c80bhdg8.jpg)
+&lt;/center&gt;
+image:
+  caption: &#34;Image from: [**Pexels**](https://www.pexels.com)&#34;
+  focal_point: &#34;&#34;
+  preview_only: false
+---
+&lt;p&gt;记住下面这些“&lt;strong&gt;黑话&lt;/strong&gt;”，以后我们也可以愉快的在 GitHub 上装逼了~&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;PR&lt;/strong&gt;: Pull Request. 拉取请求，给其他项目提交代码，这个是最为常见的缩写。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;WIP&lt;/strong&gt;: Work In Progress. 传说中提 PR 的最佳实践是，如果你有个改动很大的 PR，可以在写了一部分的情况下先提交，但是在标题里写上 WIP，以告诉项目维护者这个功能还未完成，方便维护者提前 review 部分提交的代码。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;LGTM&lt;/strong&gt;: Looks Good To Me. &lt;em&gt;&lt;strong&gt;已阅&lt;/strong&gt;&lt;/em&gt; 代码已经过 review，可以合并。也可理解为 “OJBK”。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;SGTM&lt;/strong&gt;: Sounds Good To Me. 同上，也是已经通过了 review 的意思。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;PTAL&lt;/strong&gt;: Please Take A Look. 你来瞅瞅？用来提示别人来看一下。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;TBR&lt;/strong&gt;: To Be Reviewed. 提示维护者进行 review。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: Too Long; Didn&amp;rsquo;t Read. 太长懒得看。也有很多文档在做简略描述之前会写这么一句，第一次看到的反应是：这TM是啥？&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;TBD&lt;/strong&gt;: To Be Done(or Defined/Discussed/Decided/Determined). 根据语境不同意义有所区别，但一般都是还没搞定的意思。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://farer.org/2017/03/01/code-review-acronyms/&#34;&gt;LGTM? 那些迷之缩写 - farer.org&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

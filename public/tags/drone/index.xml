@@ -1,0 +1,346 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – drone</title>
+    <link>/tags/drone/</link>
+    <description>Recent content in drone on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Wed, 11 Sep 2019 13:53:09 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/drone/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 玩转 Drone CI</title>
+      <link>/post/drone-optimize/</link>
+      <pubDate>Wed, 11 Sep 2019 13:53:09 +0800</pubDate>
+      
+      <guid>/post/drone-optimize/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;使用 drone CI 已有小半年，在将原有项目的 CI 系统从 jenkins 向 drone 迁移的时候，也陆陆续续遇到了一些问题。在这段时间，也完成了使用官方插件到插件定制的转变，使得 drone CI 流程更贴合我们 devops 开发流程。通过这篇文章总结一下目前我们对 drone 进行的一些定制化开发以及使用技巧，由于 drone 官方的文档不是很详细，所以也希望通过这种方法来和其他使用 drone 的用户分享和交流使用经验。&lt;/p&gt;
+&lt;h2 id=&#34;并行构建&#34;&gt;并行构建&lt;/h2&gt;
+&lt;p&gt;在默认情况下，drone 会按照步骤执行，但是有时会遇到前后端在同一个 repo 的情况，这时使用并行构建就可以省去很多的构建时间。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;构建流程：&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在下面的示例里会展示一个如下流程：repo 中包含一个由 Java 写的服务以及一个 vue 前端项目，maven 构建和 npm 构建同时进行，maven 构建成功后会镜像 docker 镜像构建并上传镜像仓库，docker 构建成功后会镜像 k8s 部署，部署成功后会进行 vue 项目前端发布，在 k8s 部署成功并且前端发布成功后，进行钉钉构建成功同时，否则进行钉钉构建失败通知。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;前端构建 ————————————          前端发布
+                    &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;     /        &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;                     &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;   /       钉钉通知
+                      &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; /          /
+后端构建 —— 镜像构建 —— k8s部署 ——————
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;.drone.yml&lt;/code&gt; 配置&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;pipeline&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;default&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Maven编译&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-maven&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;mvn clean install&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;clone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;构建镜像&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-docker&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;username&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker_user&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;password&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker_pass&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;dockerfile&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Dockerfile&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;repo&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry-vpc.cn-shanghai.aliyuncs.com/guoxudong/test&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;registry&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry-vpc.cn-shanghai.aliyuncs.com&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tags&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;${DRONE_BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Maven编译&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/kubectl&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;config&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;deploy/overlays/uat&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;timeout&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;300&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;check&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;构建镜像&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端构建&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/node-drone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;npm install&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;npm run build&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;clone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端上传&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/node-drone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;do something&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端构建&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;钉钉通知&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-dingtalk&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;token&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;dingding&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;type&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;markdown&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_color&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_pic&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;sha_link&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端上传&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;when&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;status&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;failure&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;success&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;多子项目构建&#34;&gt;多子项目构建&lt;/h2&gt;
+&lt;p&gt;在使用 drone 中遇到的最大问题就是，我们有很多项目都是在一个 repo 中有很多子项目，而每个子项目都是 k8s 中的一个服务，这时一个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件很难把所有的服务都囊括。而又不想每个子项目拉一个分支管理，当前的模式就很不合适。&lt;/p&gt;
+&lt;h3 id=&#34;插件开发&#34;&gt;插件开发&lt;/h3&gt;
+&lt;p&gt;针对这个问题，我们对 drone 进行了定制化开发，会在每次提交代码后，对新提交的代码和老代码进行比较，筛选出做了修改的子项目，然后对有修改的子项目尽心 CI ，其余的子项目则不进行发布。&lt;/p&gt;
+&lt;p&gt;而以上的方式仅适用于测试环境的快速迭代，生产环境则采用 tag 的模式，针对不同的子项目，打不同前缀的 tag ，比如子项目为 test1 ，则打 &lt;code&gt;test1-v0.0.1&lt;/code&gt; 的 tag，就会对该子项目进行生产发布。&lt;/p&gt;
+&lt;h3 id=&#34;构建效果&#34;&gt;构建效果&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;有修改的子项目&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g6vm2ul2zfj21ky148jx0.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;无修改的子项目&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/large/ad5fbf65gy1g6vm49on4kj21jk11iaf7.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;kubernetes-发布状态检查&#34;&gt;Kubernetes 发布状态检查&lt;/h2&gt;
+&lt;p&gt;之前的 Kubernetes 发布只是将服务发布到 Kubernetes 集群，并不管服务是否正常启动。针对这个问题以及我们的 Kubernetes 应用管理模式，我们开发了 drone 的 Kubernetes 发布插件，该插件包括 &lt;code&gt;kubectl&lt;/code&gt; 、&lt;code&gt;kustomize&lt;/code&gt;、&lt;code&gt;kubedog&lt;/code&gt; ，来完善我们的 Kubernetes 发布 step 。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;.drone.yml&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Kubernetes&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;部署&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/kubectl&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;check&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;                 &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 该参数为是否开启子模块检查&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;config&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deploy/overlays/uat&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 这里使用 kustomize ,详细使用方法请见 https://github.com/kubernetes-sigs/kustomize&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;timeout&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;300&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;                 &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# kubedog 的检测超时&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-deployment-name}&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 如果开启子模块检查则需要填入子模块名称&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;...&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.kube&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# kubeconfig 挂载位置&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;trigger&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;branch&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- master&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 触发 CI 的分支&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用该插件会如果为测试构建，则会自动设置 docker 镜像 tag 为 &lt;code&gt;DRONE_BUILD_NUMBER&lt;/code&gt; ；如果为生产构建（git tag），则叫自动设置 docker 镜像 tag 为 &lt;code&gt;DRONE_TAG&lt;/code&gt; ，然后通过 &lt;code&gt;kubectl apply -k .&lt;/code&gt; 进行部署，同时使用 &lt;code&gt;kubedog&lt;/code&gt; 进行部署状态检查，如果服务正常启动则该 step 通过，如果超时或者部署报错则该 step 失败。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;根据我们目前的开发模式，对 drone 插件进行了全方位的开发。由于 dockerhub 的镜像拉取经常超时，则将镜像推送到了我们自己的镜像仓库；对钉钉通知也进行了优化；同时也根据我们目前的开发语言进行了插件的开发，提供了基于 Java 、Python 以及 Node.js 的 drone 插件，基本可以满足我们现在的 CI 需求，但随着 drone 的深入使用，越来越多的问题将会暴露出来。后续将会不断解决遇到的问题，持续优化。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 轻量快速的 CI 工具 Drone</title>
+      <link>/post/drone-ci/</link>
+      <pubDate>Tue, 21 May 2019 08:59:00 +0800</pubDate>
+      
+      <guid>/post/drone-ci/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;公司之前一直在使用 Jenkins 作为 CI/CD 工具， Jenkins 非常强大，它完成了几乎所有 CI/CD 的工作，并且应用于整个团队有好长一段时间了。但是随着公司推荐数字化、智慧化，以及服务容器化的推进， Jenkins 的一些弊端也凸显了出来：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;重量级：&lt;/strong&gt; Jenkins 功能十分齐全，几乎可以做所有的事情。但是这也是他的一个弊端，过于重量级，有时候往往一个小的修改需要改动许多地方，升级\下载插件后需要进行重启等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;升级不易：&lt;/strong&gt; 在一些安全 Jenkins 相关的安全漏洞被公开后，我们会对 Jenkins 进行升级，但这也不是一件容易的事。之前就出现过升级\重启后，所有 job 丢失，虽然我们所有项目配置都是以 Jenkinsfile 的形式统一存储，但是每个 job 都需要重新重新创建，包括每个 job 的权限&amp;hellip;.._(´ཀ`」 ∠)_&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;权限控制复杂：&lt;/strong&gt; 这其实也是 Jenkins 的一大优势，可以精确控制每个用户的权限，但是需要花费更多时间去配置，时间长了也会出现权限混乱的问题。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;UI 界面：&lt;/strong&gt; 这个其实是吐槽最多的部分，虽然有诸如：Blue Ocean 这样的插件来展示 pipeline ，但是还是没有从根本改变它简陋的 UI 界面。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么为什么选择使用 Drone 呢？&lt;/p&gt;
+&lt;p&gt;其实在 GitHub 上提交 PR 后，大部分开源项目都会使用 &lt;a href=&#34;http://travis-ci.org/&#34;&gt;travis-ci&lt;/a&gt; 对提交的代码进行 CI 及检查，而如果是 Kubernetes 相关的项目，则会使用 &lt;a href=&#34;https://github.com/k8s-ci-robot&#34;&gt;prow&lt;/a&gt; 进行 CI。但是 &lt;a href=&#34;http://travis-ci.org/&#34;&gt;travis-ci&lt;/a&gt; 只能用于 GitHub ，在寻找类似项目的时候， Drone 进入了我的视野。&lt;/p&gt;
+&lt;p&gt;大道至简。和 Jenkins 相比， Drone 就轻量的多了，从应用本身的安装部署到流水线的构建都简洁的多。由于是和源码管理系统相集成，所以 Drone 天生就省去了各种账户\权限的配置，直接与 gitlab 、 github 、 Bitbucket 这样的源码管理系统操作源代码的权限一致。正如它官网上写的那样：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Source Code Manager&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone integrates seamlessly with multiple source code management systems, including GitHub, GitHubEnterprise, Bitbucket, and GitLab.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Platform&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone natively supports multiple operating systems and architectures, including Linux x64, ARM, ARM64 and Windows x64.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Language&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone works with any language, database or service that runs inside a Docker container. Choose from thousands of public Docker images or provide your own.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Drone 天生支持任何源码管理工具、任何平台和任何语言。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;而写这篇文章的目的，并不是要吹捧这个工具有多么的好用，而是要总结在搭建 drone 和使用时候需要的各种坑，帮助读者绕过这些坑。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;声明&#34;&gt;声明&lt;/h2&gt;
+&lt;p&gt;鉴于在使用 Drone CI 中，遇到的各种坑都和 Drone 的版本有关，这里首先声明我使用的 Drone 版本为&lt;code&gt;1.1&lt;/code&gt;，使用&lt;code&gt;0.8&lt;/code&gt;版本的同学请绕道。&lt;/p&gt;
+&lt;h2 id=&#34;搭建-drone&#34;&gt;搭建 Drone&lt;/h2&gt;
+&lt;p&gt;这里要说的就是在使用 drone 中遇到的第一个坑，在最初正准备搭建 drone 的时候 Google 了很多相关的 blog ，大部分 blog （包括某些 &lt;a href=&#34;https://medium.com/&#34;&gt;medium.com&lt;/a&gt; 上面近期的英文 blog） 推荐的安装方式都是使用 &lt;code&gt;docker-compose&lt;/code&gt;，而无一例外的都失败了&amp;hellip;走投无路之下，我回到了&lt;a href=&#34;https://docs.drone.io/installation/&#34;&gt;官网的文档&lt;/a&gt;，发现&lt;code&gt;1.0&lt;/code&gt;之后许多参数都发生了变化，并且官方推荐使用 docker 的方式运行 Drone。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;所以在使用任何开源软件之前都要去阅读它的文档，不要跟着一篇 blog 就开始了（包括我的），这样会少踩很多坑！！！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这里以 gitlab 为例，展示网上版本启动参数和实际参数的不同：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;作用&lt;/th&gt;
+&lt;th&gt;各种blog&lt;/th&gt;
+&lt;th&gt;官网文档&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;设置 Drone 的管理员&lt;/td&gt;
+&lt;td&gt;DRONE_ADMIN=admin&lt;/td&gt;
+&lt;td&gt;DRONE_USER_CREATE=username:admin,admin:true&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;设置GitLab的域名&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_URL&lt;/td&gt;
+&lt;td&gt;DRONE_SERVER_HOST&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GitLab的Application中的key&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT_ID&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GitLab的Application中的secret&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_SECRET&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT_SECRET&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Drone 域名&lt;/td&gt;
+&lt;td&gt;DRONE_HOST&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_SERVER&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;上面只是列举了部分官方文档和网上流产版本的不同，所以在使用之前一定要仔细阅读官方文档。下附运行 drone 的命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --volume=/var/run/docker.sock:/var/run/docker.sock &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --volume=/var/lib/drone:/data &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GIT_ALWAYS_AUTH&lt;/span&gt;=&lt;span style=&#34;color:#24909d&#34;&gt;false&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_SERVER&lt;/span&gt;={your-gitlab-url} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# gitlab 的 URL&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_CLIENT_ID&lt;/span&gt;={your-gitlab-applications-id} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#GitLab的Application中的id&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_CLIENT_SECRET&lt;/span&gt;={your-gitlab-applicati-secret} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#GitLab的Application中的secret&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_SERVER_HOST&lt;/span&gt;={your-drone-url} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;   &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# drone 的URl&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_SERVER_PROTO&lt;/span&gt;=http &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_TLS_AUTOCERT&lt;/span&gt;=&lt;span style=&#34;color:#24909d&#34;&gt;false&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_USER_CREATE&lt;/span&gt;=username:{your-admin-username},admin:true &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;  &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Drone的管理员&lt;/span&gt;
+  --publish=8000:80 &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --publish=443:443 &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --restart=always &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --detach=&lt;span style=&#34;color:#24909d&#34;&gt;true&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --name=drone &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  drone/drone:1.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;关于 &lt;code&gt;gitlab Application&lt;/code&gt; 的配置和 Drone 其他参数含义请参考&lt;a href=&#34;https://docs.drone.io/installation/gitlab/single-machine/&#34;&gt;官方文档&lt;/a&gt;，这里只展示单节点办的运行方式。&lt;/p&gt;
+&lt;h2 id=&#34;核心文件-droneyml&#34;&gt;核心文件 &lt;code&gt;.drone.yml&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;要使用 Drone 只需在项目根创建一个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件即可，这个是 Drone 构建脚本的配置文件，它随项目一块进行版本管理，开发者不需要额外再去维护一个配置脚本。其实现代 CI 程序都是这么做了，这个主要是相对于 Jekins 来说的。虽然 Jekins 也有插件支持，但毕竟还是需要配置。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;值得注意的事这个文件时 &lt;code&gt;.drone.yml&lt;/code&gt;，由于 Kubernetes 使用的多了，第一次创建了一个 &lt;code&gt;.drone.yaml&lt;/code&gt; 文件，导致怎么都获取不到配置&amp;hellip;_(´ཀ`」 ∠)_&amp;hellip; YAML 工程师石锤了&amp;hellip;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里放一个 Java 的 .drone.yml ，这个项目是 fork 别人的项目用作演示，记得要修改 &lt;code&gt;deployment.yaml&lt;/code&gt; 中的镜像仓库地址修改为自己的私有仓库。&lt;/p&gt;
+&lt;p&gt;示例项目源码：https://github.com/sunny0826/pipeline-example-maven&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-YAML&#34; data-lang=&#34;YAML&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pipeline&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pipeline-example-maven&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Maven编译&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;maven:&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt;-jdk&lt;span style=&#34;color:#3677a9&#34;&gt;-7&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cache&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.m2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- mvn&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;clean&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;install&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;构建镜像&lt;span style=&#34;color:#666&#34;&gt;  
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;plugins/docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/var/run/docker.sock&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;username&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker_user&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;password&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker_pass&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;repo&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-repo}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;registry&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-registry}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tags&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;${DRONE_BUILD_NUMBER}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Kubernetes&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;部署&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/kubectl:v1&lt;span style=&#34;color:#3677a9&#34;&gt;.14.1&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- sed&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;-i&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;s/#Tag/${DRONE_BUILD_NUMBER}/g&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deployment.yaml&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- kubectl&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;apply&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;-f&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deployment.yaml&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;钉钉通知&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/drone-dingtalk&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;token&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dingding&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;type&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;markdown&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_color&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_pic&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;sha_link&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;when&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;status&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[failure,&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;success]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cache&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.m2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.kube/.test_kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/var/run/docker.sock&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;trigger&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;branch&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- master&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;值得注意的事：上面的这个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件将本地的&lt;code&gt;.m2&lt;/code&gt;文件、kubeconfig文件、&lt;code&gt;docker.sock&lt;/code&gt; 文件挂载到 pipeline 中以实现 maven 打包缓存，k8s 部署、docker 缓存的作用，以提高 CI 速度。而是用挂载需要管理员在项目 settings 中勾选 &lt;code&gt;Trusted&lt;/code&gt; ，这个操作只能管理员进行，普通用户是看不到这个选项的。而管理员就是在docker运行时候 &lt;code&gt;--env=DRONE_USER_CREATE=username:{your-admin-username},admin:true &lt;/code&gt; 设置的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws3.sinaimg.cn/large/ad5fbf65gy1g38qvifxwij21d40tk76s.jpg&#34; alt=&#34;WX20190521-104717@2x&#34;&gt;&lt;/p&gt;
+&lt;p&gt;而上传镜像和钉钉同时需要在 settings 设置中添加 secret&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;docker_user：docker 仓库用户名&lt;/li&gt;
+&lt;li&gt;docker_pass：docker 仓库密码&lt;/li&gt;
+&lt;li&gt;dingding： 钉钉机器人 token&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意这里的钉钉 token 是 webhook 中 &lt;code&gt;https://oapi.dingtalk.com/robot/send?access_token=&lt;/code&gt; 后这部分
+&lt;img src=&#34;https://ws2.sinaimg.cn/large/ad5fbf65gy1g38r1mkoztj20iy0ezgmg.jpg&#34; alt=&#34;WX20190521-105337&#34;&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g38qxizsg1j21ia0tujtb.jpg&#34; alt=&#34;WX20190521-104942@2x&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;构建结果&#34;&gt;构建结果&lt;/h2&gt;
+&lt;p&gt;添加 &lt;code&gt;.drone.yml&lt;/code&gt; 文件后，向 master 分支提交代码即可出发 CI 构建&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx3.sinaimg.cn/large/ad5fbf65gy1g38r68yb8pj21l40sawit.jpg&#34; alt=&#34;WX20190521-105809@2x&#34;&gt;&lt;/p&gt;
+&lt;p&gt;CI 结束后，会在钉钉机器人所在群收到通知&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/large/ad5fbf65gy1g38r8cttcrj20e90bzacr.jpg&#34; alt=&#34;WX20190521-110009&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;插件支持&#34;&gt;插件支持&lt;/h2&gt;
+&lt;p&gt;可以看到，每一步的镜像都是一个镜像，上面 pipeline 中的 Kubernetes 及钉钉通知插件就是我开发的，具体开发方法可以参考&lt;a href=&#34;https://docs.drone.io/&#34;&gt;官方文档&lt;/a&gt;，而官方也提供了许多&lt;a href=&#34;http://plugins.drone.io/&#34;&gt;官方插件&lt;/a&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;构建后部署：&lt;a href=&#34;http://plugins.drone.io/mactynow/drone-kubernetes/&#34;&gt;Kubernetes&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/ipedrazas/drone-helm/&#34;&gt;helm&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/appleboy/drone-scp/&#34;&gt;scp&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;构建后通知：&lt;a href=&#34;http://plugins.drone.io/lddsb/drone-dingtalk-message/&#34;&gt;钉钉&lt;/a&gt; 、&lt;a href=&#34;http://plugins.drone.io/drillster/drone-email/&#34;&gt;Email&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/drone-plugins/drone-slack/&#34;&gt;Slack&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/lizheming/drone-wechat/&#34;&gt;微信&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
+&lt;p&gt;Drone 整体用起来还是很方便的，搭建、上手速度都很快，但是官方文档给的不够详实，而网上充斥着各种各样0.8版本的的实例，但是其实官网早就发布了1.0版本，而官方并没有 &lt;code&gt;example&lt;/code&gt; 这样的示例项目，这样就又把本来降下来的学习曲线拉高了。许多坑都需要自己去趟，我在测试 drone 的时候，就构构建了上百次，不停的修改 &lt;code&gt;.drone.yml&lt;/code&gt; ， commit 信息看起来是很恐怖的。后续抽空会向官方贡献 &lt;code&gt;example&lt;/code&gt; 这样的 PR。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

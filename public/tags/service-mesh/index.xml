@@ -1,0 +1,815 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – service mesh</title>
+    <link>/tags/service-mesh/</link>
+    <description>Recent content in service mesh on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Wed, 08 Jul 2020 15:08:09 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/service-mesh/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: Istio 升级新方式：金丝雀升级</title>
+      <link>/post/istio-upgrade/</link>
+      <pubDate>Wed, 08 Jul 2020 15:08:09 +0800</pubDate>
+      
+      <guid>/post/istio-upgrade/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;自 1.5 版本开始，Istio 就弃用了之前使用 &lt;code&gt;Helm&lt;/code&gt; 的安装方式。而 1.6 发布也有一段时间了，目前都已经到了 &lt;code&gt;1.6.4&lt;/code&gt; 版本，就升级部分，Istio 1.6 推出了渐进式的升级方式：金丝雀升级，为相对头疼的 Istio 升级问题提供了一种解决方案。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Istio 不支持跨版本升级。本文仅讲解从 1.5 版本升级到 1.6 版本。如果您使用的是旧版本，请先升级到 1.5 版本。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;金丝雀升级&#34;&gt;金丝雀升级&lt;/h2&gt;
+&lt;p&gt;顾名思义，金丝雀升级可以让新老版本的 &lt;code&gt;istiod&lt;/code&gt; 同时存在，并允许将所有流量在由新版控制平面 &lt;code&gt;istiod-canary&lt;/code&gt; 控制之前，先将一小部分工作负载交由新版本 &lt;code&gt;istiod-canary&lt;/code&gt; 控制，并进行监控，渐进式的完成升级。该方式比原地升级安全的多，也是现在推荐的升级方式。&lt;/p&gt;
+&lt;h3 id=&#34;控制平面升级&#34;&gt;控制平面升级&lt;/h3&gt;
+&lt;p&gt;首先需要&lt;a href=&#34;https://github.com/istio/istio/releases&#34;&gt;下载新版本 Istio&lt;/a&gt; 并切换目录为新版本目录。&lt;/p&gt;
+&lt;p&gt;安装&lt;code&gt;canary&lt;/code&gt;版本，将&lt;code&gt;revision&lt;/code&gt;字段设置为&lt;code&gt;canary&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl install --set &lt;span style=&#34;color:#40ffff&#34;&gt;revision&lt;/span&gt;=canary
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里会部署新的 &lt;code&gt;istiod-canary&lt;/code&gt;，但并不会对原有的控制平面造成影响，部署成功后会看到两个并行的 &lt;code&gt;istiod&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pods -n istio-system
+NAME                                        READY   STATUS    RESTARTS   AGE
+pod/istiod-85745c747b-knlwb                 1/1     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          33m
+pod/istiod-canary-865f754fdd-gx7dh          1/1     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          3m25s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里还可以看到新版的 &lt;code&gt;sidecar injector&lt;/code&gt; 配置：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get mutatingwebhookconfigurations
+NAME                            CREATED AT
+istio-sidecar-injector          2020-07-07T08:39:37Z
+istio-sidecar-injector-canary   2020-07-07T09:06:24Z
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;数据平面升级&#34;&gt;数据平面升级&lt;/h3&gt;
+&lt;p&gt;只安装 &lt;code&gt;canary&lt;/code&gt; 版本的控制平面并不会对现有的代理造成影响，要升级数据平面，并将他们指向新的控制平面，就需要在 namespace 中插入 &lt;code&gt;istio.io/rev&lt;/code&gt; 标签。&lt;/p&gt;
+&lt;p&gt;例如，想要要升级 &lt;code&gt;default&lt;/code&gt; namespace 的数据平面，需要添加 &lt;code&gt;istio.io/rev&lt;/code&gt; 标签并删除&lt;code&gt;istio-injection&lt;/code&gt;标签，以指向 &lt;code&gt;canary&lt;/code&gt; 版本的控制平面：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl label namespace default istio-injection- istio.io/rev=canary
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;注意：&lt;code&gt;istio-injection&lt;/code&gt; 标签必须删除，因为该标签的优先级高于 &lt;code&gt;istio.io/rev&lt;/code&gt; 标签，保留该标签将导致无法升级数据平面。&lt;/p&gt;
+&lt;p&gt;在 namespace 更新成功后，需要重启 Pod 来重新注入 Sidecar：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl rollout restart deployment -n default
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当重启成功后，该 namespace 的 pod 将被配置指向新的&lt;code&gt;istiod-canary&lt;/code&gt;控制平面，使用如下命令查看启用新代理的 Pod：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pods -n default -l istio.io/rev=canary
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;同时可以使用如下命令验证新 Pod 的控制平面为&lt;code&gt;istiod-canary&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl proxy-config endpoints &lt;span style=&#34;color:#ed9d13&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#40ffff&#34;&gt;pod_name&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}&lt;/span&gt;.default --cluster xds-grpc -ojson | grep hostname
+    &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;hostname&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;istiod-canary.istio-system.svc&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这时 &lt;code&gt;default&lt;/code&gt; namespace 内的 Pod 就完成了金丝雀升级，接下来就可以进行验证，确定这些 Pod 有没有因为 Istio 升级而导致功能异常。&lt;/p&gt;
+&lt;h2 id=&#34;原地升级--降级&#34;&gt;原地升级 &amp;amp; 降级&lt;/h2&gt;
+&lt;p&gt;目前原地升级有很大的概率通不过升级检测，导致无法升级，不推荐这种升级方式，这里就不做介绍了，详情见&lt;a href=&#34;https://istio.io/latest/docs/setup/upgrade/&#34;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;并且虽然 Istio 提供了降级方式，但是经过测试降级的体验并不好，并且出现了由于不支持的 CRD &lt;code&gt;apiVersion&lt;/code&gt; 导致无法降级的情况，所以请谨慎升级。&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;总体来说，金丝雀升级的出现很好的解决了控制平面渐进式升级的需求，但是由于&lt;code&gt;istioctl upgrade&lt;/code&gt;命令支持的场景和版本太少以及 Istio 整体架构的更改，目前的原地升级体验很差。最近还爆出了谷歌将把 Istio 捐给一个新成立基金会的消息，看来 Istio 要走的路还很长。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/latest/docs/setup/upgrade/&#34;&gt;Upgrade Istio - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 从边车模式到 Service Mesh</title>
+      <link>/post/sidercar-to-servicemesh/</link>
+      <pubDate>Wed, 10 Apr 2019 14:03:25 +0800</pubDate>
+      
+      <guid>/post/sidercar-to-servicemesh/</guid>
+      <description>
+        
+        
+        &lt;p&gt;所谓边车模式（ Sidecar pattern ），也译作挎斗模式，是分布式架构中云设计模式的一种。因为其非常类似于生活中的边三轮摩托车而得名。该设计模式通过给应用程序加上一个“边车”的方式来拓展应用程序现有的功能。这种设计模式出现的很早，实现的方式也多种多样。现在这个模式更是随着微服务的火热与 Service Mesh 的逐渐成熟而进入人们的视野。&lt;/p&gt;
+&lt;h2 id=&#34;什么是边车模式&#34;&gt;什么是边车模式&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx1.sinaimg.cn/large/ad5fbf65ly1g18zhnoh76j20dw0dw752.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;在 &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/architecture/patterns/&#34;&gt;Azure Architecture Center&lt;/a&gt; 的云设计模式中是这么介绍边车模式的：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Deploy components of an application into a separate process or container to provide isolation and encapsulation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;mdash; &lt;em&gt;&lt;strong&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/azure/architecture/patterns/sidecar&#34;&gt;Sidecar pattern&lt;/a&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;这里要注意的是： 这里的 Sidecar 是分布式架构中云设计模式的一种，与我们目前在使用的 Istio 或 Linkerd 中的 Sidecar 是设计与实现的区别，后文中提到的边车模式均是指这种设计模式，请勿与 Istio 或 其他 Service Mesh 软件 中的 Sidecar 混淆。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;边车模式&lt;/strong&gt;是一种分布式架构的设计模式。如上图所示，边车就是加装在摩托车旁来达到拓展功能的目的，比如行驶更加稳定，可以拉更多的人和货物，坐在边车上的人可以给驾驶员指路等。边车模式通过给应用服务加装一个“边车”来达到&lt;strong&gt;控制&lt;/strong&gt;和&lt;strong&gt;逻辑&lt;/strong&gt;的分离的目的。&lt;/p&gt;
+&lt;p&gt;比如日志记录、监控、流量控制、服务注册、服务发现、服务限流、服务熔断等在业务服务中不需要实现的控制面功能，可以交给“边车”，业务服务只需要专注实现业务逻辑即可。如上图那样，应用服务你只管开好你的车，打仗的事情就交给边车上的代理就好。这与分布式和微服务架构完美契合，真正的实现了控制和逻辑的分离与解耦。&lt;/p&gt;
+&lt;h2 id=&#34;边车模式设计&#34;&gt;边车模式设计&lt;/h2&gt;
+&lt;p&gt;在设计上边车模式与网关模式有类似之处，但是其粒度更细。其为每个服务都配备一个“边车”，这个“边车“可以理解为一个 agent ，这个服务所有的通信都是通过这个 agent 来完成的，这个 agent 同服务一起创建，一起销毁。像服务注册、服务发现、监控、流量控制、日志记录、服务限流和服务服务熔断等功能完全可以做成标准化的组件和模块，不需要在单独实现其功能来消耗业务开发的精力和时间来开发和调试这些功能，这样可以开发出真正高内聚低耦合的软件。&lt;/p&gt;
+&lt;p&gt;这里有两种方法来实现边车模式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;通过 SDK 、 Lib 等软件包的形式，在开发时引入该软件包依赖，使其与业务服务集成起来。&lt;/p&gt;
+&lt;p&gt;这种方法可以与应用密切集成，提高资源利用率并且提高应用性能。但是这种方法是对代码有侵入的，受到编程语言和软件开发人员水平的限制，但当该依赖有 bug 或者需要升级时，业务代码需要重新编译和发布。同时，如果该依赖宣布停止维护或者闭源，那么会给该服务带来不小的影响。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;以 Sidecar 的形式，在运维的时候与应用服务集成在一起。&lt;/p&gt;
+&lt;p&gt;这种方式对应用服务没有侵入性，不受编程语言和开发人员水平的限制，做到了控制与逻辑分开部署。但是会增加应用延迟，并且管理和部署的复杂度会增加。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;边车模式解决了什么问题&#34;&gt;边车模式解决了什么问题&lt;/h2&gt;
+&lt;p&gt;边车模式在概念上是比较简单的，但是在实践中还是要了解边车模式到底解决了什么问题，我们为什么要使用边车模式？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;控制与逻辑分离的问题&lt;/p&gt;
+&lt;p&gt;边车模式是基于将控制与逻辑分离和解耦的思想，通俗的讲就是让专业的人做专业的事，业务代码只需要关心其复杂的业务逻辑，其他的事情”边车“会帮其处理，从这个角度看，可能叫跟班或者秘书模式也不错 :)&lt;/p&gt;
+&lt;p&gt;日志记录、监控、流量控制、服务注册、服务发现、服务限流、服务熔断、鉴权、访问控制和服务调用可视化等，这些功能从本质上和业务服务的关系并不大，而传统的软件工程在开发层面完成这些功能，这导致了各种各样维护上的问题。&lt;/p&gt;
+&lt;p&gt;就好像一个厨师不是必须去关心食材的产地、饭店的选址、是给大厅的客人上菜还是给包房的客人上菜&amp;hellip;他只需要做好菜就好，虽然上面的这些事他都可以做。而传统的软件工程就像是一个小饭店的厨师，他即是老板又是厨师，既需要买菜又需要炒菜，所有的事情都要他一个人做，如果客人一多，就会变的手忙脚乱；而控制与逻辑分离的软件，其逻辑部分就像是高档酒店的厨师，他只需要将菜做好即可，其他的事情由像”边车“这样的成员帮其处理。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;解决服务之间调用越来越复杂的问题&lt;/p&gt;
+&lt;p&gt;随着分布式架构越来越复杂和微服务越拆越细，我们越来越迫切的希望有一个统一的控制面来管理我们的微服务，来帮助我们维护和管理所有微服务，这时传统开发层面上的控制就远远不够了。而边车模式可以很好的解决这个问题。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;从边车模式到-service-mesh&#34;&gt;从边车模式到 Service Mesh&lt;/h2&gt;
+&lt;p&gt;边车模式有效的分离了系统控制和业务逻辑，可以将所有的服务进行统一管理，让开发人员更专注于业务开发，显著的提升开发效率。而遵循这种模式进行实践从很早以前就开始了，开发人员一直试图将上文中我们提到的功能（如：流量控制、服务注册、服务发现、服务限流、服务熔断等）提取成一个标准化的 Sidecar ，通过 Sidecar 代理来与其他系统进行交互，这样可以大大简化业务开发和运维。而随着分布式架构和微服务被越来越多的公司和开发者接受并使用，这一需求日益凸显。&lt;/p&gt;
+&lt;p&gt;这就是 Service Mesh 服务网格诞生的契机，它是 CNCF（Cloud Native Computing Foundation，云原生基金会）目前主推的新一代微服务架构。 William Morgan 在 &lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;What&amp;rsquo;s a service mesh? And why do I need one?&lt;/a&gt; 【&lt;a href=&#34;https://blog.maoxianplay.com/posts/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;译文&lt;/a&gt;】中解释了什么是 Service Mesh 。&lt;/p&gt;
+&lt;p&gt;Service Mesh 有如下几个特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;应用程序间通讯的中间层&lt;/li&gt;
+&lt;li&gt;轻量级网络代理&lt;/li&gt;
+&lt;li&gt;应用程序无感知&lt;/li&gt;
+&lt;li&gt;解耦应用程序的重试/超时、监控、追踪和服务发现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Service Mesh 将底层那些难以控制的网络通讯统一管理，诸如：流量管控，丢包重试，访问控制等。而上层的应用层协议只需关心业务逻辑即可。Service Mesh 是一个用于处理服务间通信的基础设施层，它负责为构建复杂的云原生应用传递可靠的网络请求。&lt;/p&gt;
+&lt;h2 id=&#34;你真的需要-service-mesh-吗&#34;&gt;你真的需要 Service Mesh 吗？&lt;/h2&gt;
+&lt;p&gt;正如 NGINX 在其博客上发表的一篇文章名叫 &lt;a href=&#34;https://www.nginx.com/blog/do-i-need-a-service-mesh/&#34;&gt;Do I Need a Service Mesh? &lt;/a&gt; 【&lt;a href=&#34;http://www.servicemesher.com/blog/do-i-need-a-service-mesh/&#34;&gt;译文&lt;/a&gt;】 的文章中提到：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;As the complexity of the application increases, service mesh becomes a realistic alternative to implementing capabilities service-by-service.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;随着应用程序复杂性的增加，服务网格将成为实现服务到服务的能力的现实选择。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g1yqgvxvzrj20sg0fxgnw.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;随着我们的微服务越来越细分，我们所要管理的服务正在成倍的增长着，Kubernetes 提供了丰富的功能，使得我们可以快速的部署和调度这些服务，同时也提供了我们熟悉的方式来实现那些复杂的功能，但是当临界点到来时，可能就是我们真正要去考虑使用 Service Mesh 的时候了。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Sidecar pattern ： &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/architecture/patterns/sidecar&#34;&gt;https://docs.microsoft.com/en-us/azure/architecture/patterns/sidecar&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;What&amp;rsquo;s a service mesh? And why do I need one?： &lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Do I Need a Service Mesh?：https://www.nginx.com/blog/do-i-need-a-service-mesh/&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Service Mesh是什么，我们又为什么需要它</title>
+      <link>/post/whats-a-service-mesh-and-why-do-i-need-one/</link>
+      <pubDate>Mon, 25 Mar 2019 18:17:20 +0800</pubDate>
+      
+      <guid>/post/whats-a-service-mesh-and-why-do-i-need-one/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;作者：William Morgan 发表于2017年4月25日，2018年11月26日有所修改。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Service Mesh 是一个专门使服务与服务之间的通信变得安全、快速和可靠的的基础设施。如果你正在在构建一个云原生（ Cloud Native ）应用，那么你一定需要 Service Mesh 。&lt;/p&gt;
+&lt;p&gt;在过去的一年中， Service Mesh 成为了云原生技术栈的关键组件。像 Paypal ,  Ticketmaster 和 Credit Karma 这样的大厂，已经将 Service Mesh 加入到他们的全部应用中。并且在2017年1月，开源的 Service Mesh 软件 Linkerd 加入云原生基金会（ CNCF ），成为云原生基金会（ CNCF ）的官方项目。但是什么是真正的 Service Mesh ？它又为何突然变的如此重要？&lt;/p&gt;
+&lt;p&gt;在这篇文章，我会讲解 Service Mesh 的定义，并通过应用服务架构过去十年的发展追溯其起源。并将 Service Mesh 与其他相似的概念（包括 API 网关，边缘代理以及 ESB （enterprise service bus））进行区分。最终，将会描述 Service Mesh 的发展方向，以及随着云原生概念的普及，Service Mesh 发生的变化。&lt;/p&gt;
+&lt;h2 id=&#34;什么是-service-mesh&#34;&gt;什么是 Service Mesh&lt;/h2&gt;
+&lt;p&gt;Service Mesh 这个服务网络专注于处理服务和服务间的通讯。其主要负责构造一个稳定可靠的服务通讯的基础设施，并让整个架构更为的先进和 Cloud Native。在工程中，Service Mesh 基本来说是一组轻量级的服务代理和应用逻辑的服务在一起，并且对于应用服务是透明的。&lt;/p&gt;
+&lt;p&gt;Service Mesh 作为独立层的概念与云原生应用的兴起有关。在云原生模式，单个应用可能有数百个服务组成，每个服务又可能有上千个实例，而每个实例都有可能被像 kubernetes 这样的服务调度器不断调度从而不断变化状态。而这些复杂的通信又普遍是服务运行时行为的一部分，这时确保端到端的通信的性能和可靠性就变的至关重要。&lt;/p&gt;
+&lt;h2 id=&#34;service-mesh-就是一个网络模型吗&#34;&gt;Service Mesh 就是一个网络模型吗？&lt;/h2&gt;
+&lt;p&gt;Service Mesh 是一个位于 TCP/IP 上的抽象层的网络模型。它假定底层 L3/L4 网络存在并且能够从一点向另一点传输数据。（它还假定这个网络和环境的其他方面一样不可靠，所以 Service Mesh 也必须能够处理网络故障。）&lt;/p&gt;
+&lt;p&gt;在某些方面，Service Mesh 就像是网络七层模型中的第四层 TCP 协议。其把底层的那些非常难控制的网络通讯方面的控制面的东西都管了（比如：丢包重传、拥塞控制、流量控制），而更为上面的应用层的协议，只需要关心自己业务应用层上的事了。&lt;/p&gt;
+&lt;p&gt;与 TCP 不同的是， Service Mesh 想要达成的目的不仅仅是正常的网络通讯。它为应用提供了统一的，可视化的以及可控制的控制平面。Service Mesh 是要将服务间的通信从无法发现和控制的基础设施中分离出来，并对其进行监控、管理和控制。&lt;/p&gt;
+&lt;h2 id=&#34;service-mesh-实际上做了什么&#34;&gt;Service Mesh 实际上做了什么？&lt;/h2&gt;
+&lt;p&gt;在云原生应用中传递可靠的请求是十分复杂的。而 &lt;a href=&#34;https://linkerd.io/#_ga=2.114183109.310878331.1553762133-1927878916.1553476024&#34;&gt;Linkerd&lt;/a&gt; 提供了服务熔断、重试、负载均衡、熔断降级等功能，通过其强大的功能来管理那些必须运行在复杂环境中的服务。&lt;/p&gt;
+&lt;p&gt;这里列举一个通过 Linkerd 向服务发出请求的简单流程：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;通过 Linkerd 的动态路由规则来确定打算连接哪个服务。这个请求是要路由到生产环境还是演示环境？是请求本地数据中心的服务还是云上的服务？是请求正在测试的最新版的服务还是已经在生产中经过验证的老版本？所有的这些路由规则都是动态配置的，可以全局应用也可以部分应用。&lt;/li&gt;
+&lt;li&gt;找到正确的目的服务后， Linkerd 从一个或几个相关的服务发现端点检索实例池。如果这些信息与 Linkerd 的服务发现信息不同， Linkerd 会决定信任哪些信息来源。&lt;/li&gt;
+&lt;li&gt;Linkerd 会根据观察到的最近的响应延迟来选择速度最快的实例。&lt;/li&gt;
+&lt;li&gt;Linkerd 发送请求给这个实例，记录延迟和响应类型。&lt;/li&gt;
+&lt;li&gt;如果这个实例挂了、无响应或者无法处理请求， Linkerd 会再另一个实例上重试这个请求。（但只有在请求是幂等的时候）&lt;/li&gt;
+&lt;li&gt;如果一个实例一直请求失败， Linkerd 会将其移出定时重试的负载均衡池。&lt;/li&gt;
+&lt;li&gt;如果请求超时， Linkerd 会主动将请求失效，而不是进一步重试从而增加负载。&lt;/li&gt;
+&lt;li&gt;Linkerd 会记录指标和分布式的追踪上述行为的各个方面，将他们保存在集中的指标系统中。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;以上只是简化版的介绍， Linkerd 还可以启动和重试 TLS ，执行协议升级，动态切换流量，甚至在故障之后数据中心的切换。
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1in1q1jnuj20sg0gbt99.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;值得注意的是，这些功能旨在为每个实例和应用程序提供弹性伸缩。而大规模的分布式系统（无论是如何构建的）都有一个共同特点：都会因为许多小的故障，而升级为全系统灾难性的故障。Service Mesh 则被设计为通过快速的失效和减少负载来保护整个系统免受这样灾难性的故障。&lt;/p&gt;
+&lt;h2 id=&#34;为什么-service-mesh-是必要的&#34;&gt;为什么 Service Mesh 是必要的？&lt;/h2&gt;
+&lt;p&gt;Service Mesh 本质上并不是什么新技术，而是功能所在位置的转变。Web 应用需要管理复杂的服务通信，Service Mesh 模式的起源和演变过程可以追溯到15年前。&lt;/p&gt;
+&lt;p&gt;参考2000年左右中型 Web 应用的典型三层架构，在这个架构中，应用被分为三层：应用逻辑、web 服务逻辑、存储逻辑。层之间的通信虽然复杂，但是毕竟范围有限，最多只有2跳。这里并不是 “Mesh” 的，但在每层中处理跳转的代码是存在通信逻辑的。&lt;/p&gt;
+&lt;p&gt;当这种架构向更大规模发展的时候，这种通信方式就无以为继了。像 Google , Netflix , 和 Twitte ，在面临巨大的请求流量的时候，他们的实现了云原生应用的前身：应用被分割成了许多服务（现在称作“微服务”），这些服务组成了一种网格结构。在这些系统中，通用通信层突然兴起，表现为“胖客户端”的形式 - Twitter 的 Finagle, Netflix 的 Hystrix 和 Google 的 Stubby 都是很典型的例子。&lt;/p&gt;
+&lt;p&gt;现在看来，像 Finagle 、Stubby 和 Hystrix 这样的库就是最早的 Service Mesh。虽然它们是为特定环境、语言和框架定制了，但都是作为基础设施专门用于管理服务间的通信，并（在 Finagle 和 Hystrix 开源的情况下）在其他公司的应用中被使用。&lt;/p&gt;
+&lt;p&gt;这三个组件都有应用自适应机制，以便在负载中进行拓展，并处理在云环境中的部分故障。但是对于数百个服务或数千个实例，以及不时需要重新调度的业务层实例，单个请求通过的调用链可能变的非常复杂，而且服务可能由不同的语言编写，这时基于库的解决方案可能就不再适用了。&lt;/p&gt;
+&lt;p&gt;服务通信的复杂性和重要性导致我们急需一个专门的基础设施层来处理服务间的通信，该层需要与业务代码解耦，并且具有捕获底层环境的动态机制。这就是 Service Mesh 。&lt;/p&gt;
+&lt;h2 id=&#34;service-mesh-的未来&#34;&gt;Service Mesh 的未来&lt;/h2&gt;
+&lt;p&gt;Service Mesh 在云生态下迅速的成长，并且有着令人激动的未来等待探索。对无服务器计算（Serverless， 例如 Amazon 的 &lt;a href=&#34;https://aws.amazon.com/lambda/&#34;&gt;Lambda&lt;/a&gt;）适用的 Service Mesh 网络模型，在云生态系统中角色的自然拓展。Service Mesh 可能成为服务身份和访问策略这些在云原生领域还是比较新的技术的基础。最后，Service Mesh ，如之前的TCP / IP，将推进加入到底层的基础架构中。就像 Linkerd 是由像 Finagle 这样的系统发展而来，Service Mesh 将作为单独的用户空间代理添加到云原生技术栈中继续发展。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;Service Mesh 是云原生技术栈的关键技术。Linkerd 成立仅1年就成为了云原生基金会（CNCF）的一部分，拥有蓬勃发展的社区和贡献者。使用者从像 Monzo 这样颠覆英国银行业的创业公司，到像 Paypal、 Ticketmaster 和 Credit Karma 这样的互联网大厂，再到像 Houghton Mifflin Harcourt 这样经营了数百年的公司。&lt;/p&gt;
+&lt;p&gt;使用者和贡献者每天都在 Linkerd 社区展示 Service Mesh 创造的价值。我们将致力于打造这一令人惊叹的产品，并继续发展壮大我们的社区，&lt;a href=&#34;https://linkerd.io/#_ga=2.40265824.310878331.1553762133-1927878916.1553476024&#34;&gt;加入我们吧&lt;/a&gt;！&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;原文链接&lt;/strong&gt; &lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Istio初探之Bookinfo样例部署</title>
+      <link>/post/istio-bookinfo-demo/</link>
+      <pubDate>Thu, 21 Mar 2019 09:42:18 +0800</pubDate>
+      
+      <guid>/post/istio-bookinfo-demo/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;之前介绍了 Istio 和 Service Mesh 能给我们带来什么，我们为什么要用 Istio ，但大家对 Istio 的认识可能还没有那么深刻。正如Linux 的创始人 &lt;a href=&#34;https://en.wikipedia.org/wiki/Linus_Torvalds&#34;&gt;Linus Torvalds&lt;/a&gt; 的那句话：&lt;strong&gt;Talk is cheap. Show me the code.&lt;/strong&gt; 这里我们部署一个demo，由四个单独的微服务构成**（注意这里的四个微服务是由不同的语言编写的）**，用来演示多种 Istio 特性。这个应用模仿在线书店的一个分类，显示一本书的信息。页面上会显示一本书的描述，书籍的细节（ISBN、页数等），以及关于这本书的一些评论。&lt;/p&gt;
+&lt;h2 id=&#34;bookinfo-应用&#34;&gt;Bookinfo 应用&lt;/h2&gt;
+&lt;p&gt;Bookinfo 应用分为四个单独的微服务：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;productpage&lt;/code&gt; ：&lt;code&gt;productpage&lt;/code&gt; 微服务会调用 &lt;code&gt;details&lt;/code&gt; 和 &lt;code&gt;reviews&lt;/code&gt; 两个微服务，用来生成页面。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;details&lt;/code&gt; ：这个微服务包含了书籍的信息。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;reviews&lt;/code&gt; ：这个微服务包含了书籍相关的评论。它还会调用 ratings 微服务。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ratings&lt;/code&gt; ：ratings 微服务中包含了由书籍评价组成的评级信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里主要使用&lt;code&gt;reviews&lt;/code&gt;来演示 Istio 特性，&lt;code&gt;reviews&lt;/code&gt; 微服务有 3 个版本：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;v1 版本不会调用 &lt;code&gt;ratings&lt;/code&gt; 服务。&lt;/li&gt;
+&lt;li&gt;v2 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个黑色星形图标来显示评分信息。&lt;/li&gt;
+&lt;li&gt;v3 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个红色星形图标来显示评分信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图展示了这个应用的端到端架构。
+&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/noistio.svg&#34; alt=&#34;Istio 注入之前的 Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Istio 注入之前的 Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;Bookinfo 是一个异构应用，几个微服务是由不同的语言编写的。这些服务对 Istio &lt;strong&gt;并无依赖&lt;/strong&gt;，但是构成了一个有代表性的服务网格的例子：它由多个服务、多个语言构成，并且 reviews 服务具有多个版本。&lt;/p&gt;
+&lt;h2 id=&#34;部署应用&#34;&gt;部署应用&lt;/h2&gt;
+&lt;p&gt;这里 Istio 的安装部署就不在赘述了。&lt;/p&gt;
+&lt;p&gt;值得注意的是：如果使用的是&lt;strong&gt;阿里云&lt;/strong&gt;容器服务安装的 Istio ，需要在 &lt;code&gt;容器服务&lt;/code&gt;-&lt;code&gt;市场&lt;/code&gt;-&lt;code&gt;应用目录&lt;/code&gt; 中选择 &lt;code&gt;gateway&lt;/code&gt; 进行安装，这里提供了多种 &lt;code&gt;gateway&lt;/code&gt; ，我们选择 &lt;code&gt;istio-ingressgateway&lt;/code&gt;，选择直接安装的话会默认创建 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的Service，会自动创建一个经典网络SLB，这里是可以调整的，会在后续的文章中进行详细讲解，这里不做赘述。&lt;/p&gt;
+&lt;p&gt;在 Istio 中运行这一应用，无需对应用自身做出任何改变。我们只要简单的在 Istio 环境中对服务进行配置和运行，具体一点说就是把 Envoy sidecar 注入到每个服务之中。这个过程所需的具体命令和配置方法由运行时环境决定，而部署结果较为一致，如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/withistio.svg&#34; alt=&#34;Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;所有的微服务都和 Envoy sidecar 集成在一起，被集成服务所有的出入流量都被 sidecar 所劫持，这样就为外部控制准备了所需的 Hook，然后就可以利用 Istio 控制平面为应用提供服务路由、遥测数据收集以及策略实施等功能。&lt;/p&gt;
+&lt;h3 id=&#34;下载安装&#34;&gt;下载安装&lt;/h3&gt;
+&lt;p&gt;到 GitHub 中 istio 的 &lt;a href=&#34;https://github.com/istio/istio/releases&#34;&gt;release&lt;/a&gt; 中下载相应版本的 istio 包，下载后将 &lt;code&gt;bin&lt;/code&gt; 目录配置到环境变量 &lt;code&gt;PATH&lt;/code&gt; 中 &lt;code&gt;export PATH=&amp;quot;/istio/bin:$PATH&amp;quot;&lt;/code&gt; ，这里我们使用的是 &lt;code&gt;istio 1.0.5&lt;/code&gt; 版本&lt;/p&gt;
+&lt;p&gt;Bookinfo 这个应用就在 &lt;code&gt;samples/&lt;/code&gt;目录下&lt;/p&gt;
+&lt;h2 id=&#34;在-阿里云容器服务kubernetes-中运行&#34;&gt;在 阿里云容器服务（kubernetes） 中运行&lt;/h2&gt;
+&lt;p&gt;启动应用容器，这里提供两种注入方法：&lt;strong&gt;手工注入&lt;/strong&gt;和&lt;strong&gt;自动注入&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;自动注入&lt;/p&gt;
+&lt;p&gt;需要修改 namespace ，为其添加 label 标签，这样所以在这个 namespace 中创建的应用都会被自动注入 sidecar&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl label namespace {inject-namespace} istio-injection=enabled
+$ kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;手工注入&lt;/p&gt;
+&lt;p&gt;需要使用 istioctl 命令生成注入后应用的配置，然后在部署应用&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f samples/bookinfo/platform/kube/bookinfo.yaml | kubectl apply -f -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于是测试，这里我们使用手工注入的方法。
+上面的命令会启动全部的四个服务，其中也包括了 &lt;code&gt;reviews&lt;/code&gt; 服务的三个版本（&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt; 以及 &lt;code&gt;v3&lt;/code&gt;）&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f bookinfo.yaml | kubectl apply -f -
+service/details created
+deployment.extensions/details-v1 configured
+service/ratings created
+deployment.extensions/ratings-v1 created
+service/reviews created
+deployment.extensions/reviews-v1 created
+deployment.extensions/reviews-v2 created
+deployment.extensions/reviews-v3 created
+service/productpage created
+deployment.extensions/productpage-v1 created
+$ kubectl get po
+NAME                              READY   STATUS    RESTARTS   AGE
+details-v1-8685d68cf9-8fwdb       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+productpage-v1-5fd9fddc97-tx88z   2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+ratings-v1-7c4d756c55-cn76d       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v1-5d868db586-w28q5       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v2-787647c7d9-7sc52       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v3-6964c86584-8728m       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+$ kubectl get svc
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)            AGE
+details              ClusterIP   10.11.224.17    &amp;lt;none&amp;gt;        9080/TCP           1h
+productpage          ClusterIP   10.11.16.86     &amp;lt;none&amp;gt;        9080/TCP           1h
+ratings              ClusterIP   10.11.244.59    &amp;lt;none&amp;gt;        9080/TCP           1h
+reviews              ClusterIP   10.11.162.37    &amp;lt;none&amp;gt;        9080/TCP           1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到 Bookinfo 应用已经正常运行&lt;/p&gt;
+&lt;h3 id=&#34;指定-ingress-和-ip-的端口&#34;&gt;指定 ingress 和 IP 的端口&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;为为应用程序定义入口网关：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;确认网关创建完成&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get gateway
+NAME               AGE
+bookinfo-gateway   1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;快速查询访问地址，这里的是之前在阿里云上创建的 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的 Service&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get svc istio-ingressgateway -n istio-system
+NAME                   TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)                  AGE
+istio-ingressgateway   LoadBalancer   10.11.18.83   xxx.xxx.xxx.xxx   80:xxx/TCP,443:xxx/TCP   2h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;查看效果&#34;&gt;查看效果&lt;/h3&gt;
+&lt;p&gt;访问 http://{EXTERNAL-IP}/productpage 注意：这里最后不能有/，否则将找不到页面
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1ad2jg6p3j21g90mxgo7.jpg&#34; alt=&#34;image&#34;&gt;
+多次刷新浏览器，将在 &lt;code&gt;productpage&lt;/code&gt; 中看到评论的不同的版本，它们会按照 round robin（红星、黑星、没有星星）的方式展现，这三个展示分来来自&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt;和&lt;code&gt;v3&lt;/code&gt;版本，因为还没有使用 Istio 来控制版本的路由，所以这里显示的是以轮询的负载均衡算法进行展示。&lt;/p&gt;
+&lt;h3 id=&#34;请求路由&#34;&gt;请求路由&lt;/h3&gt;
+&lt;p&gt;BookInfo示例部署了三个版本的reviews服务，因此需要设置一个缺省路由。否则当多次访问该应用程序时，会发现有时输出会包含带星级的评价内容，有时又没有。出现该现象的原因是当没有为应用显式指定缺省路由时，Istio会将请求随机路由到该服务的所有可用版本上。&lt;/p&gt;
+&lt;p&gt;在使用 Istio 控制 Bookinfo 版本路由之前，你需要在目标规则中定义好可用的版本 。&lt;/p&gt;
+&lt;p&gt;运行以下命令为 Bookinfo 服务创建的默认的目标规则：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果不需要启用双向TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果需要启用双向 TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all-mtls.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;等待几秒钟，等待目标规则生效。你可以使用以下命令查看目标规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get destinationrules
+NAME          AGE
+details       28s
+productpage   28s
+ratings       28s
+reviews       28s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;将所有微服务的缺省版本设置为v1&#34;&gt;将所有微服务的缺省版本设置为v1&lt;/h3&gt;
+&lt;p&gt;通过运行如下命令，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以通过下面的命令来显示所有已创建的路由规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices
+NAME       AGE
+bookinfo      33m
+details       8s
+productpage   8s
+ratings       8s
+reviews       8s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;显示已创建的详细路由规划：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices -o yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;由于路由规则是通过异步方式分发到代理的，过一段时间后规则才会同步到所有pod上。因此需要等几秒钟后再尝试访问应用。&lt;/p&gt;
+&lt;p&gt;在浏览器中打开 Bookinfo 应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adqyf9dej21g70oitbd.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到 Bookinfo 应用程序的 &lt;code&gt;productpage&lt;/code&gt; 页面，显示的内容中不包含带星的评价信息，这是因为 &lt;code&gt;reviews:v1&lt;/code&gt; 服务不会访问ratings服务。&lt;/p&gt;
+&lt;h3 id=&#34;将来自特定用户的请求路由到reviewsv2&#34;&gt;将来自特定用户的请求路由到reviews:v2&lt;/h3&gt;
+&lt;p&gt;本例中，首先使用 Istio 将100%的请求流量都路由到了 Bookinfo 服务的&lt;code&gt;v1&lt;/code&gt;版本；然后再设置了一条路由规则，路由规则基于请求的 header（例如一个用户cookie）选择性地将特定的流量路由到了 &lt;code&gt;reviews&lt;/code&gt; 服务的&lt;code&gt;v2&lt;/code&gt;版本。&lt;/p&gt;
+&lt;p&gt;通过运行如下命令，把来自测试用户&amp;quot;jason&amp;quot;的请求路由到 &lt;code&gt;reviews:v2 &lt;/code&gt;，以启用ratings服务。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过如下命令确认规则是否创建：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservice reviews -o yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+    {&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;networking.istio.io/v1alpha3&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;VirtualService&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;annotations&amp;#34;&lt;/span&gt;:{},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;namespace&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;default&amp;#34;&lt;/span&gt;},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;spec&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;hosts&amp;#34;&lt;/span&gt;:[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;http&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;match&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;headers&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;end-user&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;exact&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;jason&amp;#34;&lt;/span&gt;}}}],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v2&amp;#34;&lt;/span&gt;}}]},{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v1&amp;#34;&lt;/span&gt;}}]}]}}
+creationTimestamp: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;2019-03-21T06:01:10Z&amp;#34;&lt;/span&gt;
+generation: &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;
+name: reviews
+namespace: default
+resourceVersion: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;62486214&amp;#34;&lt;/span&gt;
+selfLink: /apis/networking.istio.io/v1alpha3/namespaces/default/virtualservices/reviews
+uid: b9e41681-4b9e-11e9-a679-00163e045478
+spec:
+hosts:
+- reviews
+http:
+- match:
+    - headers:
+        end-user:
+        exact: jason
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+- route:
+    - destination:
+        host: reviews
+        subset: v1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;确认规则已创建之后，在浏览器中打开BookInfo应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;以&amp;quot;jason&amp;quot;用户登录 &lt;code&gt;productpage&lt;/code&gt; 页面，您可以在每条评价后面看到星级信息。&lt;/p&gt;
+&lt;p&gt;这里登录用户名为 &lt;code&gt;jason&lt;/code&gt; ，密码随便输入即可&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adtjugp3j21gb0iygoa.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;流量转移&#34;&gt;流量转移&lt;/h3&gt;
+&lt;p&gt;除了基于内容的路由，Istio还支持基于权重的路由规则。&lt;/p&gt;
+&lt;p&gt;首先，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其次，使用下面的命令把50%的流量从reviews:v1转移到reviews:v3:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在浏览器中多次刷新productpage页面，大约有50%的几率会看到页面中出现带红星的评价内容。&lt;/p&gt;
+&lt;p&gt;说明： 注意该方式和使用容器编排平台的部署特性来进行版本迁移是完全不同的。容器编排平台使用了实例scaling来对流量进行管理。而通过Istio，两个版本的reviews服务可以独立地进行扩容和缩容，并不会影响这两个版本服务之间的流量分发。&lt;/p&gt;
+&lt;p&gt;如果觉得 &lt;code&gt;reviews：v3&lt;/code&gt; 微服务已经稳定，你可以通过以下命令， 将 &lt;code&gt;virtual service&lt;/code&gt; 100％的流量路由到 &lt;code&gt;reviews：v3&lt;/code&gt;，从而实现一个灰度发布的功能。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;在华为云cce上运行&#34;&gt;在华为云（CCE）上运行&lt;/h2&gt;
+&lt;p&gt;华为云率先将 Istio 作为产品投入到公有云中进行商业应用，开通方式十分简单，只要在华为云CCE上创建集群，然后申请 Istio 公测即可。&lt;/p&gt;
+&lt;p&gt;为了方便测试 Bookinfo 应用在华为云上提供了一键体验应用，点击即可省去刚刚那一系列的 &lt;code&gt;kubectl&lt;/code&gt; 操作&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afbs7oq4j21g90id0vv.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;一键创建体验应用&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afgth1cgj219b0a7tb1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;点击灰度发布即可&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afjc5hvgj21fv0o1q6q.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;创建金丝雀发布&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afnqyqlhj20ze0o00vl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择灰度发布的组件&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afp1c5ltj20zk0le765.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;填写版本号&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afq846bjj20z80nowgl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择镜像版本&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afra8rmhj21050mfgpb.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;版本创建完成后配置灰度策略&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afwpan6qj21090mste1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择相应策略，策略下发即可&lt;/center&gt;
+&lt;p&gt;总的来说，华为云的 Istio 确实已经是商业化应用，这里只是展示了部分灰度发布的功能。其他比如流量治理，流量监控等功能还没展示，这些功能做的十分细致，值得尝试。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://help.aliyun.com/document_detail/90563.html?spm=a2c4g.11186623.6.759.5dbd1f5fSB2m9T&#34;&gt;在Kubernetes上基于Istio实现Service Mesh智能路由&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://support.huaweicloud.com/bestpractice-cce/cce_bestpractice_0012.html&#34;&gt;基于ISTIO服务网格的灰度发布&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 浅析ServiceMesh &amp; Istio</title>
+      <link>/post/istio-share/</link>
+      <pubDate>Wed, 20 Mar 2019 09:12:28 +0800</pubDate>
+      
+      <guid>/post/istio-share/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;公司于&lt;strong&gt;18年10月&lt;/strong&gt;正式确认服务容器化，到&lt;strong&gt;18年12月4日&lt;/strong&gt;第一个服务正式部署到生产环境kubernetes集群，再到&lt;strong&gt;如今&lt;/strong&gt;已有&lt;strong&gt;23&lt;/strong&gt;个服务完成了生产环境容器化的切换，更多的服务在测试环境容器化部署随时可以切换到生产环境。目前新项目的开发，大部分都直接在测试环境容器化部署，不再需要新购ECS搭建测试环境。随着容器化的深入，服务间的通信和联系变的更加复杂，其中通信的可视化、流量的控制和服务质量的评估问题日益凸显，成为了微服务方案的短板。这个时候&lt;code&gt;Service mesh&lt;/code&gt;就进入了我们的视野。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;service-mesh是什么&#34;&gt;Service mesh是什么&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Service mesh&lt;/code&gt; 又译作 “服务网格”，作为服务间通信的基础设施层。随着规模和复杂性的增长，服务网格越来越难以理解和管理。它的需求包括服务发现、负载均衡、故障恢复、指标收集和监控以及通常更加复杂的运维需求，例如 A/B 测试、金丝雀发布、限流、访问控制和端到端认证等。它负责通过包含现代云原生应用程序的复杂服务拓扑来可靠地传递请求。实际上，服务网格通常通过一组轻量级网络代理来实现，这些代理与应用程序代码一起部署，而不需要感知应用程序本身。&lt;/p&gt;
+&lt;p&gt;**这里注意：**&lt;code&gt;istio&lt;/code&gt;只是&lt;code&gt;Service mesh&lt;/code&gt;服务网格的一种。&lt;/p&gt;
+&lt;h3 id=&#34;服务网格的特点&#34;&gt;服务网格的特点&lt;/h3&gt;
+&lt;p&gt;服务网格有如下几个特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;应用程序间通讯的中间层&lt;/li&gt;
+&lt;li&gt;轻量级网络代理&lt;/li&gt;
+&lt;li&gt;应用程序无感知&lt;/li&gt;
+&lt;li&gt;解耦应用程序的重试/超时、监控、追踪和服务发现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;目前两款流行的服务网格开源软件 &lt;a href=&#34;https://linkerd.io&#34;&gt;Linkerd&lt;/a&gt; 和 &lt;a href=&#34;https://Istio.io&#34;&gt;Istio&lt;/a&gt; 都可以直接在 Kubernetes 中集成，其中 Linkerd 已经成为 CNCF 成员，Istio 在 2018年7月31日宣布 &lt;a href=&#34;https://istio.io/zh/blog/2018/announcing-1.0/&#34;&gt;1.0&lt;/a&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;服务网格的发展历史&#34;&gt;服务网格的发展历史&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Spring Cloud&lt;/p&gt;
+&lt;p&gt;Spring Cloud 诞生于2015年，Spring Cloud 最早在功能层面为微服务治理定义了一系列标准特性，比如：智能路由、服务熔断、服务注册于发现等这些名词我最早看到都是在 Sprint Cloud 相关文章中。同时也有一些缺点，比如：需要在代码级别对诸多组件进行控制，并且都依赖于 Java 的实现，这与微服务的多语言协作背道而驰；没有对资源的调度、devops等提供相关支持，需要借助平台来完成；众所周知的Eureka闭源等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Linkerd&lt;/p&gt;
+&lt;p&gt;Service mesh 这个命名就是来源于Linkerd。Linkerd 很好地结合了 kubernetes 所提供的功能，于2017年加入CNCF。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Istio&lt;/p&gt;
+&lt;p&gt;2017年5月， Google、 IBM 和 Lyft 宣布了Istio的诞生。一经发布，便立即获得Red Hat、F5等大厂响应，社区活跃度高涨，很快超越了 Linkerd，成为了 Service mesh 的代表产品。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;国内服务网格&lt;/p&gt;
+&lt;p&gt;这里不得不提的是国内服务网格的兴起，在 Service mesh 概念具体定义以前，国内的许多厂商就已经开始了微服务进程，同时在做自己的微服务治理产品。而在 Service mesh 概念普及之后，厂商意识到了自己产品也具有 Service mesh 的特点，将自己的服务治理平台进行了改造和完善，推出了自己的 Service mesh 产品。例如，微博、腾讯和华为都有自己的服务网格产品，华为更是已经将产品投入到公有云中进行商业应用。蚂蚁金服的 SOFAMesh 则是针对大流量的生产场景，在 Istio 的架构基础上进行修改并推广。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;istio又是什么&#34;&gt;Istio又是什么&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Istio&lt;/code&gt; 提供了一个完整的解决方案，通过为整个服务网格提供行为洞察和操作控制来满足微服务应用程序的多样化需求。Istio 允许您连接、保护、控制和观测服务。在较高的层次上，Istio 有助于降低这些部署的复杂性，并减轻开发团队的压力。它是一个完全开源的服务网格，可以透明地分层到现有的分布式应用程序上。它也是一个平台，包括允许它集成到任何日志记录平台、遥测或策略系统的 API。Istio 的多样化功能集使您能够成功高效地运行分布式微服务架构，并提供保护、连接和监控微服务的统一方法。&lt;/p&gt;
+&lt;h3 id=&#34;istio的架构&#34;&gt;Istio的架构&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Istio&lt;/code&gt;总的来说由两部分组成：&lt;strong&gt;控制平面&lt;/strong&gt;和&lt;strong&gt;数据平面&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;数据平面由一组以 sidecar 方式部署的智能代理（Envoy）组成。sidecar通过注入的方式和业务容器共存于一个 Pod 中，会劫业务容器的流量，接受控制面组件的控制，可以调节和控制微服务及 Mixer 之间所有的网络通信。&lt;/li&gt;
+&lt;li&gt;控制平面是 Istio 的核心，负责管理和配置代理来路由流量。此外控制平面配置 Mixer 以实施策略和收集遥测数据。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图显示了构成每个面板的不同组件：
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g199o3s4g5j20lw0kijux.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;图片为原创，转载请标记出处https://blog.maoxianplay.com/&lt;/center&gt;
+&lt;h4 id=&#34;envoy&#34;&gt;Envoy&lt;/h4&gt;
+&lt;p&gt;Istio 使用 Envoy 代理的扩展版本，Envoy 是以 C++ 开发的高性能代理，用于调解服务网格中所有服务的所有入站和出站流量。Envoy 的许多内置功能被 Istio 发扬光大，例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;动态服务发现&lt;/li&gt;
+&lt;li&gt;负载均衡&lt;/li&gt;
+&lt;li&gt;TLS 终止&lt;/li&gt;
+&lt;li&gt;HTTP/2 &amp;amp; gRPC 代理&lt;/li&gt;
+&lt;li&gt;熔断器&lt;/li&gt;
+&lt;li&gt;健康检查、基于百分比流量拆分的灰度发布&lt;/li&gt;
+&lt;li&gt;故障注入&lt;/li&gt;
+&lt;li&gt;丰富的度量指标&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Envoy 被部署为 sidecar，和对应服务在同一个 Kubernetes pod 中。这允许 Istio 将大量关于流量行为的信号作为属性提取出来，而这些属性又可以在 Mixer 中用于执行策略决策，并发送给监控系统，以提供整个网格行为的信息。&lt;/p&gt;
+&lt;p&gt;Sidecar 代理模型还可以将 Istio 的功能添加到现有部署中，而无需重新构建或重写代码。可以阅读更多来了解为什么我们在设计目标中选择这种方式。&lt;/p&gt;
+&lt;h4 id=&#34;mixer&#34;&gt;Mixer&lt;/h4&gt;
+&lt;p&gt;Mixer 是一个独立于平台的组件，负责在服务网格上执行访问控制和使用策略，并从 Envoy 代理和其他服务收集遥测数据。代理提取请求级属性，发送到 Mixer 进行评估。&lt;/p&gt;
+&lt;p&gt;Mixer 中包括一个灵活的插件模型，使其能够接入到各种主机环境和基础设施后端，从这些细节中抽象出 Envoy 代理和 Istio 管理的服务。&lt;/p&gt;
+&lt;h4 id=&#34;pilot&#34;&gt;Pilot&lt;/h4&gt;
+&lt;p&gt;Pilot 为 Envoy sidecar 提供服务发现功能，为智能路由（例如 A/B 测试、金丝雀部署等）和弹性（超时、重试、熔断器等）提供流量管理功能。它将控制流量行为的高级路由规则转换为特定于 Envoy 的配置，并在运行时将它们传播到 sidecar。&lt;/p&gt;
+&lt;p&gt;Pilot 将平台特定的服务发现机制抽象化并将其合成为符合 Envoy 数据平面 API 的任何 sidecar 都可以使用的标准格式。这种松散耦合使得 Istio 能够在多种环境下运行（例如，Kubernetes、Consul、Nomad），同时保持用于流量管理的相同操作界面。&lt;/p&gt;
+&lt;h4 id=&#34;citadel&#34;&gt;Citadel&lt;/h4&gt;
+&lt;p&gt;Citadel 通过内置身份和凭证管理赋能强大的服务间和最终用户身份验证。可用于升级服务网格中未加密的流量，并为运维人员提供基于服务标识而不是网络控制的强制执行策略的能力。从 0.5 版本开始，Istio 支持基于角色的访问控制，以控制谁可以访问您的服务，而不是基于不稳定的三层或四层网络标识。&lt;/p&gt;
+&lt;h4 id=&#34;galley11版本新增&#34;&gt;Galley(1.1版本新增)&lt;/h4&gt;
+&lt;p&gt;Galley 代表其他的 Istio 控制平面组件，用来验证用户编写的 Istio API 配置。随着时间的推移，Galley 将接管 Istio 获取配置、 处理和分配组件的顶级责任。它将负责将其他的 Istio 组件与从底层平台（例如 Kubernetes）获取用户配置的细节中隔离开来。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;在云原生架构下，容器的使用给予了异构应用程序的更多可行性，Kubernetes 增强了应用的横向扩容能力，用户可以快速的编排出复杂环境、复杂依赖关系的应用程序，Istio可以使开发者又无须过分关心应用程序的监控、扩展性、服务发现和分布式追踪这些繁琐的事情而专注于程序开发，赋予开发者更多的创造性。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/zh/&#34;&gt;Istio 官方文档 - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/fleeto/istio-for-beginner&#34;&gt;《深入浅出istio》&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Service Mesh是什么</title>
+      <link>/post/istio-servicemesh/</link>
+      <pubDate>Tue, 19 Mar 2019 16:12:56 +0800</pubDate>
+      
+      <guid>/post/istio-servicemesh/</guid>
+      <description>
+        
+        
+        &lt;p&gt;本文转自&lt;a href=&#34;http://www.servicemesher.com/istio-handbook/concepts-and-principle/what-is-service-mesh.html&#34;&gt;《Istio 服务网格进阶实战》&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;什么是服务网格&#34;&gt;什么是服务网格？&lt;/h1&gt;
+&lt;p&gt;Service mesh 又译作 “服务网格”，作为服务间通信的基础设施层。Buoyant 公司的 CEO Willian Morgan 在他的这篇文章 &lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;WHAT’S A SERVICE MESH? AND WHY DO I NEED ONE?&lt;/a&gt; 中解释了什么是 Service Mesh，为什么云原生应用需要 Service Mesh。&lt;/p&gt;
+&lt;p&gt;服务网格是用于处理服务间通信的专用基础设施层。它负责通过包含现代云原生应用程序的复杂服务拓扑来可靠地传递请求。实际上，服务网格通常通过一组轻量级网络代理来实现，这些代理与应用程序代码一起部署，而不需要感知应用程序本身。——  &lt;a href=&#34;https://twitter.com/wm&#34;&gt;Willian Morgan&lt;/a&gt; Buoyant CEO&lt;/p&gt;
+&lt;p&gt;服务网格（Service Mesh）这个术语通常用于描述构成这些应用程序的微服务网络以及应用之间的交互。随着规模和复杂性的增长，服务网格越来越难以理解和管理。它的需求包括服务发现、负载均衡、故障恢复、指标收集和监控以及通常更加复杂的运维需求，例如 A/B 测试、金丝雀发布、限流、访问控制和端到端认证等。&lt;/p&gt;
+&lt;h2 id=&#34;服务网格的特点&#34;&gt;服务网格的特点&lt;/h2&gt;
+&lt;p&gt;服务网格有如下几个特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;应用程序间通讯的中间层&lt;/li&gt;
+&lt;li&gt;轻量级网络代理&lt;/li&gt;
+&lt;li&gt;应用程序无感知&lt;/li&gt;
+&lt;li&gt;解耦应用程序的重试/超时、监控、追踪和服务发现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;目前两款流行的服务网格开源软件 &lt;a href=&#34;https://linkerd.io&#34;&gt;Linkerd&lt;/a&gt; 和 &lt;a href=&#34;https://Istio.io&#34;&gt;Istio&lt;/a&gt; 都可以直接在 Kubernetes 中集成，其中 Linkerd 已经成为 CNCF 成员，Istio 在 2018年7月31日宣布 &lt;a href=&#34;https://istio.io/zh/blog/2018/announcing-1.0/&#34;&gt;1.0&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;理解服务网格&#34;&gt;理解服务网格&lt;/h2&gt;
+&lt;p&gt;如果用一句话来解释什么是服务网格，可以将它比作是应用程序或者说微服务间的 TCP/IP，负责服务之间的网络调用、限流、熔断和监控。对于编写应用程序来说一般无须关心 TCP/IP 这一层（比如通过 HTTP 协议的 RESTful 应用），同样使用服务网格也就无须关心服务之间的那些原来是通过应用程序或者其他框架实现的事情，比如 Spring Cloud、OSS，现在只要交给服务网格就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;http://philcalcado.com/&#34;&gt;Phil Calçado&lt;/a&gt; 在他的这篇博客 &lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh&lt;/a&gt; 中详细解释了服务网格的来龙去脉：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;从最原始的主机之间直接使用网线相连&lt;/li&gt;
+&lt;li&gt;网络层的出现&lt;/li&gt;
+&lt;li&gt;集成到应用程序内部的控制流&lt;/li&gt;
+&lt;li&gt;分解到应用程序外部的控制流&lt;/li&gt;
+&lt;li&gt;应用程序的中集成服务发现和断路器&lt;/li&gt;
+&lt;li&gt;出现了专门用于服务发现和断路器的软件包/库，如 &lt;a href=&#34;https://finagle.github.io/&#34;&gt;Twitter 的 Finagle&lt;/a&gt; 和 &lt;a href=&#34;https://code.fb.com/networking-traffic/introducing-proxygen-facebook-s-c-http-framework/&#34;&gt;Facebook  的 Proxygen&lt;/a&gt;，这时候还是集成在应用程序内部&lt;/li&gt;
+&lt;li&gt;出现了专门用于服务发现和断路器的开源软件，如 &lt;a href=&#34;http://netflix.github.io/&#34;&gt;Netflix OSS&lt;/a&gt;、Airbnb 的 &lt;a href=&#34;https://github.com/airbnb/synapse&#34;&gt;synapse&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/airbnb/nerve&#34;&gt;nerve&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;最后作为微服务的中间层服务网格出现&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;服务网格的架构如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/00704eQkly1fswh7dbs1pj30id0bpmxl.jpg&#34; alt=&#34;Service Mesh 架构图&#34;&gt;&lt;/p&gt;
+&lt;p&gt;图片来自：&lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;服务网格作为 sidecar 运行，对应用程序来说是透明，所有应用程序间的流量都会通过它，所以对应用程序流量的控制都可以在 serivce mesh 中实现。&lt;/p&gt;
+&lt;h2 id=&#34;服务网格如何工作&#34;&gt;服务网格如何工作？&lt;/h2&gt;
+&lt;p&gt;下面以 Istio 为例讲解服务网格如何在 Kubernetes 中工作。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Istio 将服务请求路由到目的地址，根据其中的参数判断是到生产环境、测试环境还是 staging 环境中的服务（服务可能同时部署在这三个环境中），是路由到本地环境还是公有云环境？所有的这些路由信息可以动态配置，可以是全局配置也可以为某些服务单独配置。&lt;/li&gt;
+&lt;li&gt;当 Istio 确认了目的地址后，将流量发送到相应服务发现端点，在 Kubernetes 中是 service，然后 service 会将服务转发给后端的实例。&lt;/li&gt;
+&lt;li&gt;Istio 根据它观测到最近请求的延迟时间，选择出所有应用程序的实例中响应最快的实例。&lt;/li&gt;
+&lt;li&gt;Istio 将请求发送给该实例，同时记录响应类型和延迟数据。&lt;/li&gt;
+&lt;li&gt;如果该实例挂了、不响应了或者进程不工作了，Istio 将把请求发送到其他实例上重试。&lt;/li&gt;
+&lt;li&gt;如果该实例持续返回 error，Istio 会将该实例从负载均衡池中移除，稍后再周期性得重试。&lt;/li&gt;
+&lt;li&gt;如果请求的截止时间已过，Istio 主动失败该请求，而不是再次尝试添加负载。&lt;/li&gt;
+&lt;li&gt;Istio 以 metric 和分布式追踪的形式捕获上述行为的各个方面，这些追踪信息将发送到集中 metric 系统。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;为何使用服务网格&#34;&gt;为何使用服务网格？&lt;/h2&gt;
+&lt;p&gt;服务网格并没有给我们带来新功能，它是用于解决其他工具已经解决过的问题，只不过这次是在云原生的 Kubernetes 环境下的实现。&lt;/p&gt;
+&lt;p&gt;在传统的 MVC 三层 Web 应用程序架构下，服务之间的通讯并不复杂，在应用程序内部自己管理即可，但是在现今的复杂的大型网站情况下，单体应用被分解为众多的微服务，服务之间的依赖和通讯十分复杂，出现了 twitter 开发的 &lt;a href=&#34;https://twitter.github.io/finagle/&#34;&gt;Finagle&lt;/a&gt;、Netflix 开发的 &lt;a href=&#34;https://github.com/Netflix/Hystrix&#34;&gt;Hystrix&lt;/a&gt; 和 Google 的 Stubby 这样的 “胖客户端” 库，这些就是早期的服务网格，但是它们都仅适用于特定的环境和特定的开发语言，并不能作为平台级的服务网格支持。&lt;/p&gt;
+&lt;p&gt;在云原生架构下，容器的使用给予了异构应用程序的更多可行性，Kubernetes 增强的应用的横向扩容能力，用户可以快速的编排出复杂环境、复杂依赖关系的应用程序，同时开发者又无须过分关心应用程序的监控、扩展性、服务发现和分布式追踪这些繁琐的事情而专注于程序开发，赋予开发者更多的创造性。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;WHAT’S A SERVICE MESH? AND WHY DO I NEED ONE? - buoyant.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/attest-engineering/Istio-a-service-mesh-for-aws-ecs-937f201f847a&#34;&gt;Istio: A service mesh for AWS ECS - medium.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/blog/istio-service-mesh-for-microservices.html&#34;&gt;初次了解 Istio - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.christianposta.com/microservices/application-network-functions-with-esbs-api-management-and-now-service-mesh/&#34;&gt;Application Network Functions With ESBs, API Management, and Now.. Service Mesh? - blog.christianposta.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh - philcalcado.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.servicemesher.com/envoy/&#34;&gt;Envoy 官方文档中文版 - servicemesher.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/zh&#34;&gt;Istio 官方文档 - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/servicemesher/awesome-servicemesh/&#34;&gt;servicemesher/awesome-servicemesh - github.com&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 阿里云环境Istio初探</title>
+      <link>/post/istio-demo/</link>
+      <pubDate>Wed, 13 Mar 2019 15:45:43 +0800</pubDate>
+      
+      <guid>/post/istio-demo/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;istio应用部署样例&#34;&gt;istio应用部署样例&lt;/h1&gt;
+&lt;p&gt;该实例为一套istio服务上线流程：&lt;code&gt;注入&lt;/code&gt;-&amp;gt;&lt;code&gt;部署&lt;/code&gt;-&amp;gt;&lt;code&gt;创建目标规则&lt;/code&gt;-&amp;gt;&lt;code&gt;创建默认路由&lt;/code&gt;。就大多数istio服务网格应用均可基于这一流程上线。&lt;/p&gt;
+&lt;h3 id=&#34;部署istio&#34;&gt;部署istio&lt;/h3&gt;
+&lt;p&gt;istio有多种部署方式，阿里云、华为云等云服务商均提供一键安装，同时也可以通过GitHub下载release包，使用&lt;code&gt;install/kubernetes/istio-demo.yaml&lt;/code&gt;部署，或者使用helm部署。&lt;strong&gt;这里采用阿里云容器服务一键部署istio&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g117xxixlvj20a00ajdgb.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;部署两个版本的服务&#34;&gt;部署两个版本的服务&lt;/h3&gt;
+&lt;p&gt;这里选择一个简单的Python项目作为服务端，这里使用&lt;a href=&#34;https://github.com/fleeto&#34;&gt;崔秀龙&lt;/a&gt;老哥的&lt;a href=&#34;https://github.com/fleeto/flaskapp/blob/master/app/main.py&#34;&gt;flaskapp&lt;/a&gt;服务，该服务的作用就是提供2个url路径：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个是/env，用户获取容器中的环境变量，例如 http://flaskapp/env/version&lt;/li&gt;
+&lt;li&gt;另一个是/fetch ，用于获取在参数url中指定的网址的内容，例如 http://flaskapp/fetch?url=http://weibo.com&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;创建2个Deployment，分别命名为 flaskapp-v1 和 flaskapp-v2 ，同时创建一个 Service ,将其命名为flaskapp。代码文件为 &lt;code&gt;flaskapp.istio.yaml&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Service&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;selector&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ports&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;http&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;port&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;80&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;extensions/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Deployment&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp-v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;replicas&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;template&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dustise/flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;imagePullPolicy&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;IfNotPresent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;env&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;version&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;extensions/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Deployment&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp-v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;replicas&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;template&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dustise/flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;imagePullPolicy&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;IfNotPresent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;env&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;version&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;两个版本Deployment的镜像一致，但是使用了不同的version标签区分，分别为 v1 和 v2 。实际环境中的镜像是不同的&lt;/li&gt;
+&lt;li&gt;在两个Deployment中都有一个名为version的环境变量，分别为 v1 和 v2 。这里设置是为了方便后续区分服务。&lt;/li&gt;
+&lt;li&gt;两个Deployment中都使用了 app 和 version 标签，在 istio 网格应用中通常会使用这两个标签作为应用和版本的标识。&lt;/li&gt;
+&lt;li&gt;Service 中的 Selector 仅使用了一个 app 标签，这意味着该 Service 对两个 Deployment 都是有效的。&lt;/li&gt;
+&lt;li&gt;将在 Service 中定义的端口根据 &lt;strong&gt;istio 规范&lt;/strong&gt;命名为http。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;istio注入并部署服务端&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f flask.istio.yaml | kubectl apply -f -
+service/flaskapp created
+deployment.extensions/flaskapp-v1 created
+deployment.extensions/flaskapp-v2 created
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在rancher查看注入情况&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1045ku3dcj20cj05kglp.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这里也可以使用&lt;code&gt;kubectl describe po flaskapp-v1-7d4f9b8459-2ncnf&lt;/code&gt;命令查看Pod容器，这里可以看到Pod中多了一个容器，名为&lt;code&gt;istio-proxy&lt;/code&gt;，这就表示注入成功了。而前面&lt;code&gt;istio-init&lt;/code&gt;的初始化容器，这个容器是用于初始化劫持的。&lt;/p&gt;
+&lt;h3 id=&#34;部署客户端&#34;&gt;部署客户端&lt;/h3&gt;
+&lt;p&gt;这里的客户端是一个安装了测试工具的镜像，测试的内容可以在容器内通过shell完成。代码文件为 &lt;code&gt;sleep.istio.yaml&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Service&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;selector&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ports&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ssh&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;port&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;80&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;extensions/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Deployment&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;replicas&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;template&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dustise/sleep&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;imagePullPolicy&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;IfNotPresent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;istio注入并部署客户端&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f sleep.istio.yaml | kubectl apply -f -
+service/sleep created
+deployment.extensions/sleep created
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;sleep&lt;/code&gt;应用的Pod进入Running状态就可以进行验证了&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;验证服务&#34;&gt;验证服务&lt;/h3&gt;
+&lt;p&gt;直接在sleep容器中执行命令行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; i in &lt;span style=&#34;color:#ed9d13&#34;&gt;`&lt;/span&gt;seq 10&lt;span style=&#34;color:#ed9d13&#34;&gt;`&lt;/span&gt;;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;do&lt;/span&gt; http --body http://flaskapp/env/version;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;done&lt;/span&gt;
+v1
+v2
+...
+v1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;该命令使用一个for循环，重复访问 http://flaskapp/env/version ，查看内容，结果为 v1 和 v2 随机出现，各占一半。出现 v1 和 v2 版本轮流调用的效果，达到了基本的负载均衡的功能。&lt;/p&gt;
+&lt;h3 id=&#34;创建目标规则&#34;&gt;创建目标规则&lt;/h3&gt;
+&lt;p&gt;目标规则代码 &lt;code&gt;flaskapp-destinationrule.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;networking.istio.io/v1alpha3&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;DestinationRule&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;subsets&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;version&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;部署目标规则（这里使用kubectl和istioctl均可）&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f flaskapp-destinationrule.yaml
+Created config destination-rule/default/flaskapp at revision &lt;span style=&#34;color:#3677a9&#34;&gt;59183403&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;创建默认路由&#34;&gt;创建默认路由&lt;/h3&gt;
+&lt;p&gt;默认路由代码 &lt;code&gt;flaskapp-default-vs-v2.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;networking.istio.io/v1alpha3&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;VirtualService&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp-default-v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;hosts&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;http&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;route&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;destination&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flaskapp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;subset&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;部署默认路由&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f flaskapp-default-vs-v2.yaml
+Created config virtual-service/default/flaskapp-default-v2 at revision &lt;span style=&#34;color:#3677a9&#34;&gt;59185583&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;验证路由规则是否生效&#34;&gt;验证路由规则是否生效&lt;/h3&gt;
+&lt;p&gt;再次在sleep容器中执行命令，查看新定义的流量管理规则是否生效&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; i in &lt;span style=&#34;color:#ed9d13&#34;&gt;`&lt;/span&gt;seq 10&lt;span style=&#34;color:#ed9d13&#34;&gt;`&lt;/span&gt;;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;do&lt;/span&gt; http --body http://flaskapp/env/version;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;done&lt;/span&gt;
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+v2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里就可以看到，设置的默认路由已经生效了，多次重复访问，返回的内容都是来自环境变量 version 设置为 v2 的版本，也就是v2版本。&lt;/p&gt;
+&lt;h4 id=&#34;kiali查看调用情况&#34;&gt;kiali查看调用情况&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g104tydblxj21az0li40i.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到流量都进入了v2版本中&lt;/p&gt;
+&lt;h3 id=&#34;小结&#34;&gt;小结&lt;/h3&gt;
+&lt;p&gt;这里实现了一个极简的istio应用，可以帮助新手快速入门，官网提供的Bookinfo应用较为复杂。这里提供的小例子更为简洁易懂，非常利于入门。&lt;/p&gt;
+&lt;h3 id=&#34;参考&#34;&gt;参考&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/fleeto/istio-for-beginner&#34;&gt;《深入浅出Istio》&lt;/a&gt;    &amp;mdash;   崔秀龙&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

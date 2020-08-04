@@ -1,0 +1,840 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – devops</title>
+    <link>/categories/devops/</link>
+    <description>Recent content in devops on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Wed, 13 May 2020 09:55:51 +0800</lastBuildDate>
+    
+	  <atom:link href="/categories/devops/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 可视化 Tekton 组件 Tekton Dashboard</title>
+      <link>/post/tekton-dashboard/</link>
+      <pubDate>Wed, 13 May 2020 09:55:51 +0800</pubDate>
+      
+      <guid>/post/tekton-dashboard/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;Tekton 作为一款开源的云原生 CI/CD 框架，前身是 Knative 的 build-pipeline 项目。作为 CI/CD 框架，其本身并不是一个 CI/CD 产品，所以不应拿 Tekton 与 Jenkins 或者 Drone 这样的 CI/CD 产品进行比较，Tekton 本质是一个强大而灵活的 CI/CD 框架，开发者可以基于它开发自己的 CI/CD 工具或产品，一些有能力的团队可以使用 Tekton 做为底座开发出更适合自己团队使用的 CI/CD 工具。&lt;/p&gt;
+&lt;p&gt;而 Tekton 的可视化组件 Tekton Dashboard 则为用户提供了可视化界面，使 Tekton 的体验更接近与 Jenkins 这样的 CI/CD 产品，同时开发者可以在使用 Tekton Dashboard 时也会对 Tekton 的一些概念进行更深入的了解。&lt;/p&gt;
+&lt;p&gt;本文将会使用 Tekton Dashboard，通过 UI 界面在 K8S 集群中部署一个 Java 项目：&lt;a href=&#34;https://github.com/sunny0826/pipeline-example-maven&#34;&gt;pipeline-example-maven&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;交互式学习&#34;&gt;交互式学习&lt;/h2&gt;
+&lt;p&gt;本文还提供 &lt;a href=&#34;https://katacoda.com&#34;&gt;katacoda&lt;/a&gt; 交互式学习版本，用户可以直接访问 katacoda 页面：https://katacoda.com/guoxudong/scenarios/tekton-dashboard ，使用 &lt;a href=&#34;https://katacoda.com&#34;&gt;katacoda&lt;/a&gt; 在浏览器端学习使用 Tekton Dashboard。&lt;/p&gt;
+&lt;p&gt;该教程属于官方教程的汉化版，并得到了&lt;a href=&#34;https://github.com/ncskier/katacoda/issues/2&#34;&gt;许可&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax1.sinaimg.cn/large/ad5fbf65gy1geqt0wmbtvj21hb0q779v.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;tekton-dashboard&#34;&gt;Tekton Dashboard&lt;/h2&gt;
+&lt;h3 id=&#34;安装&#34;&gt;安装&lt;/h3&gt;
+&lt;p&gt;这是所有步骤中最麻烦的一步，由于官方提供的 Tekton 镜像都在 &lt;code&gt;gcr.io&lt;/code&gt; 上，在国内并不能直接拉取，所以在测试的时候着实花费了不少时间。&lt;/p&gt;
+&lt;p&gt;我特意将这些镜像转储到 dockerhub 上，如果官方版无法使用，可以使用克隆版：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;安装 &lt;a href=&#34;https://github.com/tektoncd/pipeline/blob/master/docs/install.md&#34;&gt;Tekton Pipelines&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 官方&lt;/span&gt;
+$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.10.1/release.yaml
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 克隆版&lt;/span&gt;
+$ kubectl apply -f https://raw.githubusercontent.com/sunny0826/tekton-local/v0.10.1/tekton-pipeline.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;安装 &lt;a href=&#34;https://github.com/tektoncd/dashboard#install-dashboard&#34;&gt;Tekton Dashboard&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 官方&lt;/span&gt;
+$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/previous/v0.5.3/tekton-dashboard-release.yaml
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 克隆版&lt;/span&gt;
+$ kubectl apply -f https://raw.githubusercontent.com/sunny0826/tekton-local/v0.10.1/tekton-dashboard.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;安装成功之后需要配置 Tekton Dashboard 的访问地址，可以使用 ingress 或 Nodeport 暴露端口，这里采用 &lt;code&gt;port-forward&lt;/code&gt; 的形式将端口映射到本地：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ kubectl port-forward svc/tekton-dashboard 8097:9097 -n tekton-pipelines
+Forwarding from 127.0.0.1:8097 -&amp;gt; &lt;span style=&#34;color:#3677a9&#34;&gt;9097&lt;/span&gt;
+Forwarding from [::1]:8097 -&amp;gt; &lt;span style=&#34;color:#3677a9&#34;&gt;9097&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;访问 Tekton Dashboard&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;打开浏览器访问访问 http://localhost:8097&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax3.sinaimg.cn/large/ad5fbf65gy1geqnhem9i9j21mk0tu425.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;导入资源&#34;&gt;导入资源&lt;/h3&gt;
+&lt;p&gt;点击 &lt;code&gt;Import Tekton resources&lt;/code&gt; 进入资源导入页面，导入资源：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Repository URL: &lt;code&gt;https://github.com/sunny0826/pipeline-example-maven&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Namespace: &lt;code&gt;default&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Repository directory: &lt;code&gt;tekton/&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Service Account &lt;code&gt;tekton-dashboard&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;输入内容如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax1.sinaimg.cn/large/ad5fbf65gy1geqnp36mk0j20yu0memze.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击 &lt;code&gt;Import and Apply&lt;/code&gt; 按钮，之后 Dashboard 会创建一个 PipelineRun 来导入指定的 Tekton 资源。&lt;/p&gt;
+&lt;p&gt;点击页面底部的 &lt;code&gt;View status of this run&lt;/code&gt; 链接，查看 MyApp 导入 Tekton 资源的状态。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65gy1geqnqyx5g2j20a403et8q.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;PipelineRun 完成后，Tekton 资源已导入成功。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65gy1geqns0gqi8j21go0ozwhl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;创建-pipelineresource&#34;&gt;创建 PipelineResource&lt;/h3&gt;
+&lt;p&gt;选择 &lt;code&gt;default&lt;/code&gt; 命名空间，并点击 &lt;code&gt;PipelineResource&lt;/code&gt; 按钮。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax3.sinaimg.cn/large/ad5fbf65gy1geqnukrb3aj20yb0enmyg.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击页面右上方的 &lt;code&gt;Create +&lt;/code&gt; 按钮，将弹出一个创建 PipelineResource 的表单。&lt;/p&gt;
+&lt;p&gt;我们要在 &lt;code&gt;default&lt;/code&gt; 命名空间中为 pipeline-example-maven 的 &lt;code&gt;master&lt;/code&gt; 分支创建一个 git PipelineResource，故在弹出的表单中填写以下信息：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Name: &lt;code&gt;pipeline-example-maven&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Namespace: &lt;code&gt;default&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Type: &lt;code&gt;Git&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;URL: &lt;code&gt;https://github.com/sunny0826/pipeline-example-maven&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Revision: &lt;code&gt;master&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;该表单内容应如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65gy1geqnxalh2pj20pl0dbq3h.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击 &lt;code&gt;Create&lt;/code&gt; 按钮，创建 PipelineResource。&lt;/p&gt;
+&lt;h3 id=&#34;创建-pipelinerun&#34;&gt;创建 PipelineRun&lt;/h3&gt;
+&lt;p&gt;选择 &lt;code&gt;default&lt;/code&gt; 命名空间，并点击 &lt;code&gt;PipelineRuns&lt;/code&gt; 按钮。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65gy1geqo2iatnhj20yb0ewjso.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击页面右上方的 &lt;code&gt;Create +&lt;/code&gt; 按钮，将弹出一个创建 PipelineRun 的表单。该表单是动态的，会根据所选的 Pipeline 提供 PipelineResource 和 Param 字段。&lt;/p&gt;
+&lt;p&gt;我们需要 &lt;code&gt;default&lt;/code&gt; 命名空间中使用 &lt;code&gt;pipeline-example-maven&lt;/code&gt; 的 Pipeline 和 PipelineResource，创建一个 PipelineRun，故在弹出的表单中填写以下信息：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Namespace: &lt;code&gt;default&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Pipeline: &lt;code&gt;pipeline-example-maven&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;PipelineResources source: &lt;code&gt;pipeline-example-maven&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;其余字段保留默认值。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;该表单内容应如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva3.sinaimg.cn/large/ad5fbf65gy1geqrdvoaquj20pi0lzt9o.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击 &lt;code&gt;Create&lt;/code&gt; 按钮，创建 PipelineRun。&lt;/p&gt;
+&lt;h3 id=&#34;查看-pipelinerun-日志&#34;&gt;查看 PipelineRun 日志&lt;/h3&gt;
+&lt;p&gt;点击页面顶部创建通知中的链接或在 PipelineRun 列表中对应的 PipelineRun，查看 pipeline-example-maven PipelineRun 的日志。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva3.sinaimg.cn/large/ad5fbf65gy1geqrhrwspcj217x0i7425.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;deploy 步骤中，有时会出现权限错误，需要给 default:default 绑定上 admin 的 clusterrole 权限：&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ kubectl create rolebinding default-admin --clusterrole=admin --serviceaccount=default:default
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;确认 &lt;code&gt;build&lt;/code&gt; 和 &lt;code&gt;deploy&lt;/code&gt; 任务均已成功。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax1.sinaimg.cn/large/ad5fbf65gy1geqrmy2mc9j218w0jo0uj.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+&lt;strong&gt;注意&lt;/strong&gt;：这里为了方便，使用的是单节点的 Kubernetes，构建完并没有推送到镜像仓库，镜像拉取策略为 &lt;code&gt;imagePullPolicy: Never&lt;/code&gt; ，所以启动时候也没有从远程仓库拉取镜像，而是启动的本地镜像。
+&lt;/div&gt;
+
+&lt;h3 id=&#34;查看构建结果&#34;&gt;查看构建结果&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ kubectl get deploy
+NAME                 READY   UP-TO-DATE   AVAILABLE   AGE
+example-greenhouse   1/1     &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;            &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;           5h2m
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;Tekton Dashboard 将 Tekton 的资源进行了可视化展示，指导用户快速理解 Tekton pipeline 流程以及配置方式，快速上手 Tekton。但是由于镜像的原因，导致新手体验不佳，所幸官方还提供了 &lt;a href=&#34;https://katacoda.com&#34;&gt;katacoda&lt;/a&gt; 交互式教程，该教程我已汉化完成并获得了官方的许可，可以在浏览器端快速体验从安装 Tekton 到部署应用的整个过程。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 玩转 Drone CI</title>
+      <link>/post/drone-optimize/</link>
+      <pubDate>Wed, 11 Sep 2019 13:53:09 +0800</pubDate>
+      
+      <guid>/post/drone-optimize/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;使用 drone CI 已有小半年，在将原有项目的 CI 系统从 jenkins 向 drone 迁移的时候，也陆陆续续遇到了一些问题。在这段时间，也完成了使用官方插件到插件定制的转变，使得 drone CI 流程更贴合我们 devops 开发流程。通过这篇文章总结一下目前我们对 drone 进行的一些定制化开发以及使用技巧，由于 drone 官方的文档不是很详细，所以也希望通过这种方法来和其他使用 drone 的用户分享和交流使用经验。&lt;/p&gt;
+&lt;h2 id=&#34;并行构建&#34;&gt;并行构建&lt;/h2&gt;
+&lt;p&gt;在默认情况下，drone 会按照步骤执行，但是有时会遇到前后端在同一个 repo 的情况，这时使用并行构建就可以省去很多的构建时间。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;构建流程：&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在下面的示例里会展示一个如下流程：repo 中包含一个由 Java 写的服务以及一个 vue 前端项目，maven 构建和 npm 构建同时进行，maven 构建成功后会镜像 docker 镜像构建并上传镜像仓库，docker 构建成功后会镜像 k8s 部署，部署成功后会进行 vue 项目前端发布，在 k8s 部署成功并且前端发布成功后，进行钉钉构建成功同时，否则进行钉钉构建失败通知。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;前端构建 ————————————          前端发布
+                    &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;     /        &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;                     &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;   /       钉钉通知
+                      &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; /          /
+后端构建 —— 镜像构建 —— k8s部署 ——————
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;.drone.yml&lt;/code&gt; 配置&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;pipeline&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;default&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Maven编译&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-maven&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;mvn clean install&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;clone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;构建镜像&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-docker&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;username&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker_user&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;password&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker_pass&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;dockerfile&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Dockerfile&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;repo&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry-vpc.cn-shanghai.aliyuncs.com/guoxudong/test&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;registry&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry-vpc.cn-shanghai.aliyuncs.com&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tags&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;${DRONE_BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Maven编译&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/kubectl&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;config&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;deploy/overlays/uat&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;timeout&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;300&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;check&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;构建镜像&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端构建&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/node-drone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;npm install&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;npm run build&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;clone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端上传&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/node-drone&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;do something&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端构建&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;钉钉通知&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;guoxudongdocker/drone-dingtalk&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;token&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;dingding&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;type&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;markdown&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_color&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_pic&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;sha_link&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;depends_on&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;前端上传&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Kubernetes 部署&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;when&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;status&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;failure&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;success&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;多子项目构建&#34;&gt;多子项目构建&lt;/h2&gt;
+&lt;p&gt;在使用 drone 中遇到的最大问题就是，我们有很多项目都是在一个 repo 中有很多子项目，而每个子项目都是 k8s 中的一个服务，这时一个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件很难把所有的服务都囊括。而又不想每个子项目拉一个分支管理，当前的模式就很不合适。&lt;/p&gt;
+&lt;h3 id=&#34;插件开发&#34;&gt;插件开发&lt;/h3&gt;
+&lt;p&gt;针对这个问题，我们对 drone 进行了定制化开发，会在每次提交代码后，对新提交的代码和老代码进行比较，筛选出做了修改的子项目，然后对有修改的子项目尽心 CI ，其余的子项目则不进行发布。&lt;/p&gt;
+&lt;p&gt;而以上的方式仅适用于测试环境的快速迭代，生产环境则采用 tag 的模式，针对不同的子项目，打不同前缀的 tag ，比如子项目为 test1 ，则打 &lt;code&gt;test1-v0.0.1&lt;/code&gt; 的 tag，就会对该子项目进行生产发布。&lt;/p&gt;
+&lt;h3 id=&#34;构建效果&#34;&gt;构建效果&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;有修改的子项目&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g6vm2ul2zfj21ky148jx0.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;无修改的子项目&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/large/ad5fbf65gy1g6vm49on4kj21jk11iaf7.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;kubernetes-发布状态检查&#34;&gt;Kubernetes 发布状态检查&lt;/h2&gt;
+&lt;p&gt;之前的 Kubernetes 发布只是将服务发布到 Kubernetes 集群，并不管服务是否正常启动。针对这个问题以及我们的 Kubernetes 应用管理模式，我们开发了 drone 的 Kubernetes 发布插件，该插件包括 &lt;code&gt;kubectl&lt;/code&gt; 、&lt;code&gt;kustomize&lt;/code&gt;、&lt;code&gt;kubedog&lt;/code&gt; ，来完善我们的 Kubernetes 发布 step 。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;.drone.yml&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Kubernetes&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;部署&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/kubectl&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;check&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;                 &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 该参数为是否开启子模块检查&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;config&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deploy/overlays/uat&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 这里使用 kustomize ,详细使用方法请见 https://github.com/kubernetes-sigs/kustomize&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;timeout&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;300&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;                 &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# kubedog 的检测超时&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-deployment-name}&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 如果开启子模块检查则需要填入子模块名称&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;...&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.kube&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# kubeconfig 挂载位置&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;trigger&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;branch&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- master&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 触发 CI 的分支&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用该插件会如果为测试构建，则会自动设置 docker 镜像 tag 为 &lt;code&gt;DRONE_BUILD_NUMBER&lt;/code&gt; ；如果为生产构建（git tag），则叫自动设置 docker 镜像 tag 为 &lt;code&gt;DRONE_TAG&lt;/code&gt; ，然后通过 &lt;code&gt;kubectl apply -k .&lt;/code&gt; 进行部署，同时使用 &lt;code&gt;kubedog&lt;/code&gt; 进行部署状态检查，如果服务正常启动则该 step 通过，如果超时或者部署报错则该 step 失败。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;根据我们目前的开发模式，对 drone 插件进行了全方位的开发。由于 dockerhub 的镜像拉取经常超时，则将镜像推送到了我们自己的镜像仓库；对钉钉通知也进行了优化；同时也根据我们目前的开发语言进行了插件的开发，提供了基于 Java 、Python 以及 Node.js 的 drone 插件，基本可以满足我们现在的 CI 需求，但随着 drone 的深入使用，越来越多的问题将会暴露出来。后续将会不断解决遇到的问题，持续优化。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: GitOps 与 ChatOps 的落地实践</title>
+      <link>/post/gitops-and-chatops/</link>
+      <pubDate>Thu, 11 Jul 2019 09:24:17 +0800</pubDate>
+      
+      <guid>/post/gitops-and-chatops/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;说到 GitOps 和 ChatOps ，那就不得不谈到 DevOps 。 DevOps 作为一种文化，旨在促进开发、测试和运维人员之间的沟通与协作。而促进合作的方式，往往是使用一系列工具，完成这三个角色的相互协作。这带来的好处也是显而易见的：更快的交付速度和更低的人力成本。获益于 DevOps 和公有云，一个近百人的研发团队，可以只配备一到两个专职运维人员，降低的成本不言而喻。既然 DevOps 是一种文化，那么在不同的团队则会有不同的实践，而无论实践如何，其最终目的都是一样的：最大化的实现自动化，释放更多的人力资源，创建更大价值。&lt;/p&gt;
+&lt;p&gt;而 GitOps 和 ChatOps ，则是 DevOps 的两种实践。这两种实践分别通过使用 &lt;code&gt;版本控制软件 Git&lt;/code&gt; 和&lt;code&gt;实时聊天软件&lt;/code&gt;来达到提升交付速度和研发效率的目的。&lt;/p&gt;
+&lt;h2 id=&#34;gitops&#34;&gt;GitOps&lt;/h2&gt;
+&lt;p&gt;GitOps 是一种实现持续交付的模型，它的核心思想是将应用系统的声明性基础架构和应用程序存放在 Git 的版本控制库中。&lt;/p&gt;
+&lt;p&gt;将 Git 作为交付流水线的核心，每个开发人员都可以提交拉取请求（Pull Request）并使用 Gi​​t 来加速和简化 Kubernetes 的应用程序部署和运维任务。通过使用像 Git 这样的简单熟悉工具，开发人员可以更高效地将注意力集中在创建新功能而不是运维相关任务上。&lt;/p&gt;
+&lt;p&gt;通过应用 GitOps ，应用系统的基础架构和应用程序代码可以快速查找来源——基础架构和应用程序代码都存放在 gitlab 、或者 github 等版本控制系统上。这使开发团队可以提高开发和部署速度并提高应用系统可靠性。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx4.sinaimg.cn/large/ad5fbf65gy1g4vpmjzylfj20qy09tq4b.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;将 GitOps 应用在持续交付流水线上，有诸多优势和特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;安全的云原生 CI/CD 管道模型&lt;/li&gt;
+&lt;li&gt;更快的平均部署时间和平均恢复时间&lt;/li&gt;
+&lt;li&gt;稳定且可重现的回滚（例如，根据Git恢复/回滚/ fork）&lt;/li&gt;
+&lt;li&gt;与监控和可视化工具相结合，对已经部署的应用进行全方位的监控&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在我看来 GitOps 的最大优势就是通过完善的 git 分支管理来达到管理所有 CI/CD 管道流水线的目的，不同的环境可以对应不同分支，在该环境出现问题时候，可以直接查找对应分支代码，达到快速排查问题的目的。而对于 Git 的熟悉，更是省去学习使用一般 DevOps 工具所需的学习成本和配置时间，开发人员可以无任何培训直接上手使用，进一步降低了时间与人力成本。&lt;/p&gt;
+&lt;h2 id=&#34;chatops&#34;&gt;ChatOps&lt;/h2&gt;
+&lt;p&gt;ChatOps 以聊天室（聊天群），即实时聊天软件为中心，通过一系列的机器人去对接后台的各种服务，开发&amp;amp;测试&amp;amp;运维人员只需要在聊天窗口中与机器人对话，即可与后台服务进行交互，整个工作的展开就像是使唤一个智能助手那样简单自然。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/large/ad5fbf65gy1g4vr2yialfj20rp0bbmyd.jpg&#34; alt=&#34;ChatOps&#34;&gt;&lt;/p&gt;
+&lt;p&gt;ChatOps 带来了很多好处：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;公开透明。所有的工作消息都在同一个聊天平台中沉淀并公开给所有相关成员，消除沟通壁垒，工作历史有迹可循，团队合作更加顺畅。&lt;/li&gt;
+&lt;li&gt;上下文共享。减少因工作台切换等对消息的截断，保证消息的完整性，让工作承接有序，各角色，各工具都成为完成工作流中的一环，打造真正流畅的工作体验。&lt;/li&gt;
+&lt;li&gt;移动友好。只需要在前台与预设好的机器人对话即可完成与后台工具、系统的交互，在移动环境下无需再与众多复杂的工具直接对接，大大提升移动办公的可行性。&lt;/li&gt;
+&lt;li&gt;DevOps 文化打造。用与机器人对话这种简单的方式降低 DevOps 的接受门槛，让这种自动化办公的理念更容易的扩展到团队的每一个角落。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于 ChatOps 的理解最早要源于在 GitHub 上参与开源项目的一些经历，在向 Kubernetes 相关项目提交 PR 时，会有一个名叫 &lt;code&gt;k8s-ci-robot&lt;/code&gt; 的小机器人来自动为该 RP 打上标签，并且根据你提交 PR 时的 comment 信息来为你分配 Reviewers，如果没有填的话，则会自动为你分配 Reviewers 等功能。同时可以在 comment 中输入命令，还可以进行其他的操作，详见：&lt;a href=&#34;https://prow.k8s.io/command-help&#34;&gt;命令列表&lt;/a&gt;。而其实这个机器人的后端就是名为 &lt;a href=&#34;https://github.com/kubernetes/test-infra/tree/master/prow#bots-home&#34;&gt;Prow&lt;/a&gt; 的由 Google 发起的适应云原生 CI/CD 开源项目，有兴趣的话推荐阅读：&lt;a href=&#34;https://www.servicemesher.com/blog/prow-quick-start-guide/&#34;&gt;Prow 快速入门向导&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;而一篇名为：&lt;a href=&#34;https://wanqu.co/b/7/%E6%B9%BE%E5%8C%BA%E6%97%A5%E6%8A%A5%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E4%BD%9C%E7%9A%84/&#34;&gt;《湾区日报是如何运作的？》&lt;/a&gt; 文章更是让我坚定信心开始开发自己 ChatOps 系统。该文章介绍作者是怎么运营一个名叫湾区日报的个人博客，这个博客通过11个渠道（网站，iOS app，Android app、微博，微信，Twitter，Chrome 浏览器推送、Facebook、邮件订阅、RSS、Telegram）推荐给读者，而这个11个渠道的发布都是通过 slack 和作者开发的小机器人完成。在我还在为使用脚本可以在多渠道发布个人技术博客而沾沾自喜的时候，人家早在多年前就开始使用 ChatOps 模式向多渠道使用多格式自动推送文章了。这也坚定了我开发我们自己的 ChatOps 系统的决心。&lt;/p&gt;
+&lt;h2 id=&#34;gitops--chatops-的实践&#34;&gt;GitOps &amp;amp; ChatOps 的实践&lt;/h2&gt;
+&lt;h3 id=&#34;使用-drone-实现-gitops&#34;&gt;使用 Drone 实现 GitOps&lt;/h3&gt;
+&lt;p&gt;DevOps 文化早已在我司落地，这也是为什么我们有将近百人的研发团队，却只有两个专职运维的原因。CI/CD 方面我们之前使用的是 jenkins ， jenkins 是一个十分强大的工具，但是随着公司的发展，项目也越来越多，粗略统计了一下我们在 jenkins 中有几百个 Job ，虽然所有项目都使用 Jenkinsfile 的方式将 pipeline 持久化到了 gitlab 中，但是所有的 Job 配置，包括参数化构建配置，SCM 配置等都是保存在 jenkins 上，一旦有失，几百个 Job &amp;hellip;哭都没有地方哭去（别问我是怎么知道的）。&lt;/p&gt;
+&lt;p&gt;经过调研我们选择了 &lt;a href=&#34;https://drone.io/&#34;&gt;drone CI&lt;/a&gt; 进行 GitOps ，通过自己开发不同功能的插件，完善了我们的整个 CI/CD 流水线。而插件的开发也并不是从头开始，而是直接 fork 现有的插件进行定制化的二次开发，有兴趣的可以到我的 &lt;a href=&#34;https://github.com/sunny0826/drone-dingtalk-message&#34;&gt;GitHub&lt;/a&gt;   和 &lt;a href=&#34;https://cloud.docker.com/repository/list&#34;&gt;DockerHub&lt;/a&gt; 上查看。&lt;/p&gt;
+&lt;p&gt;将项目配置进行了分离，配置使用单独的 git 仓库维护，同时整合了镜像安全扫描，钉钉通知等功能。
+&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vvfow9w9j21k810243r.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;由于 drone CI 的配置文件 &lt;code&gt;.drone.yml&lt;/code&gt; 需要统一规范，所以我们在自己的 DevOps 平台开发了 Drone 配置页面，帮助开发自主配置。我们提供了 &lt;code&gt;Java&lt;/code&gt; 、 &lt;code&gt;Node&lt;/code&gt; 、 &lt;code&gt;Python&lt;/code&gt; 三种配置模板，并且由于 DevOps 平台已与 GitLab 集成，可以直接将生成的 &lt;code&gt;.drone.yml&lt;/code&gt; 文件插入到相应 git 项目中。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx3.sinaimg.cn/large/ad5fbf65gy1g4vvoqggfoj22lk16aagu.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;同时也提供了钉钉构建通知，在构建成功后会发送到相应的开发群组中，如果需希望自动发布的话，也可点击通知中的连接自行发布。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vvrigyvlj20ec0bh40u.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;自研平台配合钉钉-outgoing-功能实现-chatops&#34;&gt;自研平台配合钉钉 Outgoing 功能实现 ChatOps&lt;/h3&gt;
+&lt;p&gt;前面的构建通知机器人使用的是钉钉的&lt;a href=&#34;https://open-doc.dingtalk.com/microapp/serverapi2/qf2nxq&#34;&gt;自定义机器人&lt;/a&gt;，将构建信息推送到各个项目群中。而钉钉机器人的 Outgoing 功能，则可用来实现 ChatOps 的功能（&lt;strong&gt;注意：钉钉的 Outgoing 功能目前还处于灰度测试阶段，想要使用的需要联系官方管理员开启该功能&lt;/strong&gt;）。&lt;/p&gt;
+&lt;p&gt;由于我司专职运维人员只有两位，管理着整个团队全部的基础设施。但是随着开发团队的扩张，运维人员每天要处理大量的咨询类工作，而这类工作有着重复性强和技术性弱的特点，对于运维人员的技术水平毫无提升，那么这类工作交给机器人岂不是更好。得益于我们 DevOps 平台完善的 API ，小助手机器人的开发并不困难。&lt;/p&gt;
+&lt;p&gt;小助手机器人的诞生，极大的提高了咨询类工作的效率，同时也释放了运维人员的工作时间，运维人员可以将更多精力投注到更有技术含量的事情上。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vwfdgd2xj20iu0ajwgc.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;小助手机器人还有运维版本，功能包括：批量操作虚拟机、重启服务、DNS 解析、Kubernetes 信息检测&amp;amp;操作等功能，由于还是测试版本，这里就不做详细介绍了。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;上文中简要的介绍了 GitOps 和 ChatOps 在我司的落地实践，从决定落地 GitOps 和 ChatOps 至今不过短短的2个月。得益于我司浓厚的 DevOps 文化氛围，让我可以在极短的时间内将 GitOps 和 ChatOps 落地实践。但毕竟实践的时间还短，很多需求还在收集和调研中，后续的开发还在持续进行。欢迎对 GitOps 和 ChatOps 感兴趣的同学一起交流，共同提升。&lt;/p&gt;
+&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.weave.works/technologies/gitops/&#34;&gt;GitOps&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://bearyinnovative.com/salon-chatops/&#34;&gt;DevOps 理念升级，ChatOps 概述及实践经验&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 轻量快速的 CI 工具 Drone</title>
+      <link>/post/drone-ci/</link>
+      <pubDate>Tue, 21 May 2019 08:59:00 +0800</pubDate>
+      
+      <guid>/post/drone-ci/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;公司之前一直在使用 Jenkins 作为 CI/CD 工具， Jenkins 非常强大，它完成了几乎所有 CI/CD 的工作，并且应用于整个团队有好长一段时间了。但是随着公司推荐数字化、智慧化，以及服务容器化的推进， Jenkins 的一些弊端也凸显了出来：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;重量级：&lt;/strong&gt; Jenkins 功能十分齐全，几乎可以做所有的事情。但是这也是他的一个弊端，过于重量级，有时候往往一个小的修改需要改动许多地方，升级\下载插件后需要进行重启等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;升级不易：&lt;/strong&gt; 在一些安全 Jenkins 相关的安全漏洞被公开后，我们会对 Jenkins 进行升级，但这也不是一件容易的事。之前就出现过升级\重启后，所有 job 丢失，虽然我们所有项目配置都是以 Jenkinsfile 的形式统一存储，但是每个 job 都需要重新重新创建，包括每个 job 的权限&amp;hellip;.._(´ཀ`」 ∠)_&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;权限控制复杂：&lt;/strong&gt; 这其实也是 Jenkins 的一大优势，可以精确控制每个用户的权限，但是需要花费更多时间去配置，时间长了也会出现权限混乱的问题。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;UI 界面：&lt;/strong&gt; 这个其实是吐槽最多的部分，虽然有诸如：Blue Ocean 这样的插件来展示 pipeline ，但是还是没有从根本改变它简陋的 UI 界面。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么为什么选择使用 Drone 呢？&lt;/p&gt;
+&lt;p&gt;其实在 GitHub 上提交 PR 后，大部分开源项目都会使用 &lt;a href=&#34;http://travis-ci.org/&#34;&gt;travis-ci&lt;/a&gt; 对提交的代码进行 CI 及检查，而如果是 Kubernetes 相关的项目，则会使用 &lt;a href=&#34;https://github.com/k8s-ci-robot&#34;&gt;prow&lt;/a&gt; 进行 CI。但是 &lt;a href=&#34;http://travis-ci.org/&#34;&gt;travis-ci&lt;/a&gt; 只能用于 GitHub ，在寻找类似项目的时候， Drone 进入了我的视野。&lt;/p&gt;
+&lt;p&gt;大道至简。和 Jenkins 相比， Drone 就轻量的多了，从应用本身的安装部署到流水线的构建都简洁的多。由于是和源码管理系统相集成，所以 Drone 天生就省去了各种账户\权限的配置，直接与 gitlab 、 github 、 Bitbucket 这样的源码管理系统操作源代码的权限一致。正如它官网上写的那样：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Source Code Manager&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone integrates seamlessly with multiple source code management systems, including GitHub, GitHubEnterprise, Bitbucket, and GitLab.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Platform&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone natively supports multiple operating systems and architectures, including Linux x64, ARM, ARM64 and Windows x64.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Any Language&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Drone works with any language, database or service that runs inside a Docker container. Choose from thousands of public Docker images or provide your own.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Drone 天生支持任何源码管理工具、任何平台和任何语言。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;而写这篇文章的目的，并不是要吹捧这个工具有多么的好用，而是要总结在搭建 drone 和使用时候需要的各种坑，帮助读者绕过这些坑。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;声明&#34;&gt;声明&lt;/h2&gt;
+&lt;p&gt;鉴于在使用 Drone CI 中，遇到的各种坑都和 Drone 的版本有关，这里首先声明我使用的 Drone 版本为&lt;code&gt;1.1&lt;/code&gt;，使用&lt;code&gt;0.8&lt;/code&gt;版本的同学请绕道。&lt;/p&gt;
+&lt;h2 id=&#34;搭建-drone&#34;&gt;搭建 Drone&lt;/h2&gt;
+&lt;p&gt;这里要说的就是在使用 drone 中遇到的第一个坑，在最初正准备搭建 drone 的时候 Google 了很多相关的 blog ，大部分 blog （包括某些 &lt;a href=&#34;https://medium.com/&#34;&gt;medium.com&lt;/a&gt; 上面近期的英文 blog） 推荐的安装方式都是使用 &lt;code&gt;docker-compose&lt;/code&gt;，而无一例外的都失败了&amp;hellip;走投无路之下，我回到了&lt;a href=&#34;https://docs.drone.io/installation/&#34;&gt;官网的文档&lt;/a&gt;，发现&lt;code&gt;1.0&lt;/code&gt;之后许多参数都发生了变化，并且官方推荐使用 docker 的方式运行 Drone。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;所以在使用任何开源软件之前都要去阅读它的文档，不要跟着一篇 blog 就开始了（包括我的），这样会少踩很多坑！！！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这里以 gitlab 为例，展示网上版本启动参数和实际参数的不同：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;作用&lt;/th&gt;
+&lt;th&gt;各种blog&lt;/th&gt;
+&lt;th&gt;官网文档&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;设置 Drone 的管理员&lt;/td&gt;
+&lt;td&gt;DRONE_ADMIN=admin&lt;/td&gt;
+&lt;td&gt;DRONE_USER_CREATE=username:admin,admin:true&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;设置GitLab的域名&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_URL&lt;/td&gt;
+&lt;td&gt;DRONE_SERVER_HOST&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GitLab的Application中的key&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT_ID&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;GitLab的Application中的secret&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_SECRET&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_CLIENT_SECRET&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Drone 域名&lt;/td&gt;
+&lt;td&gt;DRONE_HOST&lt;/td&gt;
+&lt;td&gt;DRONE_GITLAB_SERVER&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;上面只是列举了部分官方文档和网上流产版本的不同，所以在使用之前一定要仔细阅读官方文档。下附运行 drone 的命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --volume=/var/run/docker.sock:/var/run/docker.sock &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --volume=/var/lib/drone:/data &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GIT_ALWAYS_AUTH&lt;/span&gt;=&lt;span style=&#34;color:#24909d&#34;&gt;false&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_SERVER&lt;/span&gt;={your-gitlab-url} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# gitlab 的 URL&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_CLIENT_ID&lt;/span&gt;={your-gitlab-applications-id} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt; &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#GitLab的Application中的id&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_GITLAB_CLIENT_SECRET&lt;/span&gt;={your-gitlab-applicati-secret} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#GitLab的Application中的secret&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_SERVER_HOST&lt;/span&gt;={your-drone-url} &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;   &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# drone 的URl&lt;/span&gt;
+  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_SERVER_PROTO&lt;/span&gt;=http &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_TLS_AUTOCERT&lt;/span&gt;=&lt;span style=&#34;color:#24909d&#34;&gt;false&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --env=&lt;span style=&#34;color:#40ffff&#34;&gt;DRONE_USER_CREATE&lt;/span&gt;=username:{your-admin-username},admin:true &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;  &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Drone的管理员&lt;/span&gt;
+  --publish=8000:80 &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --publish=443:443 &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --restart=always &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --detach=&lt;span style=&#34;color:#24909d&#34;&gt;true&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  --name=drone &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;  drone/drone:1.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;关于 &lt;code&gt;gitlab Application&lt;/code&gt; 的配置和 Drone 其他参数含义请参考&lt;a href=&#34;https://docs.drone.io/installation/gitlab/single-machine/&#34;&gt;官方文档&lt;/a&gt;，这里只展示单节点办的运行方式。&lt;/p&gt;
+&lt;h2 id=&#34;核心文件-droneyml&#34;&gt;核心文件 &lt;code&gt;.drone.yml&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;要使用 Drone 只需在项目根创建一个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件即可，这个是 Drone 构建脚本的配置文件，它随项目一块进行版本管理，开发者不需要额外再去维护一个配置脚本。其实现代 CI 程序都是这么做了，这个主要是相对于 Jekins 来说的。虽然 Jekins 也有插件支持，但毕竟还是需要配置。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;值得注意的事这个文件时 &lt;code&gt;.drone.yml&lt;/code&gt;，由于 Kubernetes 使用的多了，第一次创建了一个 &lt;code&gt;.drone.yaml&lt;/code&gt; 文件，导致怎么都获取不到配置&amp;hellip;_(´ཀ`」 ∠)_&amp;hellip; YAML 工程师石锤了&amp;hellip;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里放一个 Java 的 .drone.yml ，这个项目是 fork 别人的项目用作演示，记得要修改 &lt;code&gt;deployment.yaml&lt;/code&gt; 中的镜像仓库地址修改为自己的私有仓库。&lt;/p&gt;
+&lt;p&gt;示例项目源码：https://github.com/sunny0826/pipeline-example-maven&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-YAML&#34; data-lang=&#34;YAML&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pipeline&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pipeline-example-maven&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;steps&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Maven编译&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;maven:&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt;-jdk&lt;span style=&#34;color:#3677a9&#34;&gt;-7&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cache&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.m2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- mvn&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;clean&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;install&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;构建镜像&lt;span style=&#34;color:#666&#34;&gt;  
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;plugins/docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/var/run/docker.sock&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;username&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker_user&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;password&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker_pass&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;repo&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-repo}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;registry&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;{your-registry}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tags&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;${DRONE_BUILD_NUMBER}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Kubernetes&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;部署&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/kubectl:v1&lt;span style=&#34;color:#3677a9&#34;&gt;.14.1&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/root/.kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;commands&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- sed&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;-i&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;s/#Tag/${DRONE_BUILD_NUMBER}/g&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deployment.yaml&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- kubectl&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;apply&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;-f&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;deployment.yaml&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;钉钉通知&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;guoxudongdocker/drone-dingtalk&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;settings&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;token&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;from_secret&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dingding&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;type&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;markdown&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_color&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;message_pic&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;sha_link&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;when&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;status&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[failure,&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;success]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cache&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.m2&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/tmp/cache/.kube/.test_kube&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;docker&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;host&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/var/run/docker.sock&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;trigger&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;branch&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- master&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;值得注意的事：上面的这个 &lt;code&gt;.drone.yml&lt;/code&gt; 文件将本地的&lt;code&gt;.m2&lt;/code&gt;文件、kubeconfig文件、&lt;code&gt;docker.sock&lt;/code&gt; 文件挂载到 pipeline 中以实现 maven 打包缓存，k8s 部署、docker 缓存的作用，以提高 CI 速度。而是用挂载需要管理员在项目 settings 中勾选 &lt;code&gt;Trusted&lt;/code&gt; ，这个操作只能管理员进行，普通用户是看不到这个选项的。而管理员就是在docker运行时候 &lt;code&gt;--env=DRONE_USER_CREATE=username:{your-admin-username},admin:true &lt;/code&gt; 设置的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws3.sinaimg.cn/large/ad5fbf65gy1g38qvifxwij21d40tk76s.jpg&#34; alt=&#34;WX20190521-104717@2x&#34;&gt;&lt;/p&gt;
+&lt;p&gt;而上传镜像和钉钉同时需要在 settings 设置中添加 secret&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;docker_user：docker 仓库用户名&lt;/li&gt;
+&lt;li&gt;docker_pass：docker 仓库密码&lt;/li&gt;
+&lt;li&gt;dingding： 钉钉机器人 token&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意这里的钉钉 token 是 webhook 中 &lt;code&gt;https://oapi.dingtalk.com/robot/send?access_token=&lt;/code&gt; 后这部分
+&lt;img src=&#34;https://ws2.sinaimg.cn/large/ad5fbf65gy1g38r1mkoztj20iy0ezgmg.jpg&#34; alt=&#34;WX20190521-105337&#34;&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g38qxizsg1j21ia0tujtb.jpg&#34; alt=&#34;WX20190521-104942@2x&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;构建结果&#34;&gt;构建结果&lt;/h2&gt;
+&lt;p&gt;添加 &lt;code&gt;.drone.yml&lt;/code&gt; 文件后，向 master 分支提交代码即可出发 CI 构建&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx3.sinaimg.cn/large/ad5fbf65gy1g38r68yb8pj21l40sawit.jpg&#34; alt=&#34;WX20190521-105809@2x&#34;&gt;&lt;/p&gt;
+&lt;p&gt;CI 结束后，会在钉钉机器人所在群收到通知&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/large/ad5fbf65gy1g38r8cttcrj20e90bzacr.jpg&#34; alt=&#34;WX20190521-110009&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;插件支持&#34;&gt;插件支持&lt;/h2&gt;
+&lt;p&gt;可以看到，每一步的镜像都是一个镜像，上面 pipeline 中的 Kubernetes 及钉钉通知插件就是我开发的，具体开发方法可以参考&lt;a href=&#34;https://docs.drone.io/&#34;&gt;官方文档&lt;/a&gt;，而官方也提供了许多&lt;a href=&#34;http://plugins.drone.io/&#34;&gt;官方插件&lt;/a&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;构建后部署：&lt;a href=&#34;http://plugins.drone.io/mactynow/drone-kubernetes/&#34;&gt;Kubernetes&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/ipedrazas/drone-helm/&#34;&gt;helm&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/appleboy/drone-scp/&#34;&gt;scp&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;构建后通知：&lt;a href=&#34;http://plugins.drone.io/lddsb/drone-dingtalk-message/&#34;&gt;钉钉&lt;/a&gt; 、&lt;a href=&#34;http://plugins.drone.io/drillster/drone-email/&#34;&gt;Email&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/drone-plugins/drone-slack/&#34;&gt;Slack&lt;/a&gt;、&lt;a href=&#34;http://plugins.drone.io/lizheming/drone-wechat/&#34;&gt;微信&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
+&lt;p&gt;Drone 整体用起来还是很方便的，搭建、上手速度都很快，但是官方文档给的不够详实，而网上充斥着各种各样0.8版本的的实例，但是其实官网早就发布了1.0版本，而官方并没有 &lt;code&gt;example&lt;/code&gt; 这样的示例项目，这样就又把本来降下来的学习曲线拉高了。许多坑都需要自己去趟，我在测试 drone 的时候，就构构建了上百次，不停的修改 &lt;code&gt;.drone.yml&lt;/code&gt; ， commit 信息看起来是很恐怖的。后续抽空会向官方贡献 &lt;code&gt;example&lt;/code&gt; 这样的 PR。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 什么是 DevSecOps ?</title>
+      <link>/post/what-is-devsecops/</link>
+      <pubDate>Fri, 03 May 2019 14:37:14 +0800</pubDate>
+      
+      <guid>/post/what-is-devsecops/</guid>
+      <description>
+        
+        
+        &lt;p&gt;DevOps 不仅仅是开发和运营团队。如果您想要充分发挥出 DevOps 方法的敏捷性和响应力，则必须在应用的整个生命周期内同时兼顾 &lt;a href=&#34;https://www.redhat.com/zh/topics/security&#34;&gt;IT 安全性&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;为什么？以往，安全性会在开发的最后阶段由特定的团队来负责实现。当开发周期长达数月、甚至数年时，上述做法不存在任何问题；但是，这种做法现在已经行不通了。有效的 DevOps 可顺利推进快速频繁的开发周期（有时全程只有数周或数天），但是过时的安全措施会对此造成负面影响，即使对于最高效的 DevOps 计划也是如此。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx4.sinaimg.cn/large/ad5fbf65gy1g2o4h6asbfj20b9077q3d.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;现在，安全防护在 DevOps 协作框架中属于共同责任，而且需要在整个周期中&lt;a href=&#34;https://www.redhat.com/zh/challenges/integration&#34;&gt;整合&lt;/a&gt;相应的安全功能。这是一个非常重要的理念。它还使得“DevSecOps”一词应运而生，以用于强调必须为 DevOps 计划打下扎实的安全基础。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/large/ad5fbf65gy1g2o4i7spd6j20b908k0t7.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;DevSecOps 意味着，从一开始就要考虑应用和基础架构的安全性；同时还要让某些安全网关实现&lt;a href=&#34;https://www.redhat.com/zh/topics/automation&#34;&gt;自动化&lt;/a&gt;，以防止 DevOps 工作流程变慢。选择正确的工具来持续确保安全性有助于实现安全目标。但是，有效的 DevOps 安全防护需要的不仅是新工具。它建立在 DevOps 文化变革的基础上，以便尽早集成安全团队的工作。&lt;/p&gt;
+&lt;h2 id=&#34;devops-安全性为内置特性&#34;&gt;DevOps 安全性为内置特性&lt;/h2&gt;
+&lt;p&gt;无论您将其称为“DevOps”还是“DevSecOps”，最好始终能在应用的整个生命周期内确保安全性。DevSecOps 关乎内置安全性，而不是应用和数据层面的安全性。如果将安全性问题留到开发流程的最后环节再加以考虑，那么采用 DevOps 方案的组织会发现自己的开发周期又变长了，而这是他们从一开始就想要避免的情况。&lt;/p&gt;
+&lt;p&gt;在某种程度上，DevSecOps 强调，在 DevOps 计划刚启动时就要邀请安全团队来确保信息的安全性，并制定自动安全防护计划。它还强调，要帮助开发人员从代码层面确保安全性；在这个过程中，安全团队需要针对已知的威胁分享可见性信息、提供反馈并进行智能分析。这可能还包括为开发人员提供新的安全培训，因为 DevSecOps 并非始终着眼于较为传统的应用开发模式。&lt;/p&gt;
+&lt;p&gt;那么，怎样才算是真正地实现了内置安全性？对于新手而言，优质的 DevSecOps 策略应能确定风险承受能力并进行风险/收益分析。在一个给定的应用中，需要配备多少个安全控制功能？对于不同的应用，上市速度又有多重要？自动执行重复任务是 DevSecOps 的关键所在，因为在管道中运行手动安全检查可能会非常耗时。&lt;/p&gt;
+&lt;h2 id=&#34;devops-安全性可自动实现&#34;&gt;DevOps 安全性可自动实现&lt;/h2&gt;
+&lt;p&gt;企业应该：确保采用时间短、频率高的开发周期；采取安全措施，以最大限度地缩短运营中断时间；采用创新技术，如&lt;a href=&#34;https://www.redhat.com/zh/topics/containers&#34;&gt;容器&lt;/a&gt;和&lt;a href=&#34;https://www.redhat.com/zh/topics/microservices&#34;&gt;微服务&lt;/a&gt;；同时，还要促使常见的孤立团队加强合作 — 这对所有企业来说都是一项艰巨的任务。上述所有举措都与人有关，而且企业内部需要协同合作；但是，&lt;a href=&#34;https://www.redhat.com/zh/topics/automation/whats-it-automation&#34;&gt;自动化&lt;/a&gt;才是有助于在 DevSecOps 框架中实现这些人员变化的关键所在。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws2.sinaimg.cn/large/ad5fbf65gy1g2o4kwhrauj20f9065aao.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;那么，企业应该在哪些方面实现自动化？具体又该怎么做呢？红帽提供了相应的&lt;a href=&#34;https://itrevolution.com/book/devops-and-audit/&#34;&gt;书面指南&lt;/a&gt;来帮助解答上述问题。企业应该退后一步，并着眼于整个开发和运营环境。其中涉及：源控制存储库；容器注册表；持续集成和持续部署 (CI/CD) 管道；应用编程接口 (API) 的管理、编排和发布自动化；以及运营管理和监控。&lt;/p&gt;
+&lt;p&gt;全新的自动化技术已帮助企业提高了开发实践的敏捷性，还在推动采用新的安全措施方面起到了重要作用。但是，自动化并不是近年来 IT 领域发生的唯一变化。现在，对于大多数 DevOps 计划而言，容器和微服务等&lt;a href=&#34;https://www.redhat.com/zh/challenges/cloud-infrastructure&#34;&gt;云原生技术&lt;/a&gt;也是一个非常重要的组成部分。所以，企业必须调整 DevOps 安全措施，以适应这些技术。&lt;/p&gt;
+&lt;h2 id=&#34;devops-安全性适用于容器和微服务&#34;&gt;DevOps 安全性适用于容器和微服务&lt;/h2&gt;
+&lt;p&gt;可通过容器实现的规模扩展和基础架构动态性提升改变了许多组织开展业务的方式。因此，DevOps 安全性实践必须适应新环境并遵循&lt;a href=&#34;https://csrc.nist.gov/publications/detail/nistir/8176/final&#34;&gt;特定于容器的安全准则&lt;/a&gt;。云原生技术不适合用来落实静态安全策略和检查清单。相反，组织必须在应用和基础架构生命周期的每个阶段确保持续安全并整合相应的安全功能。&lt;/p&gt;
+&lt;p&gt;DevSecOps 意味着，要在应用开发的整个过程中确保安全性。要实现与管道的这种集成需要秉持一种全新的思维方式，就像使用新工具一样。考虑到这一点，DevOps 团队应该实现安全防护自动化，以保护整体环境和数据；同时实现持续集成/持续交付流程——可能还要确保容器中的微服务的安全性。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;环境和数据安全性：&lt;/th&gt;
+&lt;th&gt;CI/CD 流程安全性：&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;实现环境的标准化和自动化。&lt;br&gt;每项服务都应具有最小的权限，以最大限度地减少未经授权的连接和访问。&lt;/td&gt;
+&lt;td&gt;集成适用于容器的安全性扫描程序。&lt;br&gt;应在向注册表添加容器的过程中实现这一点。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;实现用户身份和访问控制功能的集中化。&lt;br&gt;由于要在多个点发起身份验证，因此严格的访问控制和集中式身份验证机制对于确保微服务安全性而言至关重要。&lt;/td&gt;
+&lt;td&gt;自动在 CI 过程中完成安全性测试。&lt;br&gt;其中包括在构建过程中运行安全性静态分析工具；而且在构建管道中提取任何预构建容器映像时，都要进行扫描，以检查是否存在已知的安全漏洞。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;使运行微服务的容器相互隔离并与网络隔离。&lt;br&gt;这包括传输中和静止的数据，因为获取这两类数据是攻击者的高价值目标。&lt;/td&gt;
+&lt;td&gt;在验收测试流程中加入针对安全性功能的自动化测试。&lt;br&gt;自动执行输入验证测试，并针对验证操作实现身份验证和授权功能的自动化。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;加密应用与服务间的数据。&lt;br&gt;具有集成式安全功能的容器编排平台有助于最大限度地降低发生未经授权访问的可能性。&lt;/td&gt;
+&lt;td&gt;自动执行安全性更新，&lt;br&gt;例如针对已知漏洞打修补。通过 DevOps 实现这一点。这样，在创建记录在案的可跟踪更改日志时，管理员便无需登录生产系统。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;引入安全的 API 网关。&lt;br&gt;安全的 API 可提高授权和路由的可见性。通过减少公开的 API，组织可以减小攻击面。&lt;/td&gt;
+&lt;td&gt;实现系统和服务配置管理功能的自动化。&lt;br&gt;这样可以确保遵守安全策略，避免出现人为错误。审核和补救操作也应实现自动化。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Jenkins Pipeline集成Sonar进行代码质量检测</title>
+      <link>/post/sonar-pipline/</link>
+      <pubDate>Thu, 07 Mar 2019 09:14:39 +0800</pubDate>
+      
+      <guid>/post/sonar-pipline/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
+&lt;h2 id=&#34;preview_only-false&#34;&gt;image:
+caption: &amp;ldquo;Image from: &lt;a href=&#34;https://www.pexels.com&#34;&gt;&lt;strong&gt;Pexels&lt;/strong&gt;&lt;/a&gt;&amp;rdquo;
+focal_point: &amp;quot;&amp;rdquo;
+preview_only: false&lt;/h2&gt;
+&lt;h3 id=&#34;jenkins-pipeline&#34;&gt;jenkins pipeline&lt;/h3&gt;
+&lt;p&gt;Jenkins Pipeline (或简称为 &amp;ldquo;Pipeline&amp;rdquo; )是一套插件，将持续交付的实现和实施集成到 Jenkins 中。&lt;/p&gt;
+&lt;p&gt;持续交付Pipeline自动化的表达了这样一种流程：将基于版本控制管理的软件持续的交付到您的用户和消费者手中。&lt;/p&gt;
+&lt;p&gt;Jenkins Pipeline 提供了一套可扩展的工具，用于将“简单到复杂”的交付流程实现为“持续交付即代码”。 Jenkins Pipeline 的定义通常被写入到一个文本文件（称为 &lt;code&gt;Jenkinsfile&lt;/code&gt; ）中，该文件可以被检入到项目的源代码控制库中。&lt;/p&gt;
+&lt;p&gt;摘自&lt;a href=&#34;https://jenkins.io/zh/&#34;&gt;Jenkins官方文档&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;sonarqube&#34;&gt;SonarQube&lt;/h3&gt;
+&lt;p&gt;SonarQube is an open source platform to perform automatic reviews with static analysis of code to detect bugs, code smells and security vulnerabilities on 25+ programming languages including Java, C#, JavaScript, TypeScript, C/C++, COBOL and more.&lt;/p&gt;
+&lt;p&gt;SonarQube是一个开源的平台，以执行与代码的静态分析，自动审查，可以检测在25+的编程语言如Java，C＃，JavaScript，TypeScript，C/C++，COBOL等的代码缺陷和安全漏洞。&lt;/p&gt;
+&lt;h3 id=&#34;owasp&#34;&gt;OWASP&lt;/h3&gt;
+&lt;p&gt;OWASP，全称是：Open Web Application Security Project，翻译为中文就是：开放式Web应用程序安全项目，是一个非营利组织，不附属于任何企业或财团，这也是该组织可以不受商业控制地进行安全开发及安全普及的重要原因，&lt;a href=&#34;https://en.wikipedia.org/wiki/OWASP/&#34;&gt;详细介绍&lt;/a&gt;。OWASP Dependency-Check，它识别项目依赖关系，并检查是否存在任何已知的、公开的、漏洞，基于OWASP Top 10 2013。&lt;/p&gt;
+&lt;h2 id=&#34;场景&#34;&gt;场景&lt;/h2&gt;
+&lt;p&gt;在devops理念中，CI/CD毫无疑问是最重要的一环，而代码质量检查则是CI中必不可少的一步。在敏捷开发的思想下，代码的迭代周期变短，交付速度提升，这个时候代码的质量就很难保证，测试只能保证功能完整与可用，而代码的质量纯靠review的话效率又很低，这个时候sonar就可以很好的帮助开发自动化检测代码质量，降低bug数量，也可以根据扫描结果养成良好的编程习惯，同时也可以减少测试的工作量，真正提升整个团队效率，实现devops理念。&lt;/p&gt;
+&lt;h2 id=&#34;前提&#34;&gt;前提&lt;/h2&gt;
+&lt;p&gt;jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件&lt;code&gt;SonarQube Scanner for Jenkins&lt;/code&gt;，jenkins、sonarqube安装Dependency-Check插件&lt;code&gt;OWASP Dependency-Check Plugin&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;版本：jenkins2.166，sonarqube6.7.6&lt;/p&gt;
+&lt;h2 id=&#34;配置&#34;&gt;配置&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;下载安装jenkins插件&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;[系统管理]&lt;/strong&gt;-&lt;strong&gt;[插件管理]&lt;/strong&gt;-&lt;strong&gt;[可选插件]&lt;/strong&gt;-&lt;strong&gt;[SonarQube Scanner for Jenkins]&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g0u4q3ae1bj20t90233yt.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SonarQube生成token，&lt;strong&gt;这个token不会显示第二次，所以一定要记住&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/mw690/ad5fbf65ly1g0u5902q6nj213f0hgwgn.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SonarQube配置Dependency-Check&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;[配置]&lt;/strong&gt;-&lt;strong&gt;[Dependency-Check]&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;**[注意：]**这里去掉 &lt;code&gt;${WORKSPACE}/&lt;/code&gt;，否则将报&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Java&#34; data-lang=&#34;Java&#34;&gt;[INFO] Dependency-Check XML report does not exists. Please check property sonar.&lt;span style=&#34;color:#bbb&#34;&gt;dependencyCheck&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reportPath&lt;/span&gt;:/data/jenkinsHome/workspace/xxx/${WORKSPACE}/dependency-check-report.&lt;span style=&#34;color:#bbb&#34;&gt;xml&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g0yvjjcvdaj211b0jhgod.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在pom.xml文件中添加&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.sonarsource.scanner.maven&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;sonar-maven-plugin&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;3.6.0.1398&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置jenkins&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;[系统管理]&lt;/strong&gt;-&lt;strong&gt;[系统设置]&lt;/strong&gt;-&lt;strong&gt;[SonarQube servers]&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx3.sinaimg.cn/large/ad5fbf65ly1g0u50l8q4lj215o0b3myw.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;sonar添加webhook&lt;/p&gt;
+&lt;p&gt;在代码扫描成功后，扫描结果需要回调jenkins，添加的Jenkins的webhook结构为：http://[jenkins_url]/sonarqube-webhook/&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;[配置]&lt;/strong&gt;-&lt;strong&gt;[web回调接口]&lt;/strong&gt;-&lt;strong&gt;[URL]&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g0v4m590vhj212k0pw0vo.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编辑jenkins pipeline&lt;/p&gt;
+&lt;p&gt;在jenkinsfile文件中添加配置&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Groovy&#34; data-lang=&#34;Groovy&#34;&gt;stage(&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;依赖安全检查&amp;#39;&lt;/span&gt;) {
+    steps{
+        dependencyCheckAnalyzer datadir: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, hintsFile: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, includeCsvReports: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;, includeHtmlReports: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;, includeJsonReports: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;, includeVulnReports: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;, isAutoupdateDisabled: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;, outdir: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, scanpath: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, skipOnScmChange: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;, skipOnUpstreamChange: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;, suppressionFile: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, zipExtensions: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+    }
+}
+
+stage(&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;静态代码检查&amp;#39;&lt;/span&gt;) {
+    steps {
+        echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;starting codeAnalyze with SonarQube......&amp;#34;&lt;/span&gt;
+        withSonarQubeEnv(&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;sonar&amp;#39;&lt;/span&gt;) {
+            &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//注意这里withSonarQubeEnv()中的参数要与之前SonarQube servers中Name的配置相同
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;            withMaven(maven: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;M3&amp;#39;&lt;/span&gt;) {
+                sh &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;mvn clean package -Dmaven.test.skip=true sonar:sonar -Dsonar.projectKey={项目key} -Dsonar.projectName={项目名称} -Dsonar.projectVersion={项目版本} -Dsonar.sourceEncoding=UTF-8 -Dsonar.exclusions=src/test/** -Dsonar.sources=src/ -Dsonar.java.binaries=target/classes -Dsonar.host.url={SonarQube地址} -Dsonar.login={SonarQube的token}&amp;#34;&lt;/span&gt;
+            }
+        }
+        script {
+            timeout(&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;) {
+                &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//这里设置超时时间1分钟，不会出现一直卡在检查状态
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//利用sonar webhook功能通知pipeline代码检测结果，未通过质量阈，pipeline将会fail
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;def&lt;/span&gt; qg = waitForQualityGate(&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;sonar&amp;#39;&lt;/span&gt;)
+                &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//注意：这里waitForQualityGate()中的参数也要与之前SonarQube servers中Name的配置相同
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; (qg.&lt;span style=&#34;color:#bbb&#34;&gt;status&lt;/span&gt; != &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;OK&amp;#39;&lt;/span&gt;) {
+                    error &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;未通过Sonarqube的代码质量阈检查，请及时修改！failure: ${qg.status}&amp;#34;&lt;/span&gt;
+                }
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;参数解释：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;sonar.projectKey：项目key (必填项)&lt;/li&gt;
+&lt;li&gt;sonar.projectName：项目名称（必填项）&lt;/li&gt;
+&lt;li&gt;sonar.projectVersion：项目版本（必填项）&lt;/li&gt;
+&lt;li&gt;sonar.sources：源码位置(相对路径）&lt;/li&gt;
+&lt;li&gt;sonar.java.binaries：编译后的class位置（必填项，相对路径同上）&lt;/li&gt;
+&lt;li&gt;sonar.exclusions：排除的扫描的文件路径&lt;/li&gt;
+&lt;li&gt;sonar.host.url：SonarQube地址&lt;/li&gt;
+&lt;li&gt;sonar.login：SonarQube生成的token&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;运行&#34;&gt;运行&lt;/h2&gt;
+&lt;p&gt;执行jenkins构建，构建成功后会显示如下，则证明sonar代码扫描成功且通过代码质量阈检查
+&lt;img src=&#34;https://wx1.sinaimg.cn/mw690/ad5fbf65ly1g0u6qrh8qrj21fu0q2dmw.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;查看sonar报告，这里有两种方式&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;可直接登录SonarQube查看报告
+&lt;img src=&#34;https://ws1.sinaimg.cn/mw690/ad5fbf65ly1g0u6vbspv5j21260myadw.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;也可直接在jenkins页面点击SonarQube图标进入，点击以下标记均可进去
+&lt;img src=&#34;https://ws2.sinaimg.cn/mw690/ad5fbf65ly1g0u6xzcryhj21fn0q7wkm.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;其他&#34;&gt;其他&lt;/h2&gt;
+&lt;h3 id=&#34;问题一无法扫描代码错误提示&#34;&gt;问题一：无法扫描代码，错误提示&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Java&#34; data-lang=&#34;Java&#34;&gt;hudson.&lt;span style=&#34;color:#bbb&#34;&gt;remoting&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ProxyException&lt;/span&gt;: hudson.&lt;span style=&#34;color:#bbb&#34;&gt;AbortException&lt;/span&gt;: SonarQube installation defined in &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;this&lt;/span&gt; &lt;span style=&#34;color:#447fcf&#34;&gt;job&lt;/span&gt; (sonar) does not match any configured installation. Number of installations that can be configured: 1.
+If you want to reassign jobs to a different SonarQube installation, check the documentation under https:&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//redirect.sonarsource.com/plugins/jenkins.html
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;    at hudson.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sonar&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SonarInstallation&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkValid&lt;/span&gt;(SonarInstallation.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:94)
+    at hudson.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sonar&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SonarBuildWrapper&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;setUp&lt;/span&gt;(SonarBuildWrapper.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:67)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;steps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CoreWrapperStep$Execution&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;start&lt;/span&gt;(CoreWrapperStep.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:80)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeStep&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:268)
+Caused: hudson.&lt;span style=&#34;color:#bbb&#34;&gt;remoting&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ProxyException&lt;/span&gt;: org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;InvokerInvocationException&lt;/span&gt;: hudson.&lt;span style=&#34;color:#bbb&#34;&gt;AbortException&lt;/span&gt;: SonarQube installation defined in &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;this&lt;/span&gt; &lt;span style=&#34;color:#447fcf&#34;&gt;job&lt;/span&gt; (sonar) does not match any configured installation. Number of installations that can be configured: 1.
+If you want to reassign jobs to a different SonarQube installation, check the documentation under https:&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//redirect.sonarsource.com/plugins/jenkins.html
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsStepContext&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;replay&lt;/span&gt;(CpsStepContext.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:499)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeStep&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:295)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeStep&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:207)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeDescribable&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:395)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:179)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsScript&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(CpsScript.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:122)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GeneratedMethodAccessor1200&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Unknown Source)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DelegatingMethodAccessorImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(DelegatingMethodAccessorImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:43)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Method&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Method.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:498)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reflection&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CachedMethod&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(CachedMethod.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:93)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaMethod&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;doMethodInvoke&lt;/span&gt;(MetaMethod.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:325)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaClassImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(MetaClassImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:1213)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaClassImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(MetaClassImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:1022)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;PogoMetaClassSite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(PogoMetaClassSite.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:42)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CallSiteArray&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;defaultCall&lt;/span&gt;(CallSiteArray.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:48)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;AbstractCallSite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(AbstractCallSite.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:113)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:157)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GroovyInterceptor&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;onMethodCall&lt;/span&gt;(GroovyInterceptor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:23)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;scriptsecurity&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxInterceptor&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;onMethodCall&lt;/span&gt;(SandboxInterceptor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:155)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:155)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:159)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxInvoker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;methodCall&lt;/span&gt;(SandboxInvoker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:17)
+Caused: hudson.&lt;span style=&#34;color:#bbb&#34;&gt;remoting&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ProxyException&lt;/span&gt;: java.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;IllegalArgumentException&lt;/span&gt;: Failed to prepare withSonarQubeEnv step
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeDescribable&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:397)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DSL&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(DSL.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:179)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsScript&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(CpsScript.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:122)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GeneratedMethodAccessor1200&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Unknown Source)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DelegatingMethodAccessorImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(DelegatingMethodAccessorImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:43)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Method&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Method.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:498)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reflection&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CachedMethod&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(CachedMethod.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:93)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaMethod&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;doMethodInvoke&lt;/span&gt;(MetaMethod.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:325)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaClassImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(MetaClassImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:1213)
+    at groovy.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;MetaClassImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invokeMethod&lt;/span&gt;(MetaClassImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:1022)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;PogoMetaClassSite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(PogoMetaClassSite.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:42)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CallSiteArray&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;defaultCall&lt;/span&gt;(CallSiteArray.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:48)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callsite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;AbstractCallSite&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(AbstractCallSite.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:113)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:157)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GroovyInterceptor&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;onMethodCall&lt;/span&gt;(GroovyInterceptor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:23)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;scriptsecurity&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxInterceptor&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;onMethodCall&lt;/span&gt;(SandboxInterceptor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:155)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:155)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:159)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;kohsuke&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Checker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;checkedCall&lt;/span&gt;(Checker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:129)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxInvoker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;methodCall&lt;/span&gt;(SandboxInvoker.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:17)
+    at WorkflowScript.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(WorkflowScript:27)
+    at ___cps.&lt;span style=&#34;color:#bbb&#34;&gt;transform___&lt;/span&gt;(Native Method)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ContinuationGroup&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;methodCall&lt;/span&gt;(ContinuationGroup.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:57)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;FunctionCallBlock$ContinuationImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;dispatchOrArg&lt;/span&gt;(FunctionCallBlock.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:109)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;FunctionCallBlock$ContinuationImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;fixArg&lt;/span&gt;(FunctionCallBlock.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:82)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GeneratedMethodAccessor249&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Unknown Source)
+    at sun.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;DelegatingMethodAccessorImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(DelegatingMethodAccessorImpl.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:43)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reflect&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Method&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;invoke&lt;/span&gt;(Method.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:498)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ContinuationPtr$ContinuationImpl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;receive&lt;/span&gt;(ContinuationPtr.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:72)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;impl&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ClosureBlock&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;eval&lt;/span&gt;(ClosureBlock.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:46)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Next&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;step&lt;/span&gt;(Next.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:83)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Continuable$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Continuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:174)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Continuable$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Continuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:163)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GroovyCategorySupport$ThreadCategoryInfo&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;use&lt;/span&gt;(GroovyCategorySupport.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:122)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;codehaus&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runtime&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GroovyCategorySupport&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;use&lt;/span&gt;(GroovyCategorySupport.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:261)
+    at com.&lt;span style=&#34;color:#bbb&#34;&gt;cloudbees&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Continuable&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run0&lt;/span&gt;(Continuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:163)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxContinuable&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;access$101&lt;/span&gt;(SandboxContinuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:34)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxContinuable&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;lambda$run0$0&lt;/span&gt;(SandboxContinuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:59)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;scriptsecurity&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;sandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;groovy&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;GroovySandbox&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runInSandbox&lt;/span&gt;(GroovySandbox.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:121)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SandboxContinuable&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run0&lt;/span&gt;(SandboxContinuable.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:58)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsThread&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runNextChunk&lt;/span&gt;(CpsThread.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:182)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsThreadGroup&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(CpsThreadGroup.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:332)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsThreadGroup&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;access$200&lt;/span&gt;(CpsThreadGroup.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:83)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsThreadGroup$2&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(CpsThreadGroup.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:244)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsThreadGroup$2&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(CpsThreadGroup.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:232)
+    at org.&lt;span style=&#34;color:#bbb&#34;&gt;jenkinsci&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;plugins&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;workflow&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;cps&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;CpsVmExecutorService$2&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(CpsVmExecutorService.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:64)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;concurrent&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;FutureTask&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(FutureTask.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:266)
+    at hudson.&lt;span style=&#34;color:#bbb&#34;&gt;remoting&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;SingleLaneExecutorService$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(SingleLaneExecutorService.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:131)
+    at jenkins.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ContextResettingExecutorService$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(ContextResettingExecutorService.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:28)
+    at jenkins.&lt;span style=&#34;color:#bbb&#34;&gt;security&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ImpersonatingExecutorService$1&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(ImpersonatingExecutorService.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:59)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;concurrent&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Executors$RunnableAdapter&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;call&lt;/span&gt;(Executors.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:511)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;concurrent&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;FutureTask&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(FutureTask.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:266)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;concurrent&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ThreadPoolExecutor&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;runWorker&lt;/span&gt;(ThreadPoolExecutor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:1149)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;util&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;concurrent&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;ThreadPoolExecutor$Worker&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(ThreadPoolExecutor.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:624)
+    at java.&lt;span style=&#34;color:#bbb&#34;&gt;lang&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;Thread&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;run&lt;/span&gt;(Thread.&lt;span style=&#34;color:#bbb&#34;&gt;java&lt;/span&gt;:748)
+Finished: FAILURE
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;原因：withSonarQubeEnv()中的参数与之前SonarQube servers中Name的配置不同，导致没有找到找到SonarQube&lt;/p&gt;
+&lt;h3 id=&#34;问题二sonarqube的token配置不对导致无法连接sonar&#34;&gt;问题二：SonarQube的token配置不对，导致无法连接sonar&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Java&#34; data-lang=&#34;Java&#34;&gt;[ERROR] Failed to execute goal org.&lt;span style=&#34;color:#bbb&#34;&gt;sonarsource&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;scanner&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;maven&lt;/span&gt;:sonar-maven-plugin:3.&lt;span style=&#34;color:#bbb&#34;&gt;6&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1398&lt;/span&gt;:sonar (&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;default&lt;/span&gt;-cli) on project callcenter: Not authorized. Please check the properties sonar.&lt;span style=&#34;color:#bbb&#34;&gt;login&lt;/span&gt; and sonar.&lt;span style=&#34;color:#bbb&#34;&gt;password&lt;/span&gt;. -&amp;gt; [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;switch&lt;/span&gt;.
+[ERROR] Re-run Maven using the -X &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;switch&lt;/span&gt; to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http:&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;[Pipeline] }
+[withMaven] artifactsPublisher - Archive artifact pom.&lt;span style=&#34;color:#bbb&#34;&gt;xml&lt;/span&gt; under cn/keking/callcenter/callcenter/0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT/callcenter-0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT.&lt;span style=&#34;color:#bbb&#34;&gt;pom&lt;/span&gt;
+[withMaven] artifactsPublisher - Archive artifact target/callcenter-0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT.&lt;span style=&#34;color:#bbb&#34;&gt;jar&lt;/span&gt; under cn/keking/callcenter/callcenter/0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT/callcenter-0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT.&lt;span style=&#34;color:#bbb&#34;&gt;jar&lt;/span&gt;
+[withMaven] artifactsPublisher - Archive artifact target/callcenter-0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT-api.&lt;span style=&#34;color:#bbb&#34;&gt;jar&lt;/span&gt; under cn/keking/callcenter/callcenter/0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT/callcenter-0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT-api.&lt;span style=&#34;color:#bbb&#34;&gt;jar&lt;/span&gt;
+[withMaven] junitPublisher - Archive test results &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; Maven artifact cn.&lt;span style=&#34;color:#bbb&#34;&gt;keking&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;callcenter&lt;/span&gt;:callcenter:jar:0.&lt;span style=&#34;color:#bbb&#34;&gt;0&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;1&lt;/span&gt;-SNAPSHOT generated by maven-surefire-plugin:test (&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;default&lt;/span&gt;-test): target/surefire-reports/*.&lt;span style=&#34;color:#bbb&#34;&gt;xml&lt;/span&gt;
+[withMaven] junitPublisher - Jenkins JUnit Attachments Plugin not found, can&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;t publish test attachments.&lt;span style=&#34;color:#bbb&#34;&gt;Recording&lt;/span&gt; test results
+None of the test reports contained any result
+[withMaven] Jenkins Task Scanner Plugin not found, don&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;t display results of source code scanning &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;TODO&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; and &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;FIXME&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; in pipeline screen.
+[withMaven] Publishers: Pipeline Graph Publisher: 1 ms, Generated Artifacts Publisher: 891 ms, Junit Publisher: 4 ms, Dependencies Fingerprint Publisher: 5 ms
+[Pipeline] &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;// withMaven
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;[Pipeline] }
+WARN: Unable to locate &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;report-task.&lt;span style=&#34;color:#bbb&#34;&gt;txt&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; in the workspace. Did the SonarScanner succedeed?
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;原因：sonar.login的token配置不正确或者没有配置&lt;/p&gt;
+&lt;h3 id=&#34;问题三jenkins-pipeline在sonarqube回调时显示超时&#34;&gt;问题三：jenkins pipeline在SonarQube回调时显示超时&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Java&#34; data-lang=&#34;Java&#34;&gt;[Pipeline] waitForQualityGate
+Checking status of SonarQube task &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;AWlX97LSgWqXn-z33SO5&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; on server &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;sonar&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;
+SonarQube task &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;AWlX97LSgWqXn-z33SO5&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; status is &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;IN_PROGRESS&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;
+Cancelling nested steps due to timeout
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;原因：SonarQube没有配置webhook回调，导致请求超时，按照步骤4配置webhook即可解决&lt;/p&gt;
+&lt;h3 id=&#34;问题四sonar找不到dependency-check-xml&#34;&gt;问题四：sonar找不到Dependency-Check XML&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Java&#34; data-lang=&#34;Java&#34;&gt;[INFO] Sensor Dependency-Check [dependencycheck]
+[INFO] Process Dependency-Check report
+[INFO] Dependency-Check XML report does not exists. Please check property sonar.&lt;span style=&#34;color:#bbb&#34;&gt;dependencyCheck&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;reportPath&lt;/span&gt;:/data/jenkinsHome/workspace/xxx/${WORKSPACE}/dependency-check-report.&lt;span style=&#34;color:#bbb&#34;&gt;xml&lt;/span&gt;
+[INFO] Analysis skipped/aborted due to missing report file
+[INFO] Dependency-Check HTML report does not exists. Please check property sonar.&lt;span style=&#34;color:#bbb&#34;&gt;dependencyCheck&lt;/span&gt;.&lt;span style=&#34;color:#bbb&#34;&gt;htmlReportPath&lt;/span&gt;:/data/jenkinsHome/workspace/xxx/${WORKSPACE}/dependency-check-report.&lt;span style=&#34;color:#bbb&#34;&gt;html&lt;/span&gt;
+[INFO] HTML-Dependency-Check report does not exist.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;原因：SonarQube配置Dependency-Check插件有误，按照上文配置即可&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;sonar与jenkins集成的方式还有很多，不止pipeline+maven这一种，还有配置在jenkins构建任务中、直接使用sonar脚本等方法。采用这样方法，一方面是配置相对简单，不需要每个构建任务都进行配置，只需要将jenkinsfile中拷入相应代码并修改几个参数即可。同时可以在静态代码扫描期间完整maven打包，减少持续集成的时间。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

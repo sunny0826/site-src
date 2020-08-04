@@ -1,0 +1,129 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 远程办公</title>
+    <link>/tags/%E8%BF%9C%E7%A8%8B%E5%8A%9E%E5%85%AC/</link>
+    <description>Recent content in 远程办公 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Mon, 10 Feb 2020 10:52:26 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/%E8%BF%9C%E7%A8%8B%E5%8A%9E%E5%85%AC/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 疫情期间【在家/公司】远程办公指南</title>
+      <link>/post/work-4-home/</link>
+      <pubDate>Mon, 10 Feb 2020 10:52:26 +0800</pubDate>
+      
+      <guid>/post/work-4-home/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;hr&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+“非常时期呼唤非常担当”
+&lt;/div&gt;
+
+&lt;p&gt;这是我司 CEO 张世伟在复工当天致全体员工公开信的题目。2020年，在第一个不走亲戚的春节过后，我们鼠年的工作，以远程办公的形式开始了。&lt;/p&gt;
+&lt;p&gt;在进行了一周的远程办公之后，我们于2月10日正式复工，但是由于我抵沪自我隔离未满7日，只得继续在家远程办公，但是不能因为在家办公就放低对自己的要求，故结合在假期浏览的一系列介绍远程办公的文章，以及疫情防控知识，总结了这篇远程及在公司办公指南，希望对大家有所帮助。&lt;/p&gt;
+&lt;h2 id=&#34;取消晨会&#34;&gt;取消晨会&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;之所以将这个放在最前面，是由于这个在平时办公中的“正常操作”，在远程办公的环境下，&lt;strong&gt;成为了一场灾难&lt;/strong&gt;。2月3日开始，企业开始复工，但由于疫情还在扩散，所以大家不约而同的选择了远程办公&amp;hellip;而往日里那些“稳如老狗”的远程办公软件，阿里巴巴的钉钉，腾讯的企业微信，华为的 WeLink 相继出现了比较大的延迟甚至崩溃现象。同时还有其他的原因：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;家里的网络条件不佳，可能出现延迟或者掉线的现象&lt;/li&gt;
+&lt;li&gt;同一时间，只有能一个人说话，沟通效率很低&lt;/li&gt;
+&lt;li&gt;一些不必要的发言，比如需要单独沟通的问题，占用大量大家的时间&lt;/li&gt;
+&lt;li&gt;出现多人等一人的情况&lt;/li&gt;
+&lt;li&gt;:satisfied: 没洗脸，没洗头，素颜等其他问题&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;同时由于中小学线上课堂的开始，各路人民教师纷纷转型十八线主播，网络环境更是变的拥挤不堪。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax1.sinaimg.cn/wap360/ad5fbf65gy1gbr5wkd8puj20c809f74q.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;故取消线上晨会，这里就显的比较合理，同时可以采用异步的协同方式，通过 jira 和 confluence 进行工作的协同。利用 jira 实时更新自己任务的状态，项目组长与组员也可以实时通过 jira 了解项目的实时进度，这样就减少了面对面的沟通，安全又高效。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;例如：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/wap360/ad5fbf65gy1gbr68kif3lj20me0xumzk.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;目标分级&#34;&gt;目标分级&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;远程办公比统一办公需要更加细粒度的工作分级，什么事情应该马上做，什么事情可以放一放，什么时候对接的同事有时间，这些都需要规划的更加仔细。&lt;/p&gt;
+&lt;p&gt;将工作内容进行细粒度拆分，使用个人看板，时间管理工具甚至记事本拆分自己每天的工作时间安排，每周对自己工作的任务列表进行回顾，将已完成的标记，将本周新增加的任务加入进来，这样很容易让我们在周一的时候对工作的优先级有个快速梳理，并且不容易遗漏一些细节工作。&lt;/p&gt;
+&lt;p&gt;推荐使用&lt;a href=&#34;https://wiki.mbalib.com/wiki/%E6%97%B6%E9%97%B4%E2%80%9C%E5%9B%9B%E8%B1%A1%E9%99%90%E2%80%9D%E6%B3%95&#34;&gt;四象限法&lt;/a&gt;来对自己目前的工作进行分级，根据紧急情况和重要情况，对自己的工作进行分级，优先处理那些紧急且重要的事情，同样个人看板也可以帮助您记录完成的任务和待完成的任务，这样写日报/周报就可以直接拿来用，不用再绞尽脑汁回忆今天/本周都做了什么，个人看板这里推荐 &lt;a href=&#34;https://trello.com&#34;&gt;Trello&lt;/a&gt;，个人免费使用。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax3.sinaimg.cn/large/ad5fbf65gy1gbrai6ynydj20b407kdg6.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;提升个人效率&#34;&gt;提升个人效率&lt;/h2&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;清晰区分工作时间和休息时间&#34;&gt;清晰区分工作时间和休息时间&lt;/h3&gt;
+&lt;p&gt;在家办公，工作效率很容易变差。毕竟沙发和床就在身边，很容易工作着突然就想去休息一会儿。这里就需要在家里划分出一个 &lt;strong&gt;【工作区】&lt;/strong&gt; ，并在工作区中准备上班所需的一切；同时要按时起床，穿戴整齐，吃好早点，然后进入工作区开始一天的工作，通过这种简单的 &lt;strong&gt;仪式感&lt;/strong&gt; 可以让我们快速进入工作状态，更好的提高效率，不至于出现「在家工作居然比在公司下班晚」的情况。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva3.sinaimg.cn/wap360/ad5fbf65gy1gbraur5ylbj20hi0fiwf8.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;按日程工作&#34;&gt;按日程工作&lt;/h3&gt;
+&lt;p&gt;切记，&lt;strong&gt;在家办公只是地点变了，工作时间和内容并没有变&lt;/strong&gt;。按照上文中提到的目标分级，合理的将目标分为日程，并在自己的看板中进行记录，保持钉钉/微信实时在线，防止突然出现紧急且重要的突发任务，同时也将非紧急问题都推后处理，让聚焦工作的整块时间尽量不受干扰。&lt;/p&gt;
+&lt;h3 id=&#34;珍惜自己的时间也珍惜他人的时间&#34;&gt;珍惜自己的时间也珍惜他人的时间&lt;/h3&gt;
+&lt;p&gt;这是每个职场人应有的自律，少开无效会议，多用异步协同代替实时协同；非紧急事件给对方更多响应缓冲时间；能在 Confluence 里搜到的内容尽量不在群里提问。（运维组提供钉钉应答机器人，基础资源相关的问题，可以先 &lt;code&gt;@&lt;/code&gt; 群内机器人进行提问）。&lt;/p&gt;
+&lt;h2 id=&#34;榜样作用&#34;&gt;榜样作用&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;主要负责人自主性地高效率完成工作，尽量少传播负面的信息。负责人主动去执行公司规章和在疫情期间发挥表率作用，为其他同事提供良好的表率，小到请假流程的规范，大到对疫区同事的生活的关心和支持。榜样的作用，可以让同事们心安，更快的投入到工作当中，齐心协力，共同度过难关。&lt;/p&gt;
+&lt;h2 id=&#34;安全保障&#34;&gt;安全保障&lt;/h2&gt;
+&lt;hr&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+安全第一！安全第一！安全第一！重要的事情说三遍。
+&lt;/div&gt;
+
+&lt;p&gt;道路千万条，安全第一条。在这个特殊的时期，我们做的所有努力其实都是建立在自身安全的前提下，如果没有自身安全，那么一切工作就都变的没有意义了。&lt;/p&gt;
+&lt;p&gt;下面介绍一些在不同场合中的安全建议：&lt;/p&gt;
+&lt;h3 id=&#34;上班路上&#34;&gt;上班路上&lt;/h3&gt;
+&lt;p&gt;尽量避免乘坐公共交通，建议步行、骑行或乘坐私家车上班。如必须乘坐公共交通工具时，务必全程佩戴口罩，途中尽量避免用手触摸车上物品。&lt;/p&gt;
+&lt;p&gt;戴口罩的同时也要戴上手套（冬天的手套或者户外手套皆可），在地铁、汽车和公共场所不要摘下手套。同样要小心楼梯扶手、电梯按钮。尽量远离他人1米：特别是在公共场所时，应该适当与他人保持距离。如在路上时，尽可能远离其他人（至少1米）。&lt;/p&gt;
+&lt;p&gt;到达园区之后，尽量走楼梯，不要乘电梯。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva1.sinaimg.cn/large/ad5fbf65gy1gbrcy6k5cxg20dc07i0y1.gif&#34; alt=&#34;走楼梯&#34;&gt;&lt;/p&gt;
+&lt;center&gt;照片提供人：@王沛&lt;/center&gt;
+&lt;h3 id=&#34;办公室内&#34;&gt;办公室内&lt;/h3&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+办公室内不开中央空调，请增添衣物
+&lt;/div&gt;
+
+&lt;p&gt;保持办公区环境清洁，建议每日通风3次，每次20-30分钟，通风时注意保暖。人与人之间保持1米以上距离，办公室中不要摘除口罩，并且不要打开中央空调，请增添衣物。&lt;/p&gt;
+&lt;p&gt;到达公司的第一件事，先洗手，之后再清理工位，有条件的同学使用酒精或者消毒湿巾将手可以接触到的地方进行消毒，键盘、鼠标、笔记本、桌面等都是首要清洁目标。同时不要用手触摸眼睛，有条件的同学可以带上护目镜。&lt;/p&gt;
+&lt;h3 id=&#34;会议室内&#34;&gt;会议室内&lt;/h3&gt;
+&lt;p&gt;工作办公中减少会议（可以用远程会议方式代替），如果非要开会需要做到以下三点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;为参会人员配备一次性医用口罩等物品；&lt;/li&gt;
+&lt;li&gt;会场座位间隔建议1米以上；&lt;/li&gt;
+&lt;li&gt;会议时间较长的建议每小时通风1次。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;午饭时间&#34;&gt;午饭时间&lt;/h3&gt;
+&lt;p&gt;饭前要洗手，建议自己带饭，带瓶装矿泉水，不要和别人一起进餐，&lt;strong&gt;尤其不要面对面进餐&lt;/strong&gt;，避免肉类生食。建议营养配餐，清淡适口。&lt;/p&gt;
+&lt;h2 id=&#34;保持乐观的心态&#34;&gt;保持乐观的心态&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;由于我的母亲是医生的缘故，在这次疫情期间多次听说有人感觉自己出现了肺炎症状，但是检测后却十分正常，这就是 &lt;strong&gt;过度焦虑&lt;/strong&gt; 引发的身体不适。&lt;/p&gt;
+&lt;p&gt;对于没有去过疫区，并且没有和疫区出来的人进行过接触的人，主要还是应该把精力放在预防和消毒上，不要疑神疑鬼，保持乐观的心态和充足的睡眠，相信我们一定能度过这次的难关！&lt;/p&gt;
+&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/4j715itQQPLivqfX0bseRw&#34;&gt;疫情下的阿里员工，约定这样上班&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/P33JO0OS4CuN7M8alLIF_Q&#34;&gt;调查完150个远程办公团队，我们发现了这几个真相&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.toutiao.com/a6791254617146524173/?timestamp=1581228897&amp;amp;app=news_article&amp;amp;group_id=6791254617146524173&amp;amp;req_id=2020020914145701001203319422A09121&#34;&gt;开工在即，在办公室中如何练成“百毒不侵”？&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

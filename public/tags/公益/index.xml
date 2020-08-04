@@ -1,0 +1,46 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 公益</title>
+    <link>/tags/%E5%85%AC%E7%9B%8A/</link>
+    <description>Recent content in 公益 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Sun, 29 Sep 2019 09:52:11 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/%E5%85%AC%E7%9B%8A/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 当码农遇见公益</title>
+      <link>/post/alibaba-public-welfare/</link>
+      <pubDate>Sun, 29 Sep 2019 09:52:11 +0800</pubDate>
+      
+      <guid>/post/alibaba-public-welfare/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;本次参加云栖大会，除了受到阿里云开发者社区的邀请，同时也受到了阿里码上公益团队的邀请，于9月25日下午参加了&lt;strong&gt;阿里巴巴技术公益专场&lt;/strong&gt;。说来惭愧，作为一个码农关注并加入码上公益已半年有余，但是除了在平台上以自己的经验来给出各种建议外，并没有贡献什么实质的代码，这也可能是因为我专职运维开发，在devops和效能提升上有很多自己的见解，但对于前端UI和各种官网的构建并不是很在行。&lt;/p&gt;
+&lt;h2 id=&#34;阿里巴巴与公益&#34;&gt;阿里巴巴与公益&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65gy1g7gdc2nfg5j21z819i4qv.jpg&#34; alt=&#34;image&#34;&gt;
+一直以来我对于公益的理解还是停留在很浅的阶段，而且很长一段时间以来，公益还是停留在有限的圈子内，像我这样的技术人与公益完全就是两个世界。而阿里巴巴推出的码上公益则改变了这一点，这个平台让我了解到，原来公益除了捐助之外还能以自己的技术能力做出更大的贡献。此次技术公益专场，阿里发布了技术公益基金，我也是第一次见到这么多的阿里合伙人，可见公益在阿里巴巴集团内部的重要。阿里巴巴不只在集团内部推进公益，而且还为我们这样的普通人提供了像码上公益、蚂蚁森林、一书等平台和产品，让越来越多的人参与到公益事业中，让更多的人平等的享有技术红利。&lt;/p&gt;
+&lt;h2 id=&#34;让代码更有温度&#34;&gt;让代码更有温度&lt;/h2&gt;
+&lt;p&gt;参加码上公益的初衷只不过是想为公益事业做一些力所能及的事情，尤其是使用代码这种方式，在公益事业上展示我们技术人的才华。也符合与我的价值观：&lt;strong&gt;技术让世界更美好&lt;/strong&gt;。我们技术人可以通过一种比捐助更有温度的方式：代码，来让我们的世界越来越美好。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva1.sinaimg.cn/large/ad5fbf65gy1g7g8ywqxu5j21z01b87wp.jpg&#34; alt=&#34;image&#34;&gt;
+在公益专场中有幸结识了 Michael HERMANN 老师，作为一个德国人，他却操这一口流利的中文，十几年如一日的在中国偏远的乡村中为那里的孩子带去教育，同时也为孩子们带去了希望。在专场后的公益沟通会有幸与 Michael 老师一桌，这是一位可爱的老人，十分关注中国偏远地区孩子们的教育问题，在他的身上我看到了一个作为公益人的坚持，在他眼里国籍、文化、地域都没有差别，有的只是希望这些生活在偏远地区的孩子都享有受教育的权利，十分值得敬佩。同时还结识了许多志同道合的码农朋友，大家都希望用自己温暖的代码为公益事业做出自己的贡献。&lt;/p&gt;
+&lt;h2 id=&#34;我们只有一个地球&#34;&gt;我们只有一个地球&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax2.sinaimg.cn/large/ad5fbf65gy1g7ge105htyj21z419mqvb.jpg&#34; alt=&#34;image&#34;&gt;
+之后《用现代科技助力中国虎豹保护》的主题分享，让我了解到了，环境的保护也是公益中很重要的一部分。而科技的发展，让从事动物保护的人员可以做的更仔细更完善，对于AI、大数据的应用，使得对于野生动物的保护更精准。技术赋能野生动物保护，可以更好的保护野生动物，同时也让动物保护人员的工作更轻松，让这些常年在大山密林中保护野生动物的科学家不再那么辛苦，同时更好的保护野生动物。&lt;/p&gt;
+&lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
+&lt;p&gt;之后南都公益基金会理事长徐永光分享了《互联网带来的时代改变》，了解到了互联网公益并不只是刚刚兴起，而是一直在努力；而联合国世界粮食计划署驻华代表屈四喜则带来了《为了“零饥饿”目标》。感谢阿里巴巴提供了这个机会，让我这样的技术人可以参与到公益事业当中，为公益事业贡献出自己的力量。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

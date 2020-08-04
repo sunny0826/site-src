@@ -1,0 +1,896 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 混沌工程</title>
+    <link>/categories/%E6%B7%B7%E6%B2%8C%E5%B7%A5%E7%A8%8B/</link>
+    <description>Recent content in 混沌工程 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Wed, 22 Jul 2020 17:30:53 +0800</lastBuildDate>
+    
+	  <atom:link href="/categories/%E6%B7%B7%E6%B2%8C%E5%B7%A5%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: ChaosBlade：从零开始的混沌工程（四）</title>
+      <link>/post/start-chaosblade-3/</link>
+      <pubDate>Wed, 22 Jul 2020 17:30:53 +0800</pubDate>
+      
+      <guid>/post/start-chaosblade-3/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;在上篇文章中，我们介绍了如何使用 &lt;strong&gt;ChaosBlade Operator&lt;/strong&gt; 对 pod 资源进行混沌实验。从本章将继续对 Kubernetes Node 资源的混沌实验进行讲解，同时也配套了 &lt;a href=&#34;https://katacoda.com/&#34;&gt;katacode&lt;/a&gt; 交互式教程，读者可用通过 katacode，在浏览器上操作真实的 Kubernetes 和 ChaosBlade。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://chaosblade.io/&#34;&gt;chaosblade.io&lt;/a&gt; 官网已经正式上线，在官网的&lt;a href=&#34;https://chaosblade.io/try/&#34;&gt;互动教程&lt;/a&gt;模块，也可以找到 ChaosBlade 的 KataCoda 教程，目前官网由我维护，有任何问题，欢迎在 &lt;a href=&#34;https://github.com/chaosblade-io/chaosblade-website/issues&#34;&gt;ISSUE&lt;/a&gt; 中进行反馈。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;KataCoda 教程：《ChaosBlade Node 实验场景》&lt;/p&gt;
+&lt;p&gt;地址：&lt;a href=&#34;https://katacoda.com/guoxudong/courses/chaosblade/chaosblade-node-experiment&#34;&gt;https://katacoda.com/guoxudong/courses/chaosblade/chaosblade-node-experiment&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;实验对象node&#34;&gt;实验对象：Node&lt;/h2&gt;
+&lt;p&gt;在 Kubernetes 中，节点（Node）是执行工作的机器，以前叫做 minion。根据你的集群环境，节点可以是一个虚拟机或者物理机器。每个节点都包含用于运行 pods 的必要服务，并由主控组件管理。节点上的服务包括 容器运行时、kubelet 和 kube-proxy。&lt;/p&gt;
+&lt;h2 id=&#34;node-实验场景&#34;&gt;Node 实验场景&lt;/h2&gt;
+&lt;p&gt;同&lt;a href=&#34;./start-chaosblade-2&#34;&gt;上篇文章&lt;/a&gt;，本篇默认已安装 &lt;a href=&#34;https://github.com/cloudnativeapp/guestbook?spm=5176.2020520152.0.0.7c5f16ddH8myx6&#34;&gt;guestbook&lt;/a&gt; 应用和 ChaosBlade Operator。&lt;/p&gt;
+&lt;h3 id=&#34;节点资源相关场景&#34;&gt;节点资源相关场景&lt;/h3&gt;
+&lt;h4 id=&#34;节点-cpu-负载实验场景&#34;&gt;节点 CPU 负载实验场景&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：指定一个节点，做 CPU 负载 80% 实验。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;node_cpu_load.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cpu-load&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cpu&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;fullload&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;increase node cpu load by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cpu-percent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;80&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;选择一个节点，修改 &lt;code&gt;node_cpu_load.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f node_cpu_load.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade cpu-load -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;进入该 Node 节点，可以看到该节点 CPU 达到预期效果：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65ly1ggzw9xq77mg20qg06i4qp.gif&#34; alt=&#34;节点 CPU 负载实验&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f node_cpu_load.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade cpu-load&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;节点网络相关场景&#34;&gt;节点网络相关场景&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;实验前，请先登录 node 节点，使用 &lt;code&gt;ifconfig&lt;/code&gt; 命令查看网卡信息，不是所有系统默认的网卡名称都是 &lt;code&gt;eth0&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;节点网络延迟场景&#34;&gt;节点网络延迟场景&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：指定节点的本地 32436 端口添加 3000 毫秒访问延迟，延迟时间上下浮动 1000 毫秒。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;delay_node_network_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;对 docker20 节点本地端口 32436 访问丢包率 100%。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;delay_node_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay-node-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay node network loss&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;interface&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;ens33&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;local-port&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;32436&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;time&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;3000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;offset&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f delay_node_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade delay-node-network-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 从实验节点访问 Guestbook&lt;/span&gt;
+$ &lt;span style=&#34;color:#24909d&#34;&gt;time&lt;/span&gt; &lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt; | telnet 192.168.1.129 &lt;span style=&#34;color:#3677a9&#34;&gt;32436&lt;/span&gt;
+Trying 192.168.1.129...
+Connected to 192.168.1.129.
+Escape character is &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;^]&amp;#39;&lt;/span&gt;.
+Connection closed by foreign host.
+&lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;  0.00s user 0.00s system 35% cpu 0.003 total
+telnet 192.168.1.129 &lt;span style=&#34;color:#3677a9&#34;&gt;32436&lt;/span&gt;  0.01s user 0.00s system 0% cpu 3.248 total
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65ly1ggzwhc0n0yg20qg070dou.gif&#34; alt=&#34;节点网络延迟场景&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f delay_node_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade delay-node-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id=&#34;节点网络丢包场景&#34;&gt;节点网络丢包场景&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：指定节点的 &lt;code&gt;32436&lt;/code&gt; 端口注入丢包率 100% 的故障。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;loss_node_network_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;loss_node_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;loss-node-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;loss&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;node network loss&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;percent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;100&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;interface&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;ens33&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;local-port&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;32436&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f loss_node_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade loss-node-network-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;观测结果&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;该端口为 &lt;code&gt;Guestbook&lt;/code&gt; nodeport 的端口，访问实验端口无响应，但是访问未开启实验的端口可以正常使用：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 获取节点 IP&lt;/span&gt;
+$ kubectl get node -o wide
+NAME       STATUS   ROLES                      AGE     VERSION   INTERNAL-IP     EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+docker20   Ready    worker                     3d16h   v1.17.6   192.168.1.129   &amp;lt;none&amp;gt;        Ubuntu 18.04.4 LTS   4.15.0-101-generic   docker://19.3.11
+kk         Ready    controlplane,etcd,worker   4d16h   v1.17.6   192.168.4.210   &amp;lt;none&amp;gt;        Ubuntu 18.04.4 LTS   4.15.0-101-generic   docker://19.3.11
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 从实验节点访问 Guestbook - 无法访问&lt;/span&gt;
+$ telnet 192.168.1.129 &lt;span style=&#34;color:#3677a9&#34;&gt;32436&lt;/span&gt;
+Trying 192.168.1.129...
+telnet: connect to address 192.168.1.129: Operation timed out
+telnet: Unable to connect to remote host
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 从非实验节点访问 Guestbook - 正常访问&lt;/span&gt;
+$ telnet 192.168.4.210 &lt;span style=&#34;color:#3677a9&#34;&gt;32436&lt;/span&gt;
+Trying 192.168.4.210...
+Connected to 192.168.4.210.
+Escape character is &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;^]&amp;#39;&lt;/span&gt;.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://tva2.sinaimg.cn/large/ad5fbf65ly1ggzwjjyj67g20qg07c4az.gif&#34; alt=&#34;节点网络丢包场景&#34;&gt;&lt;/p&gt;
+&lt;p&gt;同样也可以直接从浏览器访问地址，验证实验。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f loss_node_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade loss-node-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id=&#34;节点域名访问异常场景&#34;&gt;节点域名访问异常场景&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：本实验通过修改 Node 的 hosts，篡改域名地址映射，模拟 Pod 内域名访问异常场景。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;dns_node_network_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;dns_node_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dns-node-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dns&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;dns node network by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;domain&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;www.baidu.com&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ip&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.0.0.1&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f dns_node_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade dns-node-network-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 node&lt;/span&gt;
+$ ssh kk@192.168.1.129
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Ping www.baidu.com&lt;/span&gt;
+$ ping www.baidu.com
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 无响应&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65ly1ggzwluapg5g20qg07011a.gif&#34; alt=&#34;节点域名访问异常场景&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到 Node 的 &lt;code&gt;/etc/hosts&lt;/code&gt; 文件被修改，模拟了 dns 解析异常的场景。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f dns_node_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade dns-node-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;节点磁盘相关场景&#34;&gt;节点磁盘相关场景&lt;/h3&gt;
+&lt;p&gt;kubernetes 节点磁盘场景。&lt;/p&gt;
+&lt;h4 id=&#34;节点磁盘填充场景&#34;&gt;节点磁盘填充场景&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：指定节点磁盘占用 80%&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;fill_node_disk_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;fill_node_disk_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;fill-node-disk-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;disk&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;fill&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;node disk fill&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;percent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;80&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f fill_node_disk_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade fill-node-disk-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;可以看到磁盘占用 80%。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 node&lt;/span&gt;
+$ ssh kk@192.168.1.129
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 查看磁盘使用率&lt;/span&gt;
+$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            7.9G     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;  7.9G   0% /dev
+tmpfs           1.6G  2.2M  1.6G   1% /run
+/dev/sda2        98G   73G   20G  79% /
+tmpfs           7.9G     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;  7.9G   0% /dev/shm
+tmpfs           5.0M     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;  5.0M   0% /run/lock
+tmpfs           7.9G     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;  7.9G   0% /sys/fs/cgroup
+/dev/loop1       90M   90M     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; 100% /snap/core/8268
+tmpfs           1.6G     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;  1.6G   0% /run/user/1000
+/dev/loop0       98M   98M     &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; 100% /snap/core/9289
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65ly1ggzwq8gdtrg20t406k7fr.gif&#34; alt=&#34;节点磁盘填充场景&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f fill_node_disk_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade fill-node-disk-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;节点进程相关场景&#34;&gt;节点进程相关场景&lt;/h3&gt;
+&lt;p&gt;kubernetes 节点进程相关场景。&lt;/p&gt;
+&lt;h4 id=&#34;杀节点上指定进程&#34;&gt;杀节点上指定进程&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：此实验会删除指定节点上的 &lt;code&gt;redis-server&lt;/code&gt; 进程。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;kill_node_process_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;kill_node_process_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kill-node-process-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;process&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kill&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kill node process by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;process&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-server&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f kill_node_process_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade kill-node-process-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 node&lt;/span&gt;
+$ ssh kk@192.168.1.129
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 查看 redis-server 进程号&lt;/span&gt;
+$ ps -ef | grep redis-server
+root     &lt;span style=&#34;color:#3677a9&#34;&gt;31327&lt;/span&gt; &lt;span style=&#34;color:#3677a9&#34;&gt;31326&lt;/span&gt;  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; 06:15 ?        00:00:00 redis-server *:6379
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 可以看到进程号发生了变化&lt;/span&gt;
+$ ps -ef | grep redis-server
+root      &lt;span style=&#34;color:#3677a9&#34;&gt;2873&lt;/span&gt;  &lt;span style=&#34;color:#3677a9&#34;&gt;2872&lt;/span&gt;  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; 06:23 ?        00:00:00 redis-server *:6379
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;redis-server&lt;/code&gt; 的进程号发生改变，说明被杀掉后，又被重新拉起。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva1.sinaimg.cn/large/ad5fbf65ly1ggzwsx3sbig20t407a4d6.gif&#34; alt=&#34;杀节点上指定进程&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f kill_node_process_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade kill-node-process-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id=&#34;挂起节点上指定进程&#34;&gt;挂起节点上指定进程&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：此实验会挂起指定节点上的 &lt;code&gt;redis-server&lt;/code&gt; 进程。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;选择一个节点，修改 &lt;code&gt;stop_node_process_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;names&lt;/code&gt; 值。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;stop_node_process_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;stop-node-process-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;process&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;stop&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kill node process by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;docker20&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;process&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-server&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f stop_node_process_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade stop-node-process-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 node&lt;/span&gt;
+$ ssh kk@192.168.1.129
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 查看 redis-server 进程号&lt;/span&gt;
+$ ps aux| grep redis-server
+root      &lt;span style=&#34;color:#3677a9&#34;&gt;5632&lt;/span&gt;  0.0  0.0  &lt;span style=&#34;color:#3677a9&#34;&gt;41520&lt;/span&gt;  &lt;span style=&#34;color:#3677a9&#34;&gt;4168&lt;/span&gt; ?        Tl   06:28   0:06 redis-server *:6379
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到 &lt;code&gt;redis-server&lt;/code&gt; 此刻进程处于暂停状态了（T）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65ly1ggzwuoz52eg20t407w7m0.gif&#34; alt=&#34;挂起节点上指定进程&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f stop_node_process_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade stop-node-process-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;本篇我们使用 ChaosBlade Operator 对 Kubernetes Node 资源进行混沌工程实验，可以看到对于 Node 节点，ChaosBlade 依旧有简单的配置及操作来完成复杂的实验，可以通过自由组合，实现各种 Node 节点级别的复杂故障，验证 Kubernetes 集群的稳定性及可用性。同时当真正的故障来临时，由于早已模拟了各种故障情况，可以快速定位故障源，做到处变不惊，轻松处理故障。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: ChaosBlade：从零开始的混沌工程（三）</title>
+      <link>/post/start-chaosblade-2/</link>
+      <pubDate>Mon, 15 Jun 2020 15:45:36 +0800</pubDate>
+      
+      <guid>/post/start-chaosblade-2/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;在上篇文章中，我们介绍了如何安装 &lt;strong&gt;ChaosBlade Operator&lt;/strong&gt;，并进行了简单的使用。从本章开始，所有的实践章节，都会有配套的 &lt;a href=&#34;https://katacoda.com/&#34;&gt;katacode&lt;/a&gt; 交互式教程，读者可用通过 katacode，在浏览器上操作真实的 Kubernetes 和 ChaosBlade。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;KataCoda 教程：《ChaosBlade Pod 实验场景》&lt;/p&gt;
+&lt;p&gt;地址：&lt;a href=&#34;https://katacoda.com/guoxudong/courses/chaosblade/pod-experiment&#34;&gt;https://katacoda.com/guoxudong/courses/chaosblade/pod-experiment&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;实验对象pod&#34;&gt;实验对象：Pod&lt;/h2&gt;
+&lt;p&gt;Pod 是 Kubernetes 应用程序的基本执行单元，即它是 Kubernetes 对象模型中创建或部署的最小和最简单的单元。Pod 表示在 集群 上运行的进程。&lt;/p&gt;
+&lt;p&gt;Pod 封装了应用程序容器（或者在某些情况下封装多个容器）、存储资源、唯一网络 IP 以及控制容器应该如何运行的选项。 Pod 表示部署单元：Kubernetes 中应用程序的单个实例，它可能由单个 容器 或少量紧密耦合并共享资源的容器组成。&lt;/p&gt;
+&lt;h2 id=&#34;pod-实验场景&#34;&gt;Pod 实验场景&lt;/h2&gt;
+&lt;p&gt;Pod 作为 Kubernetes 最基本的执行单元，对于 Kubernetes 集群来说十分重要。那么对于混沌工程，从 Pod 入手实践就再合适不过了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本篇默认已安装 &lt;a href=&#34;https://github.com/cloudnativeapp/guestbook?spm=5176.2020520152.0.0.7c5f16ddH8myx6&#34;&gt;guestbook&lt;/a&gt; 应用和 ChaosBlade Operator。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;删除-pod-场景&#34;&gt;删除 Pod 场景&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：删除 &lt;code&gt;chaosblade&lt;/code&gt; 命名空间下标签是 &lt;code&gt;role=master&lt;/code&gt; 的 pod。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;执行观测&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开始观察需要删除的 pod：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -l &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;role=master&amp;#34;&lt;/span&gt; -n chaosblade -w
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;delete_pod_by_labels.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delete-two-pod-by-labels&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delete&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delete pod by labels&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;labels&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;role=master&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;evict-count&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;2&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;新建终端，并开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f delete_pod_by_labels.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl get blade delete-two-pod-by-labels -o json&lt;/code&gt;，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;查看实验结果&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;通过上面的观测命令，可以看到 pod 被删除并重启，结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva2.sinaimg.cn/large/ad5fbf65ly1gft22n0pnpg20pg06qhdt.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f delete_pod_by_labels.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade delete-two-pod-by-labels&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;pod-网络延迟场景&#34;&gt;Pod 网络延迟场景&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：在 chaosblade 命名空间中，对 &lt;code&gt;redis-master-68857cd57c-dzbs9&lt;/code&gt; Pod 的本地 6379 端口添加 3000 毫秒访问延迟，延迟时间上下浮动 1000 毫秒。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;delay_pod_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay-pod-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay pod network by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-master-68857cd57c-dzbs9&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;local-port&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;6379&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;interface&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;eth0&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;time&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;3000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;offset&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;获取 Pod 名称：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -l &lt;span style=&#34;color:#40ffff&#34;&gt;app&lt;/span&gt;=redis,role=master -o &lt;span style=&#34;color:#40ffff&#34;&gt;jsonpath&lt;/span&gt;={.items..metadata.name}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;修改 &lt;code&gt;delay_pod_network_by_names.yaml&lt;/code&gt; 中的 &lt;code&gt;name&lt;/code&gt; 字段的值。&lt;/p&gt;
+&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f delay_pod_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade delay-pod-network-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;观测结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 获取实验 pod ip&lt;/span&gt;
+$ kubectl get pod -l &lt;span style=&#34;color:#40ffff&#34;&gt;app&lt;/span&gt;=redis,role=master -o &lt;span style=&#34;color:#40ffff&#34;&gt;jsonpath&lt;/span&gt;={.items..status.podIP}
+10.42.69.44
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入观测 pod&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it redis-slave-6dd975d4c8-2zrkb bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 在 pod 中安装 telnet&lt;/span&gt;
+$ apt-get update &amp;amp;&amp;amp; apt-get install -y telnet
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 测试时间&lt;/span&gt;
+$ &lt;span style=&#34;color:#24909d&#34;&gt;time&lt;/span&gt; &lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt; | telnet 10.42.69.44 &lt;span style=&#34;color:#3677a9&#34;&gt;6379&lt;/span&gt;
+Trying 10.42.69.44...
+Connected to 10.42.69.44.
+Escape character is &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;^]&amp;#39;&lt;/span&gt;.
+Connection closed by foreign host.
+
+real    0m3.790s
+user    0m0.007s
+sys     0m0.001s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到访问实验 pod 6379 端口的延迟为 3s 左右，结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65ly1gft27x90skg20p606c1kx.gif&#34; alt=&#34;delay-pod-network&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f delay_pod_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade delay-pod-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;pod-网络丢包场景&#34;&gt;Pod 网络丢包场景&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：在 chaosblade 命名空间中，对 &lt;code&gt;redis-master-68857cd57c-dzbs9&lt;/code&gt; Pod 注入丢包率 100% 的故障，只针对 IP 为 10.42.69.42 的 pod 生效，也就是除 10.42.69.42 以外的 pod 都能正常访问 &lt;code&gt;redis-master-68857cd57c-dzbs9&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;获取 pod 名称内容同上。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;loss_pod_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;loss-pod-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;loss&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;loss pod network by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-master-68857cd57c-dzbs9&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;interface&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;eth0&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;percent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;100&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;timeout&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;60&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;destination-ip&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.42.69.42&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f loss_pod_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade loss-pod-network-by-names -o json&lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;观测结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 获取实验 pod ip&lt;/span&gt;
+$ kubectl get pod -l &lt;span style=&#34;color:#40ffff&#34;&gt;app&lt;/span&gt;=redis,role=master -o &lt;span style=&#34;color:#40ffff&#34;&gt;jsonpath&lt;/span&gt;={.items..status.podIP}
+10.42.69.44
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入观测 pod，IP为：10.42.69.42（被设置丢包率 100%）&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it redis-slave-6dd975d4c8-lm8jz bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Ping 实验Pod ip&lt;/span&gt;
+$ ping 10.42.69.44
+PING 10.42.69.44 (10.42.69.44) 56(84) bytes of data.
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 无响应&lt;/span&gt;
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入观测 pod，该 pod 未被指定丢包&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it redis-slave-6dd975d4c8-2zrkb bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Ping 实验Pod ip&lt;/span&gt;
+$ ping 10.42.69.44
+PING 10.42.69.44 (10.42.69.44) 56(84) bytes of data.
+&lt;span style=&#34;color:#3677a9&#34;&gt;64&lt;/span&gt; bytes from 10.42.69.44: &lt;span style=&#34;color:#40ffff&#34;&gt;icmp_seq&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;ttl&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;63&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;time&lt;/span&gt;=0.128 ms
+&lt;span style=&#34;color:#3677a9&#34;&gt;64&lt;/span&gt; bytes from 10.42.69.44: &lt;span style=&#34;color:#40ffff&#34;&gt;icmp_seq&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;ttl&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;63&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;time&lt;/span&gt;=0.128 ms
+&lt;span style=&#34;color:#3677a9&#34;&gt;64&lt;/span&gt; bytes from 10.42.69.44: &lt;span style=&#34;color:#40ffff&#34;&gt;icmp_seq&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;ttl&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;63&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;time&lt;/span&gt;=0.092 ms
+...
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 响应正常&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到观测 pod 访问实验 pod 丢包率 100%（无法访问），而其他 pod 不受影响，结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax2.sinaimg.cn/large/ad5fbf65ly1gft2c288oqg20p607i7wi.gif&#34; alt=&#34;loss-pod-network&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这里在配置中将 &lt;code&gt;timeout&lt;/code&gt; 设置为 60 秒，60 秒后 100% 丢包的情况将会消失，这个配置是为了防止因丢包率设置太高，造成机器无法连接的情况。与其有相似功能的还有 &lt;code&gt;exclude-port&lt;/code&gt;，该配置指定一些端口不会丢包，以免该 pod 失联。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f loss_pod_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade loss-pod-network-by-names&lt;/code&gt;)&lt;/p&gt;
+&lt;h3 id=&#34;pod-域名访问异常场景&#34;&gt;Pod 域名访问异常场景&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：Pod 内访问指定域名异常。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;获取 pod 名称内容同上。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;dns_pod_network_by_names.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dns-pod-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;dns&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;dns pod network by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-slave-6dd975d4c8-lm8jz&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;domain&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;www.baidu.com&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ip&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.0.0.1&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f dns_pod_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade dns-pod-network-by-names -o json &lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;观测结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 pod&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it redis-slave-6dd975d4c8-lm8jz bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Ping www.baidu.com&lt;/span&gt;
+$ ping www.baidu.com
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 无响应&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到访问指定域名 &lt;code&gt;www.baidu.com&lt;/code&gt; 异常，结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax1.sinaimg.cn/large/ad5fbf65ly1gft2hti44bg20p607i4nj.gif&#34; alt=&#34;dns-pod-network&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f dns_pod_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade dns-pod-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;pod-文件系统-io-故障场景&#34;&gt;Pod 文件系统 I/O 故障场景&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;实验目标&lt;/strong&gt;：给 kubernetes 的 pod 注入文件系统I/O故障。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：此场景需要激活 &lt;code&gt;--webhook-enable&lt;/code&gt; 参数，如需使用此功能，请在 chaosblade-operator 参数中添加 &lt;code&gt;--webhook-enable&lt;/code&gt;，或者在安装时指定：例如 helm 安装时添加 &lt;code&gt;--set webhook.enable=true&lt;/code&gt; 指定。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;前提条件&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;集群中部署了 &lt;code&gt;chaosblade-admission-webhook&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;需要注入故障的 &lt;code&gt;volume&lt;/code&gt; 设置 &lt;code&gt;mountPropagation&lt;/code&gt; 为 &lt;code&gt;HostToContainer&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;pod上面添加了如下annotations:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;chaosblade/inject-volume&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;//需要注入故障的volume&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;name&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;chaosblade/inject-volume-subpath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;conf&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;//volume挂载的子目录&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;部署测试 pod&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;chaosblade webhook 会根据 pod 的 annotation，注入 fuse 的 sidecar 容器：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;chaosblade/inject-volume&lt;/code&gt; 指明需要注入故障的 volume name，比如例子中的 &lt;code&gt;data&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;chaosblade/inject-volume-subpath&lt;/code&gt; 指明 volume 挂载路径的子目录。上面的例子中，volume 的挂载路径是 &lt;code&gt;/data&lt;/code&gt;,子目录是 &lt;code&gt;conf&lt;/code&gt;，则在 pod 内，注入I/O异常的目录是 &lt;code&gt;/data/conf&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;指定需要注入故障的 volume 需要指定 &lt;code&gt;mountPropagation：HostToContainer&lt;/code&gt;，这个字段的含义可以参考官方文档 &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation&#34;&gt;Volumes&lt;/a&gt;。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 部署测试 pod&lt;/span&gt;
+$ kubectl apply -f io-test-pod.yaml
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 查看 sidecar 是否注入成功&lt;/span&gt;
+$ kubectl get pod test-7c9fc6fd88-7lx6b -n chaosblade
+NAME                    READY   STATUS    RESTARTS   AGE
+test-7c9fc6fd88-7lx6b   2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          4m8s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;开始实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;pod_io.yaml&lt;/code&gt; 内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;inject-pod-by-labels&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;IO&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Pod IO Exception by labels&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;labels&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;app=test&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;method&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;read&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1000&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;path&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;percent&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;60&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;errno&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;28&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f pod_io.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看实验状态&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade inject-pod-by-labels -o json &lt;/code&gt; 命令，查看实验状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;观测结果&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入实验 pod&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it test-7c9fc6fd88-7lx6b bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 在 pod 内读取指定目录中的文件，如果没有可以新建一个&lt;/span&gt;
+$ &lt;span style=&#34;color:#24909d&#34;&gt;time&lt;/span&gt; cat /data/conf/test.yaml
+cat: &lt;span style=&#34;color:#24909d&#34;&gt;read&lt;/span&gt; error: No space left on device
+
+real    0m3.007s
+user    0m0.002s
+sys     0m0.002s
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 因为有重试，显示有 3s 的延迟&lt;/span&gt;
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 因为设置了 60% 的异常，所有还是有成功的情况&lt;/span&gt;
+$ &lt;span style=&#34;color:#24909d&#34;&gt;time&lt;/span&gt; cat /data/conf/test.yaml
+&lt;span style=&#34;color:#3677a9&#34;&gt;123&lt;/span&gt;
+
+real    0m0.004s
+user    0m0.002s
+sys     0m0.000s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;文件读取异常，结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65ly1gft2pqli3ug20p607i7nk.gif&#34; alt=&#34;io-pod-read&#34;&gt;&lt;/p&gt;
+&lt;p&gt;在本例中，我们对 read 操作注入两种异常，异常率为百分之60:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对 &lt;code&gt;read&lt;/code&gt; 操作增加 1s 的延迟。&lt;/li&gt;
+&lt;li&gt;对 &lt;code&gt;read&lt;/code&gt; 操作返回错误 &lt;code&gt;28&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里只是做了一种类型的实验，更多的实验类型详见&lt;a href=&#34;https://chaosblade-io.gitbook.io/chaosblade-help-zh-cn/blade-create-k8s/blade-create-k8s-pod-io&#34;&gt;官方文档&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f pod_io.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade inject-pod-by-labels&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;删除测试 pod：&lt;code&gt;kubectl delete -f io-test-pod.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;本篇我们使用 ChaosBlade Operator 对 Kubernetes Pod 资源进行混沌工程实验，可以看到 ChaosBlade 的操作简单易懂且功能强大，通过模拟不同的故障，可以检验我们系统监控报警的时效性，也可以检验我们系统在遇到故障时的情况，根据这些情况对系统进行调整，从而完善系统架构，增加可用性。&lt;/p&gt;
+&lt;p&gt;这里只是对于每种场景进行了简单的实验，而每个场景不止有一种实验方式，用户可以通过调整参数进行不同的实验。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: ChaosBlade：从零开始的混沌工程（二）</title>
+      <link>/post/start-chaosblade-1/</link>
+      <pubDate>Tue, 09 Jun 2020 11:14:09 +0800</pubDate>
+      
+      <guid>/post/start-chaosblade-1/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;在上篇文章中，我们介绍了&lt;strong&gt;混沌工程&lt;/strong&gt;以及 &lt;strong&gt;ChaosBlade&lt;/strong&gt;。从本篇开始，从 ChaosBlade 的安装部署，到实验的创建销毁，在实践的角度，一步步的完成各种混沌实验，深入认识和使用混沌工程。&lt;/p&gt;
+&lt;h2 id=&#34;chaosblade-operator&#34;&gt;ChaosBlade-Operator&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/chaosblade-io/chaosblade-operator&#34;&gt;ChaosBlade-Operator&lt;/a&gt; 是 ChaosBlade 的 Kubernetes 平台实验场景实现。将混沌实验通过 Kubernetes 标准的 CRD 方式定义，用户可以像定义 Deployment 或 StatefulSet 那样定义 ChaosBlade 实验，只要对 &lt;code&gt;kubectl&lt;/code&gt; 和 Kubernetes 对象有所了解，就可以轻松的创建、更新和删除实验场景；同时也可以通过 chaosblade cli 工具来操作实验场景。&lt;/p&gt;
+&lt;h3 id=&#34;安装&#34;&gt;安装&lt;/h3&gt;
+&lt;p&gt;ChaosBlade-Operator 需要使用 Helm 安装，进入 &lt;a href=&#34;https://github.com/chaosblade-io/chaosblade-operator/releases&#34;&gt;release 页面&lt;/a&gt; 下载安装包（ChaosBlade 还提供了阿里云 OSS 的下载地址，提升国内下载速度）。&lt;/p&gt;
+&lt;p&gt;使用 Helm 3 安装：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 下载安装包&lt;/span&gt;
+$ wget -qO chaosblade-operator-0.6.0.tgz https://chaosblade.oss-cn-hangzhou.aliyuncs.com/agent/github/0.6.0/chaosblade-operator-0.6.0-v3.tgz
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 为 chaosblade 创建一个 namespace&lt;/span&gt;
+$ kubectl create namespace chaosblade
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 安装 ChaosBlade-Operator&lt;/span&gt;
+$ helm install chaos chaosblade-operator-0.6.0.tgz --set webhook.enable=&lt;span style=&#34;color:#24909d&#34;&gt;true&lt;/span&gt; --namespace=chaosblade
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 查看安装结果&lt;/span&gt;
+$ kubectl get pod -n chaosblade | grep chaosblade
+chaosblade-operator-6b6b484599-gdgq8   1/1     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          4d23h
+chaosblade-tool-7wtph                  1/1     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          4d20h
+chaosblade-tool-r4zdk                  1/1     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          4d23h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;ChaosBlade-Operator 启动后将会在每个节点部署一个 &lt;code&gt;chaosblade-tool&lt;/code&gt; Pod 和一个 &lt;code&gt;chaosblade-operator&lt;/code&gt; Pod，如果都运行正常，则安装成功。上面设置 &lt;code&gt;--set webhook.enable=true&lt;/code&gt; 是为了 Pod 文件系统 I/O 故障实验，如果不需要进行该实验，则无需添加该设置。&lt;/p&gt;
+&lt;h2 id=&#34;快速开始&#34;&gt;快速开始&lt;/h2&gt;
+&lt;p&gt;下面就以 Pod 网络延迟实验为例，展示如何使用 ChaosBlade-Operator。&lt;/p&gt;
+&lt;h3 id=&#34;实验准备&#34;&gt;实验准备&lt;/h3&gt;
+&lt;p&gt;实验前需要先准备实验对象，这里使用 &lt;a href=&#34;https://github.com/cloudnativeapp/guestbook?spm=5176.2020520152.0.0.7c5f16ddH8myx6&#34;&gt;guestbook&lt;/a&gt; 应用。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;安装&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;同样使用 Helm 3&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# add repo&lt;/span&gt;
+helm repo add apphub-incubator https://apphub.aliyuncs.com/incubator/
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 安装&lt;/span&gt;
+helm install guestbook apphub-incubator/guestbook --set service.type=NodePort --namespace=chaosblade
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;默认的 Service 类型为 &lt;code&gt;LoadBalancer&lt;/code&gt;，这里为了方便访问设置为了 &lt;code&gt;NodePort&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;开始实验&#34;&gt;开始实验&lt;/h3&gt;
+&lt;p&gt;**实验目标：**对 chaosblade 命名空间中，对 &lt;code&gt;redis-master-68857cd57c-dzbs9&lt;/code&gt; Pod 的本地 6379 端口添加 3000 毫秒访问延迟，延迟时间上下浮动 1000 毫秒。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;实验 yaml 配置&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;chaosblade.io/v1alpha1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ChaosBlade&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay-pod-network-by-names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;experiments&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;scope&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;pod&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;target&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;network&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;action&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;delay&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;desc&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay pod network by names&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;matchers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;names&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-master-68857cd57c-dzbs9&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;local-port&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;6379&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;interface&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;eth0&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;time&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;3000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;offset&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;      &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;value&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1000&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将其保存为 &lt;code&gt;delay_pod_network_by_names.yaml&lt;/code&gt; 并执行命令，开始实验：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f delay_pod_network_by_names.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;查看实验状态&#34;&gt;查看实验状态&lt;/h3&gt;
+&lt;p&gt;执行 &lt;code&gt;kubectl get blade delay-pod-network-by-names -o json&lt;/code&gt; 命令，查看实验状态：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade.io/v1alpha1&amp;#34;&lt;/span&gt;,
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;ChaosBlade&amp;#34;&lt;/span&gt;,
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;annotations&amp;#34;&lt;/span&gt;: {
+            &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;kubectl.kubernetes.io/last-applied-configuration&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;{\&amp;#34;apiVersion\&amp;#34;:\&amp;#34;chaosblade.io/v1alpha1\&amp;#34;,\&amp;#34;kind\&amp;#34;:\&amp;#34;ChaosBlade\&amp;#34;,\&amp;#34;metadata\&amp;#34;:{\&amp;#34;annotations\&amp;#34;:{},\&amp;#34;name\&amp;#34;:\&amp;#34;delay-pod-network-by-names\&amp;#34;},\&amp;#34;spec\&amp;#34;:{\&amp;#34;experiments\&amp;#34;:[{\&amp;#34;action\&amp;#34;:\&amp;#34;delay\&amp;#34;,\&amp;#34;desc\&amp;#34;:\&amp;#34;delay pod network by names\&amp;#34;,\&amp;#34;matchers\&amp;#34;:[{\&amp;#34;name\&amp;#34;:\&amp;#34;names\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;redis-master-68857cd57c-dzbs9\&amp;#34;]},{\&amp;#34;name\&amp;#34;:\&amp;#34;namespace\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;chaosblade\&amp;#34;]},{\&amp;#34;name\&amp;#34;:\&amp;#34;local-port\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;6379\&amp;#34;]},{\&amp;#34;name\&amp;#34;:\&amp;#34;interface\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;eth0\&amp;#34;]},{\&amp;#34;name\&amp;#34;:\&amp;#34;time\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;3000\&amp;#34;]},{\&amp;#34;name\&amp;#34;:\&amp;#34;offset\&amp;#34;,\&amp;#34;value\&amp;#34;:[\&amp;#34;1000\&amp;#34;]}],\&amp;#34;scope\&amp;#34;:\&amp;#34;pod\&amp;#34;,\&amp;#34;target\&amp;#34;:\&amp;#34;network\&amp;#34;}]}}\n&amp;#34;&lt;/span&gt;
+        },
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;creationTimestamp&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;2020-06-02T05:57:50Z&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;finalizers&amp;#34;&lt;/span&gt;: [
+            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;finalizer.chaosblade.io&amp;#34;&lt;/span&gt;
+        ],
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;generation&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;,
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay-pod-network-by-names&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;resourceVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;7710394&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;selfLink&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/apis/chaosblade.io/v1alpha1/chaosblades/delay-pod-network-by-names&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;uid&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1235ff55-8256-4caa-a371-e1abf6c9e7b7&amp;#34;&lt;/span&gt;
+    },
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;spec&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;experiments&amp;#34;&lt;/span&gt;: [
+            {
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;action&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay pod network by names&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;matchers&amp;#34;&lt;/span&gt;: [
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;names&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-master-68857cd57c-dzbs9&amp;#34;&lt;/span&gt;
+                        ]
+                    },
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;namespace&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;chaosblade&amp;#34;&lt;/span&gt;
+                        ]
+                    },
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;local-port&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;6379&amp;#34;&lt;/span&gt;
+                        ]
+                    },
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;interface&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;eth0&amp;#34;&lt;/span&gt;
+                        ]
+                    },
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;time&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;3000&amp;#34;&lt;/span&gt;
+                        ]
+                    },
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;offset&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+                            &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;1000&amp;#34;&lt;/span&gt;
+                        ]
+                    }
+                ],
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;scope&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;pod&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;target&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;network&amp;#34;&lt;/span&gt;
+            }
+        ]
+    },
+    &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;status&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;expStatuses&amp;#34;&lt;/span&gt;: [
+            {
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;action&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delay&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;resStatuses&amp;#34;&lt;/span&gt;: [
+                    {
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;a86f8cf8b68ace98&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;pod&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-master&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;nodeName&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;keking&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;state&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Success&amp;#34;&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;success&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;,
+                        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;uid&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;619a19ceb213f9b6152159bd868e88de2ddbf9a8aac606dc274b34bec6510c60&amp;#34;&lt;/span&gt;
+                    }
+                ],
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;scope&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;pod&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;state&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Success&amp;#34;&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;success&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;,
+                &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;target&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;network&amp;#34;&lt;/span&gt;
+            }
+        ],
+        &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;phase&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Running&amp;#34;&lt;/span&gt;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到实验成功创建了。&lt;/p&gt;
+&lt;h3 id=&#34;观测结果&#34;&gt;观测结果&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 获取实验 pod ip&lt;/span&gt;
+$ kubectl get pod -l &lt;span style=&#34;color:#40ffff&#34;&gt;app&lt;/span&gt;=redis,role=master -o &lt;span style=&#34;color:#40ffff&#34;&gt;jsonpath&lt;/span&gt;={.items..status.podIP}
+10.42.69.44
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 进入观测 pod&lt;/span&gt;
+$ kubectl &lt;span style=&#34;color:#24909d&#34;&gt;exec&lt;/span&gt; -it redis-slave-6dd975d4c8-2zrkb bash
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 在 pod 中安装 telnet&lt;/span&gt;
+$ apt-get update &amp;amp;&amp;amp; apt-get install -y telnet
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 测试时间&lt;/span&gt;
+$ &lt;span style=&#34;color:#24909d&#34;&gt;time&lt;/span&gt; &lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt; | telnet 10.42.69.44 &lt;span style=&#34;color:#3677a9&#34;&gt;6379&lt;/span&gt;
+Trying 10.42.69.44...
+Connected to 10.42.69.44.
+Escape character is &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;^]&amp;#39;&lt;/span&gt;.
+Connection closed by foreign host.
+
+real    0m3.790s
+user    0m0.007s
+sys     0m0.001s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://tva3.sinaimg.cn/large/ad5fbf65gy1gfm2deqtdwg20p606c1kx.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到结果符合预期。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;停止实验&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;执行命令：&lt;code&gt;kubectl delete -f delay_pod_network_by_names.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;或者直接删除 blade 资源：&lt;code&gt;kubectl delete blade delay-pod-network-by-names&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;本篇我们讲解了如何部署 ChaosBlade-Operator 并进行了简单的实验，可以看到在云原生场景下，ChaosBlade 依旧有着简单的操作方式，多种实验场景，并对混沌实验模型进行了标准化实现。很友好的将混沌实验模型与 Kubernetes 声明式设计结合在一起，依靠混沌实验模型便捷开发场景的同时，又可以很好的结合 Kubernetes 设计理念。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: ChaosBlade：从零开始的混沌工程（一）</title>
+      <link>/post/start-chaosblade-0/</link>
+      <pubDate>Thu, 04 Jun 2020 17:02:58 +0800</pubDate>
+      
+      <guid>/post/start-chaosblade-0/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;随着微服务的盛行以及容器技术的普及，借助 Kubernetes 的容器编排能力，部署一套分布式系统的难度也越来越低。但随之而来的是越来越复杂的系统，以及越来越难的系统可靠性测试，有时仅仅是一个接口的故障，就可能导致整个系统的雪崩。在雪崩中，找到那个最初故障的接口也十分困难，因为到处都在报错。&lt;/p&gt;
+&lt;p&gt;为了解决这些问题，除了不断减少服务的耦合，建立强大的监控系统以及设置熔断、限流等策略等方式，这时&lt;strong&gt;混沌工程&lt;/strong&gt;就出现了。&lt;/p&gt;
+&lt;h2 id=&#34;什么是混沌工程&#34;&gt;什么是混沌工程&lt;/h2&gt;
+&lt;p&gt;根据&lt;a href=&#34;https://principlesofchaos.org&#34;&gt;混沌工程原则（PRINCIPLES OF CHAOS ENGINEERING）&lt;/a&gt;：&lt;strong&gt;混沌工程是在分布式系统上进行实验的学科, 目的是建立对系统抵御生产环境中失控条件的能力以及信心。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;大规模分布式软件系统的发展正在改变软件工程。作为一个行业，我们很快就采用了提高开发灵活性和部署速度的实践。但伴随着这些优点，一个迫切问题出现了，那就是：我们对投入生产的复杂系统有多少信心？&lt;/p&gt;
+&lt;p&gt;即使分布式系统中的所有单个服务都正常运行, 但这些服务之间的交互也会导致不可预知的结果。这些不可预知的结果, 由影响生产环境的罕见且具有破坏性的事件复合而成，令这些分布式系统存在内在的混沌。&lt;/p&gt;
+&lt;p&gt;需要在异常行为出现之前，在整个系统内找出这些弱点。这些弱点包括以下形式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当服务不可用时的不正确回滚设置&lt;/li&gt;
+&lt;li&gt;不当的超时设置导致的重试风暴&lt;/li&gt;
+&lt;li&gt;由于下游依赖的流量过载导致的服务中断&lt;/li&gt;
+&lt;li&gt;单点故障时的级联失败等&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在这些弱点通过生产环境暴露给用户之前，必须主动的发现这些重要的弱点。并需要一种方法来管理这些系统固有的混沌, 通过增加的灵活性和速率以提升我们对生产环境部署的信心, 尽管系统的复杂性是由这些部署所导致的。&lt;/p&gt;
+&lt;p&gt;采用基于经验和系统的方法解决了分布式系统在规模增长时引发的问题, 并以此建立对系统抵御这些事件的能力和信心。通过在受控实验中观察分布式系统的行为来了解它的特性，我们称之为&lt;strong&gt;混沌工程&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;chaosblade&#34;&gt;ChaosBlade&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax3.sinaimg.cn/large/ad5fbf65gy1gfh7pe8dxnj21d407mgly.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/chaosblade-io/chaosblade&#34;&gt;ChaosBlade&lt;/a&gt; 中文名混沌之刃，是阿里巴巴开源的一款遵循混沌工程原理和混沌实验模型的实验注入工具，是内部项目 MonkeyKing 对外开源的项目，其建立在阿里巴巴近十年故障测试和演练实践基础上，结合了集团各业务的最佳创意和实践。旨在帮助企业提升分布式系统的容错能力，并且在企业上云或往云原生系统迁移过程中业务连续性提供保障。&lt;/p&gt;
+&lt;p&gt;目前支持的场景有：&lt;code&gt;基础资源&lt;/code&gt;、&lt;code&gt;Java 应用&lt;/code&gt;、&lt;code&gt;C++ 应用&lt;/code&gt;、&lt;code&gt;Docker 容器&lt;/code&gt;以及 &lt;code&gt;Kubernetes 平台&lt;/code&gt;。该项目将场景按领域实现封装成单独的项目，不仅可以使领域内场景标准化实现，而且非常方便场景水平和垂直扩展，通过遵循混沌实验模型，实现 chaosblade cli 统一调用。&lt;/p&gt;
+&lt;p&gt;该项目体验极好，仅需一个可执行文件 &lt;code&gt;blade&lt;/code&gt;，就可完成多种场景的实验（一些复杂场景如 Java 应用实验，则需要相关工具包），同时如果不想下载 chaosblade 工具包，快速体验 chaosblade，可以拉取 docker 镜像并运行，在容器内体验。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65gy1gfh7yajpkkg212i0mqu0y.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;center&gt;快速体验&lt;/center&gt;
+&lt;p&gt;该项目于 2020 年 5 月 27 日发布了最新了 &lt;a href=&#34;https://github.com/chaosblade-io/chaosblade/releases/tag/v0.6.0&#34;&gt;v0.6.0&lt;/a&gt; 版本，本系列文章的全部实践也将基于这个版本以及该版本的修复版本 v0.6.x 进行。&lt;/p&gt;
+&lt;h2 id=&#34;chaosblade-operator&#34;&gt;ChaosBlade-Operator&lt;/h2&gt;
+&lt;p&gt;ChaosBlade-Operator 是 ChaosBlade 的 Kubernetes 平台实验场景实现，也是本系列文章主要使用的工具。其将混沌实验通过 Kubernetes 标准的 CRD 方式定义，很方便的使用 Kubernetes 资源操作的方式来创建、更新、删除实验场景，包括使用 kubectl、client-go 等方式执行，而且还可以使用上述的 chaosblade cli 工具执行。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax4.sinaimg.cn/large/ad5fbf65gy1gfh84jo6dgg20p606c1kx.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Pod 网络延迟场景&lt;/center&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;本篇为系列文章开篇，主要介绍混动工程以及混沌工程实验工具 ChaosBlade，后续会从实践的角度带领读者上手实践混沌工程，了解混沌工程的方法及原理。实践出真知，在后续的文章后，我们将从 ChaosBlade-Operator 的安装部署、实验配置、实验观测及实验销毁等方面，详细介绍 ChaosBlade 的功能。同时也会介绍在不同场景下混沌工程是如何帮助开发者发现系统中的问题，并达到逐渐建设高可用的韧性系统的目的。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/wizardbyron/principlesofchaos_zh-cn&#34;&gt;混沌工程原则&lt;/a&gt; - Principlesofchaos.org&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/chaosblade-io/chaosblade&#34;&gt;ChaosBlade&lt;/a&gt; - Github.com&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

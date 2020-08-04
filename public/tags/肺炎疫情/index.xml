@@ -1,0 +1,181 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 肺炎疫情</title>
+    <link>/tags/%E8%82%BA%E7%82%8E%E7%96%AB%E6%83%85/</link>
+    <description>Recent content in 肺炎疫情 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Fri, 14 Feb 2020 10:12:52 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/%E8%82%BA%E7%82%8E%E7%96%AB%E6%83%85/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: 使用 Grafana 展示肺炎疫情动态</title>
+      <link>/post/feiyan-grafana/</link>
+      <pubDate>Fri, 14 Feb 2020 10:12:52 +0800</pubDate>
+      
+      <guid>/post/feiyan-grafana/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;新型冠状病毒疫情汹涌而来，全国各地严防死守，而疫情的实时数据也通过不同的渠道，如微信城市服务的疫情动态订阅、支付宝的疫情实时追踪、新浪新闻的疫情实时动态等等，各种平台纷纷将疫情的实时动态进行展示，确保人们可以第一时间了解疫情的发展情况。&lt;/p&gt;
+&lt;p&gt;而无论是哪一家的数据推送和展示，都是面向大众的，并不能个性化的展示我们最关心的那些数据，所以这时就需要自制一个疫情动态展示的 Dashboard 了。&lt;/p&gt;
+&lt;p&gt;说到 Dashboard，第一个联想到的当然就是 &lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; 了，&lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; 是自2014年以来推出的多平台开源分析和交互式可视化软件。连接支持的数据源，它会提供 Web 图表的展示以及报警。终端用户可以通过插件进行拓展，从而使用交互式的查询及展示复杂的监控仪表盘。&lt;/p&gt;
+&lt;h2 id=&#34;项目准备&#34;&gt;项目准备&lt;/h2&gt;
+&lt;p&gt;明确目标，我们这里需要定制一个 Dashboard 用于展示疫情动态，由于我目前在上海，需要展示全国和上海的确诊、疑似、治愈和死亡病例数；同时还需要一个病例发展曲线，用来观察疫情发展趋势；各省区情况已经上海各区情况也是需要的。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; 只是一个展示数据的工具，首先需要的是数据源，目前市面上并没有可以直接用于 Grafana 的疫情数据源，这里我们需要：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;需要一个 &lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt;，无论是在你的笔记本电脑上，还是在你的 K8S 集群中（这里推荐使用 docker 进行运行 Grafana，如果部署在 K8S 集群中，那更好）。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;安装 &lt;a href=&#34;https://grafana.com/grafana/plugins/grafana-simple-json-datasource/installation&#34;&gt;SimpleJson&lt;/a&gt; 插件，它可以将 json 格式的数据，用作 Grafana 的数据源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;开发数据源&#34;&gt;开发数据源&lt;/h2&gt;
+&lt;p&gt;数据源这里使用 Python Bottle 进行开发，当然你也可以选择 flask，都是一样的，我使用 Bottle 的原因是之前开发的 Grafana 数据源是使用 Bottle 开发的，这里直接拿来就可以用，调试配置甚至用于构建 docker 镜像的 &lt;code&gt;Dockerfile&lt;/code&gt; 和用于部署 K8S 的 &lt;code&gt;deploy.yaml&lt;/code&gt; 都有现成可以用的。使用 Python 开发 &lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; 数据源很简单，只有符合 &lt;a href=&#34;https://grafana.com/grafana/plugins/grafana-simple-json-datasource/installation&#34;&gt;SimpleJson&lt;/a&gt; 的格式要求即可。可以根据 &lt;a href=&#34;http://oz123.github.io/about.html&#34;&gt;Oz Nahum Tiram&lt;/a&gt; 的博文 &lt;a href=&#34;http://oz123.github.io/writings/2019-06-16-Visualize-almost-anything-with-Grafana-and-Python/index.html&#34;&gt;Visualize almost anything with Grafana and Python&lt;/a&gt; 来学习如果使用 Python 作为 &lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; 的数据源。&lt;/p&gt;
+&lt;p&gt;在对数据源的定制中，使用两种类型的的数据：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;timeserie&lt;/code&gt; 类型：&lt;/p&gt;
+&lt;p&gt;用于展示全国（含港澳台）和上海地区的疫情实时动态，展示确诊、疑似、治愈和死亡数，并且展示较昨日增加的数量，绘制了【确诊/疑似】数和【治愈/死亡】数的对比曲线。&lt;/p&gt;
+&lt;p&gt;这里只要将全国确诊数 &lt;code&gt;gntotal&lt;/code&gt; 与 当前时间戳组合返回即可，其他指标也是这种方式。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;@app.post(&#39;/query&#39;)
+def query():
+    print(request.json)
+    body = []
+    all_data = getDataSync()
+    time_stamp = int(round(time.time() * 1000))
+    for target in request.json[&#39;targets&#39;]:
+    name = target[&#39;target&#39;]
+    if name == &#39;gntotal&#39;:
+        body.append({&#39;target&#39;: &#39;gntotal&#39;, &#39;datapoints&#39;: [[all_data[&#39;gntotal&#39;], time_stamp]]})
+    body = dumps(body)
+    return HTTPResponse(body=body, headers={&#39;Content-Type&#39;: &#39;application/json&#39;})
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;table&lt;/code&gt; 类型：&lt;/p&gt;
+&lt;p&gt;用于绘制中国各省确诊、疑似、治愈和死亡病例数表格，以及上海各区确诊、疑似、治愈和死亡病例数表格。&lt;/p&gt;
+&lt;p&gt;取出数据中的名称以及确诊、疑似、治愈和死亡数，&lt;code&gt;append&lt;/code&gt; 到 &lt;code&gt;rows&lt;/code&gt; 中即可。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;@app.post(&#39;/query&#39;)
+def query():
+    print(request.json)
+    body = []
+    all_data = getDataSync()
+    sh_data = getShDataSync()
+    if request.json[&#39;targets&#39;][0][&#39;type&#39;] == &#39;table&#39;:
+        rows = []
+        for data in all_data[&#39;list&#39;]:
+            row = [data[&#39;name&#39;], data[&#39;value&#39;], data[&#39;susNum&#39;], data[&#39;cureNum&#39;], data[&#39;deathNum&#39;]]
+            rows.append(row)
+        sh_rows = []
+        for data in sh_data[&#39;city&#39;]:
+            row = [data[&#39;name&#39;], data[&#39;conNum&#39;], data[&#39;susNum&#39;], data[&#39;cureNum&#39;], data[&#39;deathNum&#39;]]
+            sh_rows.append(row)
+        bodies = {&#39;all&#39;: [{
+            &amp;quot;columns&amp;quot;: [
+                {&amp;quot;text&amp;quot;: &amp;quot;省份&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;name&amp;quot;},
+                {&amp;quot;text&amp;quot;: &amp;quot;确诊&amp;quot;, &amp;quot; type&amp;quot;: &amp;quot;conNum&amp;quot;},
+                {&amp;quot;text&amp;quot;: &amp;quot;疑似&amp;quot;, &amp;quot; type&amp;quot;: &amp;quot;susNum&amp;quot;},
+                {&amp;quot;text&amp;quot;: &amp;quot;治愈&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;cureNum&amp;quot;},
+                {&amp;quot;text&amp;quot;: &amp;quot;死亡&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;deathNum&amp;quot;}
+            ],
+            &amp;quot;rows&amp;quot;: rows,
+            &amp;quot;type&amp;quot;: &amp;quot;table&amp;quot;
+        }],
+            &#39;sh&#39;: [{
+                &amp;quot;columns&amp;quot;: [
+                    {&amp;quot;text&amp;quot;: &amp;quot;省份&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;name&amp;quot;},
+                    {&amp;quot;text&amp;quot;: &amp;quot;确诊&amp;quot;, &amp;quot; type&amp;quot;: &amp;quot;value&amp;quot;},
+                    {&amp;quot;text&amp;quot;: &amp;quot;疑似&amp;quot;, &amp;quot; type&amp;quot;: &amp;quot;susNum&amp;quot;},
+                    {&amp;quot;text&amp;quot;: &amp;quot;治愈&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;cureNum&amp;quot;},
+                    {&amp;quot;text&amp;quot;: &amp;quot;死亡&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;deathNum&amp;quot;}
+                ],
+                &amp;quot;rows&amp;quot;: sh_rows,
+                &amp;quot;type&amp;quot;: &amp;quot;table&amp;quot;
+            }]}
+
+        series = request.json[&#39;targets&#39;][0][&#39;target&#39;]
+        body = dumps(bodies[series])
+  return HTTPResponse(body=body, headers={&#39;Content-Type&#39;: &#39;application/json&#39;})
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;选择展示-panel-类型&#34;&gt;选择展示 Panel 类型&lt;/h2&gt;
+&lt;p&gt;总的来说，使用了4种 Panel 进行展示：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;展示病例数的展示块，使用 &lt;code&gt;Singlestat&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;展示数据对比曲线，使用 &lt;code&gt;Graph&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;展示表格，使用 &lt;code&gt;Table&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;文字标题，使用 &lt;code&gt;Text&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;配置数据源&#34;&gt;配置数据源&lt;/h2&gt;
+&lt;h3 id=&#34;病例数展示块&#34;&gt;病例数展示块：&lt;/h3&gt;
+&lt;p&gt;这里只有一个值，所以要选择 &lt;code&gt;First&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax2.sinaimg.cn/large/ad5fbf65gy1gbvs6gmbzlj20x00ku0uk.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;病例数发展趋势图&#34;&gt;病例数发展趋势图：&lt;/h3&gt;
+&lt;p&gt;这里将【确诊/疑似】和【治愈/死亡】数进行对比。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva2.sinaimg.cn/large/ad5fbf65gy1gbvs8hmuvoj21gu0iu41j.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;数据表格&#34;&gt;数据表格：&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://tvax3.sinaimg.cn/large/ad5fbf65gy1gbvsa2pharj21b30igdi1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;效果&#34;&gt;效果&lt;/h2&gt;
+&lt;p&gt;整体效果还可以，先已用作公司大屏展示疫情情况（这里我司用于展示屏幕较小，只不过是一个小米电视，故字体和展示块都做的大了一些）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;featured.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;构建&#34;&gt;构建&lt;/h2&gt;
+&lt;p&gt;将代码打包成为 docker 镜像，就可以运行在任意环境以及 K8S 集群了，镜像已上传 dockerhub 直接拉取镜像，开箱即食。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# Dockerfile
+FROM python:3.7.3-alpine3.9
+
+LABEL maintainer=&amp;quot;sunnydog0826@gmail.com&amp;quot;
+
+COPY . /app
+
+RUN echo &amp;quot;https://mirrors.aliyun.com/alpine/v3.9/main/&amp;quot; &amp;gt; /etc/apk/repositories \
+    &amp;amp;&amp;amp; apk update \
+    &amp;amp;&amp;amp; apk add --no-cache gcc g++ python3-dev python-dev linux-headers libffi-dev openssl-dev make \
+    &amp;amp;&amp;amp; pip3 install -r /app/requestments.txt -i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
+
+WORKDIR /app
+
+ENTRYPOINT [&amp;quot;uwsgi&amp;quot;,&amp;quot;--ini&amp;quot;,&amp;quot;uwsgi.ini&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;运行&#34;&gt;运行&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;拉取镜像&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;docker pull guoxudongdocker/feiyan-datasource
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;运行镜像&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;docker run -d --name datasource -p 8088:3000 guoxudongdocker/feiyan-datasource
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;添加数据源&lt;/p&gt;
+&lt;p&gt;选择 &lt;a href=&#34;https://grafana.com/grafana/plugins/grafana-simple-json-datasource/installation&#34;&gt;SimpleJson&lt;/a&gt; 类型的数据源，点击添加，填入数据源地址：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65gy1gbvsocijjuj20jj0lagot.jpg&#34; alt=&#34;datasource&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;导入 Dashboard&lt;/p&gt;
+&lt;p&gt;点击 &lt;code&gt;Upload.json file&lt;/code&gt;，选择 &lt;code&gt;wuhan2020-grafana/dashboard.json&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://tva4.sinaimg.cn/large/ad5fbf65gy1gbvspqvaz0j20uh0iracw.jpg&#34; alt=&#34;import&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用 K8S 部署（可选）&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl apply -f deploy.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;截止目前（2020年2月14日），病例数还在不断的增加，但是疑似病例数趋势开始下降，可以看出，目前新型肺炎的确诊速度增加了；治愈数也在不断的增加；上海地区和其他地区比起来，虽然有大批返工人员进入，但是并没有增加特别多的病例数，各个社区严防死守的效果初显；同时上海一直保持着死亡1人的情况，而且中国首例新型肺炎治愈的也在上海。总的来说只要大家注意预防，待在家中，多消毒，多通风，一定可以战胜疫情，度过难关。&lt;/p&gt;
+&lt;p&gt;导入 Dashboard 的 &lt;code&gt;json&lt;/code&gt; 文件和部署 K8S 的 &lt;code&gt;yaml&lt;/code&gt; 文件都可以在 GitHub 上找到。&lt;/p&gt;
+&lt;p&gt;项目地址：https://github.com/sunny0826/wuhan2020-grafana&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

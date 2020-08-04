@@ -1,0 +1,430 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 问题解决</title>
+    <link>/categories/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/</link>
+    <description>Recent content in 问题解决 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Thu, 18 Apr 2019 17:46:08 +0800</lastBuildDate>
+    
+	  <atom:link href="/categories/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: Rancher 2.2.1 解决工作负载监控为空问题</title>
+      <link>/post/rancher-prometheus-fix-question/</link>
+      <pubDate>Thu, 18 Apr 2019 17:46:08 +0800</pubDate>
+      
+      <guid>/post/rancher-prometheus-fix-question/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;Rancher 2.2.X 版本于3月底正式GA，新版本处理其他部分的优化以外，最大亮点莫过于本身集成了 Prometheus ，可以通过 Rancher 自带 UI 或者 Grafana 查看集群的实时监控，对所有监控进行了一次聚合，不用再和之前一样，每个集群都要安装一个 Prometheus 用于监控，而告警部分也可使用 Rancher 自带的通知组件进行告警。通知方式目前支持 Slack 、 邮件、 PagerDuty 、 Webhook 、 企业微信，由于我司办公使用钉钉，所以我们使用了 Webhook 的方式，告警触发后通知我们的消息服务，然后消息服务将其发送到钉钉进行告警。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx2.sinaimg.cn/large/ad5fbf65gy1g26xsh6omvj20rk0ilta6.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;问题&#34;&gt;问题&lt;/h2&gt;
+&lt;p&gt;Rancher 集成 Prometheus 后，监控方面变的十分强大，不用再徘徊于多个集群的 Grafana ，直接在 Rancher 上即可查看，非常方便&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx2.sinaimg.cn/large/ad5fbf65gy1g26xuv2frnj212b0onn1h.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;但是在使用的时候，我发现了一个问题：就是在查看 工作负载和 Pod 的时候会显示 &lt;em&gt;&lt;strong&gt;没有足够的数据绘制图表&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g26xzvi2cpj20po057q31.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;进入 Grafana 查看会发现，其实监控参数是存在的，但是没有采集到值，所以并没有展示出来。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g26y4j4s3yj21f50m9wqj.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;解决&#34;&gt;解决&lt;/h2&gt;
+&lt;p&gt;在检查了配置后并没有找到原因，只好去 GitHub 上提一个 issue 来询问一下开发者或者其他用户有无遇到这个问题。&lt;/p&gt;
+&lt;p&gt;Rancher 官方的开发者还是十分负责的， GitHub 上用户名为 &lt;a href=&#34;https://github.com/loganhz&#34;&gt;Logan&lt;/a&gt; 的官方小哥来我指导解决这个问题。&lt;/p&gt;
+&lt;p&gt;小哥发现我是导入的集群，要我进入 Prometheus 查看，发现 &lt;code&gt;cattle-prometheus/exporter-kube-state-cluster-monitoring&lt;/code&gt; 果然没有起来&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g26yb1p4eoj21db0am782.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;解决这个问题，需要在集群监控配置中添加一个高级选项，插入值为：&lt;code&gt;exporter-kubelets.https=false&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g26ycq6amfj221q0uggp8.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击保存，问题就解决了！&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g26yheqwp7j213e0g3di5.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
+&lt;p&gt;使用 Rancher 有半年，从2.0版本一直用到2.2版本，而18年分别在云栖大会和 KubeCon 上听了 Rancher 创始人梁胜博士的演讲。而从这一个小问题上就可以看到 Rancher 官方对每一个用户都是十分重视的。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: kubernetes中pod同步时区问题</title>
+      <link>/post/pod-timezone/</link>
+      <pubDate>Wed, 30 Jan 2019 20:18:13 +0800</pubDate>
+      
+      <guid>/post/pod-timezone/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;新版监控大屏于18年最后一天正式上线，之后陆续进行了几次优化和修改，最近发现一个比较大的bug，就是监控显示的时间轴不对，显示的就是和目前的时间相差8小时，这就引出了docker中的时区问题&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;问题的原因&#34;&gt;问题的原因&lt;/h1&gt;
+&lt;p&gt;默认的情况，在K8S里启动一个容器，该容器的设置的时区是UTC0，但是对用户而言，主机环境并不在UTC0。我们在UTC8。如果不把容器的时区和主机主机设置为一致，则在查找日志等时候将非常不方便，也容易造成误解。但是K8S以及Docker容器没有一个简便的设置/开关在系统层面做配置。都需要我们从单个容器入手做设置，具体有两个方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;直接修改镜像的时间设置，好处是应用部署时无需做特殊设置，但是需要手动构建Docker镜像。&lt;/li&gt;
+&lt;li&gt;部署应用时，单独读取主机的“/etc/localtime”文件，即创建pod时同步时区，无需修改镜像，但是每个应用都要单独设置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;问题的解决&#34;&gt;问题的解决&lt;/h1&gt;
+&lt;p&gt;这里我们选择第二种方法，即修改部署应用的yaml文件，创建pod时同步时区&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;extensions/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Deployment&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;myweb&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;replicas&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;template&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;myweb&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;myweb&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;nginx:apline&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ports&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containerPort&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;80&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#挂载到pod中&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumeMounts&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;host-time&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;mountPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/localtime&lt;span style=&#34;color:#666&#34;&gt;    
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#需要被挂载的宿主机的时区文件&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;host-time&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;hostPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/localtime&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;效果对比&#34;&gt;效果对比&lt;/h1&gt;
+&lt;h2 id=&#34;修改时区前&#34;&gt;修改时区前&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/time-1.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;修改时区后&#34;&gt;修改时区后&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/time-2.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 阿里云部署rancher2.1采坑记</title>
+      <link>/post/install-rancher/</link>
+      <pubDate>Thu, 29 Nov 2018 18:28:13 +0800</pubDate>
+      
+      <guid>/post/install-rancher/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;近期由于公司需要将部署在ucloud上的rancher迁移到阿里云上，所以将部署到阿里云的图中遇到的问题和踩到的坑在这里进行记录。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;无法删除namespace&#34;&gt;无法删除namespace&lt;/h1&gt;
+&lt;p&gt;在安装新环境的rancher之前，需要将kubernetes集群中cattle-system ns下面的cluster-agent和node-agent干掉，这里我选择直接删除cattle-system这个命名空间&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl delete ns cattle-system
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然而问题来了，在删除命名空间之后，这个命名空间并没有立刻被删除，而是一直处于Terminating状态，这里我专门写了一篇文章解决这个问题，这里就不再赘述&lt;/p&gt;
+&lt;h1 id=&#34;阿里云证书配置&#34;&gt;阿里云证书配置&lt;/h1&gt;
+&lt;p&gt;由于之前使用的ucloud的机器进行测试，使用默认自签名证书并没有使用SSL证书，所以在配置证书这里遇到的许多的问题&lt;/p&gt;
+&lt;p&gt;首先根据官方文档使用权威CA机构颁发的证书，这里使用的是本公司自己的证书&lt;/p&gt;
+&lt;p&gt;获取证书方法：
+&lt;img src=&#34;/images/source/jinrussl.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;点击下载证书，选择nginx证书下载
+&lt;img src=&#34;/images/source/zhengshu.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;之后将下载的证书上传到rancher所在服务器，并配置好数据卷挂载&lt;/p&gt;
+&lt;p&gt;将下面代码的挂载地址指向证书文件，运行代码&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker run -d --restart=unless-stopped &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;-p 80:80 -p 443:443 &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;-v /root/var/log/auditlog:/var/log/auditlog &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;-e &lt;span style=&#34;color:#40ffff&#34;&gt;AUDIT_LEVEL&lt;/span&gt;=&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;-v /etc/your_certificate_directory/fullchain.pem:/etc/rancher/ssl/cert.pem &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;-v /etc/your_certificate_directory/privkey.pem:/etc/rancher/ssl/key.pem &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;rancher/rancher:latest --no-cacerts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;之后会自动冲dockerhub上拉取最新的rancher进行进行安装，之后使用命令&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker ps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看容器是否在运行，如果运行正常，则后端的配置就完成了&lt;/p&gt;
+&lt;p&gt;划重点：这是是在后端配置了证书，所以在阿里云的配置上要使用四层TCP监听&lt;/p&gt;
+&lt;p&gt;这个地方可是坑了我许久，我一直在前端配置https七层监听，导致一直无法正常访问，一度已经到了怀疑人生的地步=。=&lt;/p&gt;
+&lt;p&gt;之后就是简单的阿里云SLB配置四层TCP监听，这里也就不再赘述了&lt;/p&gt;
+&lt;h1 id=&#34;k8s集群导入rancher&#34;&gt;k8s集群导入rancher&lt;/h1&gt;
+&lt;p&gt;前后端都准备就绪，现在就可以访问rancher了，访问rancher根据页面提示进行基本配置，登录后选择添加集群&lt;/p&gt;
+&lt;p&gt;选择导入现有集群
+&lt;img src=&#34;/images/source/add.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;为集群创建一个rancher中的名称，然后根据提示将命令拷贝到k8s集群所在宿主机执行即可，注意：这里由于配置了证书，所以选择有证书，不绕过证书的那个命令执行，之后就可看到集群数据导入中
+&lt;img src=&#34;/images/source/wating.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;等待几秒即可开心的使用rancher了！&lt;/p&gt;
+&lt;h1 id=&#34;关于rancher部署后访问集群api超时问题&#34;&gt;关于rancher部署后访问集群api超时问题&lt;/h1&gt;
+&lt;p&gt;经过排查，原因是阿里云在容器服务对外连接处设置了TLS双向认证，导致rancher的外网ip经常性的被拦截，导致超时&lt;/p&gt;
+&lt;p&gt;解决办法：&lt;/p&gt;
+&lt;p&gt;对k8s集群中rancher的cattle-cluster-agent传递内网参数，将其配置为内网连接，就可以正常访问了&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl -n cattle-system patch deployments cattle-cluster-agent --patch &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;{
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;    &amp;#34;spec&amp;#34;: {
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;        &amp;#34;template&amp;#34;: {
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                &amp;#34;spec&amp;#34;: {
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                    &amp;#34;hostAliases&amp;#34;: [{
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                                    &amp;#34;hostnames&amp;#34;:[&amp;#34;rancher.keking.cn&amp;#34;],  #rancher的域名
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                                    &amp;#34;ip&amp;#34;: &amp;#34;10.0.0.219&amp;#34;  #rancher部署地址
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                                    }]
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                        }
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;                    }
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;            }
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Kubernetes删除一直处于Terminating状态的namespace</title>
+      <link>/post/k8s-d-n/</link>
+      <pubDate>Fri, 16 Nov 2018 18:18:13 +0800</pubDate>
+      
+      <guid>/post/k8s-d-n/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;近期由于公司需要将部署在ucloud上的rancher迁移到阿里云上，所以需要将原有Rancher依赖的namespace（cattle-system）删除，但在删除中出现了删除的namespace一直处于Terminating状态的情况&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/d-n-1.png&#34; alt=&#34;imgage&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;解决方案&#34;&gt;解决方案&lt;/h1&gt;
+&lt;p&gt;运行命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl edit namespaces cattle-system
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到namespaces的yaml配置：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/d-n-2.png&#34; alt=&#34;imgage&#34;&gt;&lt;/p&gt;
+&lt;p&gt;将finalizer的value删除，这里将其设置为[]&lt;/p&gt;
+&lt;p&gt;保存即可看到该namespace已被删除&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/d-n-3.png&#34; alt=&#34;imgage&#34;&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 精简docker镜像</title>
+      <link>/post/image-size/</link>
+      <pubDate>Thu, 27 Sep 2018 20:28:13 +0800</pubDate>
+      
+      <guid>/post/image-size/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;精简Docker镜像的好处很多，不仅可以节省存储空间和带宽，还能减少安全隐患。优化镜像大小的手段多种多样，因服务所使用的基础开发语言不同而有差异。本文将介绍精简Docker镜像的几种通用方法。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;精简docker镜像大小的必要性&#34;&gt;精简Docker镜像大小的必要性&lt;/h1&gt;
+&lt;p&gt;Docker镜像由很多镜像层（Layers）组成（最多127层），镜像层依赖于一系列的底层技术，比如文件系统(filesystems)、写时复制(copy-on-write)、联合挂载(union mounts)等技术，你可以查看Docker社区文档以了解更多有关Docker存储驱动的内容，这里就不再赘述技术细节。总的来说，Dockerfile中的每条指令都会创建一个镜像层，继而会增加整体镜像的尺寸。&lt;/p&gt;
+&lt;p&gt;下面是精简Docker镜像尺寸的好处：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;减少构建时间&lt;/li&gt;
+&lt;li&gt;减少磁盘使用量&lt;/li&gt;
+&lt;li&gt;减少下载时间&lt;/li&gt;
+&lt;li&gt;因为包含文件少，攻击面减小，提高了安全性&lt;/li&gt;
+&lt;li&gt;提高部署速度&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;五点建议减小Docker镜像尺寸&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;一优化基础镜像&#34;&gt;一、优化基础镜像&lt;/h1&gt;
+&lt;p&gt;优化基础镜像的方法就是选用合适的更小的基础镜像，常用的 Linux 系统镜像一般有 Ubuntu、CentOs、Alpine，其中Alpine更推荐使用。大小对比如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;guoxudong@ubuntu ~/s&amp;gt; docker images
+REPOSITORY         TAG             IMAGE ID            CREATED             SIZE
+ubuntu             latest        74f8760a2a8b        &lt;span style=&#34;color:#3677a9&#34;&gt;8&lt;/span&gt; days ago          82.4MB
+alpine             latest        11cd0b38bc3c        &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; weeks ago         4.41MB
+centos               &lt;span style=&#34;color:#3677a9&#34;&gt;7&lt;/span&gt;           49f7960eb7e4        &lt;span style=&#34;color:#3677a9&#34;&gt;7&lt;/span&gt; weeks ago         200MB
+debian             latest        3bbb526d2608        &lt;span style=&#34;color:#3677a9&#34;&gt;8&lt;/span&gt; days ago          101MB
+guoxudong@ubuntu ~/s&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Alpine是一个高度精简又包含了基本工具的轻量级Linux发行版，基础镜像只有4.41M，各开发语言和框架都有基于Alpine制作的基础镜像，强烈推荐使用它。Alpine镜像各个语言和框架支持情况，可以参考《优化Docker镜像、加速应用部署》。
+查看上面的镜像尺寸对比结果，你会发现最小的镜像也有4.41M，那么有办法构建更小的镜像吗？答案是肯定的，例如 gcr.io/google_containers/pause-amd64:3.1 镜像仅有742KB。为什么这个镜像能这么小？在为大家解密之前，再推荐两个基础镜像：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;scratch镜像&lt;/p&gt;
+&lt;p&gt;scratch是一个空镜像，只能用于构建其他镜像，比如你要运行一个包含所有依赖的二进制文件，如Golang程序，可以直接使用scratch作为基础镜像。现在给大家展示一下上文提到的Google pause镜像Dockerfile：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; scratch&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ARG&lt;/span&gt; ARCH&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ADD&lt;/span&gt; bin/pause-&lt;span style=&#34;color:#ed9d13&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#40ffff&#34;&gt;ARCH&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}&lt;/span&gt; /pause&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ENTRYPOINT&lt;/span&gt; [&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/pause&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Google pause镜像使用了scratch作为基础镜像，这个镜像本身是不占空间的，使用它构建的镜像大小几乎和二进制文件本身一样大，所以镜像非常小。当然在我们的Golang程序中也会使用。对于一些Golang/C程序，可能会依赖一些动态库，你可以使用自动提取动态库工具，比如ldd、linuxdeployqt等提取所有动态库，然后将二进制文件和依赖动态库一起打包到镜像中。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;busybox镜像&lt;/p&gt;
+&lt;p&gt;scratch是个空镜像，如果希望镜像里可以包含一些常用的Linux工具，busybox镜像是个不错选择，镜像本身只有1.16M，非常便于构建小镜像。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;二串联-dockerfile-指令&#34;&gt;二、串联 Dockerfile 指令&lt;/h1&gt;
+&lt;p&gt;大家在定义Dockerfile时，如果太多的使用RUN指令，经常会导致镜像有特别多的层，镜像很臃肿，而且甚至会碰到超出最大层数（127层）限制的问题，遵循 Dockerfile 最佳实践，我们应该把多个命令串联合并为一个 RUN（通过运算符&amp;amp;&amp;amp;和/ 来实现），每一个 RUN 要精心设计，确保安装构建最后进行清理，这样才可以降低镜像体积，以及最大化的利用构建缓存。&lt;/p&gt;
+&lt;p&gt;下面是一个优化前Dockerfile：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; ubuntu&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ENV&lt;/span&gt; VER     3.0.0 &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ENV&lt;/span&gt; TARBALL http://download.redis.io/releases/redis-&lt;span style=&#34;color:#40ffff&#34;&gt;$VER&lt;/span&gt;.tar.gz &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# ==&amp;gt; Install curl and helper tools...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; apt-get update &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; apt-get install -y  curl make gcc &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# ==&amp;gt; Download, compile, and install...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; curl -L &lt;span style=&#34;color:#40ffff&#34;&gt;$TARBALL&lt;/span&gt; | tar zxv &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;  redis-$VER &lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; make &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; make install &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# ==&amp;gt; Clean up...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; / &lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; apt-get remove -y --auto-remove curl make gcc &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; apt-get clean &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; rm -rf /var/lib/apt/lists/*  /redis-&lt;span style=&#34;color:#40ffff&#34;&gt;$VER&lt;/span&gt; &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;CMD&lt;/span&gt; [&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-server&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;构建镜像，名称叫 &lt;code&gt;test/test:0.1&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;我们对Dockerfile做优化，优化后Dockerfile：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; ubuntu&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ENV&lt;/span&gt; VER     3.0.0 &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;ENV&lt;/span&gt; TARBALL http://download.redis.io/releases/redis-&lt;span style=&#34;color:#40ffff&#34;&gt;$VER&lt;/span&gt;.tar.gz&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; &lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;==&amp;gt; Install curl and helper tools...&amp;#34;&lt;/span&gt;  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\ &lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;apt-get update                      &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;apt-get install -y  curl make gcc   &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;==&amp;gt; Download, compile, and install...&amp;#34;&lt;/span&gt;  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;curl -L &lt;span style=&#34;color:#40ffff&#34;&gt;$TARBALL&lt;/span&gt; | tar zxv  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#24909d&#34;&gt;cd&lt;/span&gt; redis-&lt;span style=&#34;color:#40ffff&#34;&gt;$VER&lt;/span&gt;               &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;make                        &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;make install                &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;==&amp;gt; Clean up...&amp;#34;&lt;/span&gt;  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;apt-get remove -y --auto-remove curl make gcc  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;apt-get clean                                  &amp;amp;&amp;amp; &lt;span style=&#34;color:#ed9d13&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&lt;/span&gt;rm -rf /var/lib/apt/lists/*  /redis-&lt;span style=&#34;color:#40ffff&#34;&gt;$VER&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#...&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;CMD&lt;/span&gt; [&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;redis-server&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;构建镜像，名称叫 &lt;code&gt;test/test:0.2&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;对比两个镜像大小：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;root@k8s-master:/tmp/iops# docker images
+REPOSITORY       TAG           IMAGE ID            CREATED             SIZE
+test/test        0.2         58468c0222ed        &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; minutes ago       98.1MB
+test/test        0.1         e496cf7243f2        &lt;span style=&#34;color:#3677a9&#34;&gt;6&lt;/span&gt; minutes ago       307MB
+root@k8s-master:/tmp/iops#
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到，将多条RUN命令串联起来构建的镜像大小是每条命令分别RUN的三分之一。&lt;/p&gt;
+&lt;p&gt;**提示：**为了应对镜像中存在太多镜像层，Docker 1.13版本以后，提供了一个压扁镜像功能，即将 Dockerfile 中所有的操作压缩为一层。这个特性还处于实验阶段，Docker默认没有开启，如果要开启，需要在启动Docker时添加-experimental 选项，并在Docker build 构建镜像时候添加 &amp;ndash;squash 。我们不推荐使用这个办法，请在撰写 Dockerfile 时遵循最佳实践编写，不要试图用这种办法去压缩镜像。&lt;/p&gt;
+&lt;h1 id=&#34;三使用多阶段构建&#34;&gt;三、使用多阶段构建&lt;/h1&gt;
+&lt;p&gt;Dockerfile中每条指令都会为镜像增加一个镜像层，并且你需要在移动到下一个镜像层之前清理不需要的组件。实际上，有一个Dockerfile用于开发（其中包含构建应用程序所需的所有内容）以及一个用于生产的瘦客户端，它只包含你的应用程序以及运行它所需的内容。这被称为“建造者模式”。Docker 17.05.0-ce版本以后支持多阶段构建。使用多阶段构建，你可以在Dockerfile中使用多个FROM语句，每条FROM指令可以使用不同的基础镜像，这样您可以选择性地将服务组件从一个阶段COPY到另一个阶段，在最终镜像中只保留需要的内容。&lt;/p&gt;
+&lt;p&gt;下面是一个使用 &lt;code&gt;COPY --from&lt;/code&gt; 和 &lt;code&gt;FROM ... AS ...&lt;/code&gt; 的Dockerfile：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Compile&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; golang:1.9.0 AS builder&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; /go/src/v9.git...com/.../k8s-monitor&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; . .&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; /go/src/v9.git...com/.../k8s-monitor&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; make build&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;RUN&lt;/span&gt; mv k8s-monitor /root&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Package&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# Use scratch image&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; scratch&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; /root/&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; --from=builder /root .&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;EXPOSE&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; 8080&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;CMD&lt;/span&gt; [&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/root/k8s-monitor&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;构建镜像，你会发现生成的镜像只有上面COPY 指令指定的内容，镜像大小只有2M。这样在以前使用两个Dockerfile（一个Dockerfile用于开发和一个用于生产的瘦客户端），现在使用多阶段构建就可以搞定。&lt;/p&gt;
+&lt;h1 id=&#34;四构建业务服务镜像技巧&#34;&gt;四、构建业务服务镜像技巧&lt;/h1&gt;
+&lt;p&gt;Docker在build镜像的时候，如果某个命令相关的内容没有变化，会使用上一次缓存（cache）的文件层，在构建业务镜像的时候可以注意下面两点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不变或者变化很少的体积较大的依赖库和经常修改的自有代码分开；&lt;/li&gt;
+&lt;li&gt;因为cache缓存在运行Docker build命令的本地机器上，建议固定使用某台机器来进行Docker build，以便利用cache。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下面是构建Spring Boot应用镜像的例子，用来说明如何分层。其他类型的应用，比如Java WAR包，Nodejs的npm 模块等，可以采取类似的方式。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;在Dockerfile所在目录，解压缩maven生成的jar包&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ unzip &amp;lt;path-to-app-jar&amp;gt;.jar -d app
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Dockerfile 我们把应用的内容分成4个部分COPY到镜像里面：其中前面3个基本不变，第4个是经常变化的自有代码。最后一行是解压缩后，启动spring boot应用的方式。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; openjdk:8-jre-alpine&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;LABEL&lt;/span&gt; maintainer &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;opl-xws@xiaomi.com&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; app/BOOT-INF/lib/ /app/BOOT-INF/lib/&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; app/org /app/org&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; app/META-INF /app/META-INF&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;COPY&lt;/span&gt; app/BOOT-INF/classes /app/BOOT-INF/classes&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;EXPOSE&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt; 8080&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;CMD&lt;/span&gt; [&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/usr/bin/java&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;-cp&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/app&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;org.springframework.boot.loader.JarLauncher&amp;#34;&lt;/span&gt;]&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;这样在构建镜像时候可大大提高构建速度。&lt;/p&gt;
+&lt;h1 id=&#34;五其他优化办法&#34;&gt;五、其他优化办法&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;RUN命令中执行apt、apk或者yum类工具技巧，如果在RUN命令中执行apt、apk或者yum类工具，可以借助这些工具提供的一些小技巧来减少镜像层数量及镜像大小。举几个例子：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在执行apt-get install -y 时增加选项— no-install-recommends ，可以不用安装建议性（非必须）的依赖，也可以在执行apk add 时添加选项&amp;ndash;no-cache 达到同样效果；&lt;/li&gt;
+&lt;li&gt;执行yum install -y 时候， 可以同时安装多个工具，比如yum install -y gcc gcc-c++ make &amp;hellip;。将所有yum install 任务放在一条RUN命令上执行，从而减少镜像层的数量；&lt;/li&gt;
+&lt;li&gt;组件的安装和清理要串联在一条指令里面，如 apk &amp;ndash;update add php7 &amp;amp;&amp;amp; rm -rf /var/cache/apk/* ，因为Dockerfile的每条指令都会产生一个文件层，如果将apk add &amp;hellip;和 rm -rf &amp;hellip; 命令分开，清理无法减小apk命令产生的文件层的大小。 Ubuntu或Debian可以使用 rm -rf /**var**/lib/apt/lists/* 清理镜像中缓存文件；CentOS等系统使用yum clean all 命令清理。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;压缩镜像&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Docker 自带的一些命令还能协助压缩镜像，比如 export 和 import&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run -d test/test:0.2
+$ docker &lt;span style=&#34;color:#24909d&#34;&gt;export&lt;/span&gt; 747dc0e72d13 | docker import - test/test:0.3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;使用这种方式需要先将容器运行起来，而且这个过程中会丢失镜像原有的一些信息，比如：导出端口，环境变量，默认指令。&lt;/p&gt;
+&lt;p&gt;查看这两个镜像history信息，如下，可以看到test/test:0.3 丢失了所有的镜像层信息：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;root@k8s-master:/tmp/iops# docker &lt;span style=&#34;color:#24909d&#34;&gt;history&lt;/span&gt; test/test:0.3
+IMAGE               CREATED             CREATED BY          SIZE                COMMENT
+6fb3f00b7a72        &lt;span style=&#34;color:#3677a9&#34;&gt;15&lt;/span&gt; seconds ago                          84.7MB              Imported from -
+root@k8s-master:/tmp/iops# docker &lt;span style=&#34;color:#24909d&#34;&gt;history&lt;/span&gt; test/test:0.2
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+58468c0222ed        &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; hours ago         /bin/sh -c &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#(nop)  CMD [&amp;#34;redis-server&amp;#34;]         0B&lt;/span&gt;     
+1af7ffe3d163        &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; hours ago         /bin/sh -c &lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;==&amp;gt; Install curl and helper...   15.7MB 
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;8bac6e733d54        2 hours ago         /bin/sh -c #(nop)  ENV TARBALL=http://downlo...   0B     
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;793282f3ef7a        2 hours ago         /bin/sh -c #(nop)  ENV VER=3.0.0                0B     
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;74f8760a2a8b        8 days ago          /bin/sh -c #(nop)  CMD [&amp;#34;&lt;/span&gt;/bin/bash&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;]            0B     
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;missing&amp;gt;           8 days ago          /bin/sh -c mkdir -p /run/systemd &amp;amp;&amp;amp; echo &amp;#39;do...   7B
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;missing&amp;gt;           8 days ago          /bin/sh -c sed -i &amp;#39;s/^#\s*\(deb.*universe\)&lt;/span&gt;$&lt;span style=&#34;color:#ed9d13&#34;&gt;...   2.76kB
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;missing&amp;gt;           8 days ago          /bin/sh -c rm -rf /var/lib/apt/lists/*          0B
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;missing&amp;gt;           8 days ago          /bin/sh -c set -xe   &amp;amp;&amp;amp; echo &amp;#39;#!/bin/sh&amp;#39; &amp;gt; /...   745B   
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;missing&amp;gt;           8 days ago          /bin/sh -c #(nop) ADD file:5fabb77ea8d61e02d...   82.4MB 
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;root@k8s-master:/tmp/iops#
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;社区里还有很多压缩工具，比如Docker-squash ，用起来更简单方便，并且不会丢失原有镜像的自带信息，大家有兴趣可以试试。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Docker容器启动退出解决方案</title>
+      <link>/post/docker-quit/</link>
+      <pubDate>Thu, 27 Sep 2018 19:27:03 +0800</pubDate>
+      
+      <guid>/post/docker-quit/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;现象&#34;&gt;现象&lt;/h1&gt;
+&lt;p&gt;启动docker容器&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run –name [CONTAINER_NAME] [CONTAINER_ID] 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看容器运行状态&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker ps -a 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;发现刚刚启动的mydocker容器已经退出&lt;/p&gt;
+&lt;h1 id=&#34;原因&#34;&gt;原因&lt;/h1&gt;
+&lt;p&gt;docker容器的主线程（dockfile中CMD执行的命令）结束，容器会退出&lt;/p&gt;
+&lt;h1 id=&#34;解决办法&#34;&gt;解决办法&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;可以使用交互式启动&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run -i [CONTAINER_NAME or CONTAINER_ID]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;``&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;上面的不太友好，建议使用后台模式和tty选项&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run -dit [CONTAINER_NAME or CONTAINER_ID]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;``&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Docker 容器在后台以守护态（Daemonized）形式运行，可以通过添加 -d 参数来实现&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ sudo docker run -d ubuntu:14.04 /bin/sh -c &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;while true; do echo hello world; sleep 1; done&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;``&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在脚本最后一行添加&lt;strong&gt;tail -f /dev/null&lt;/strong&gt;，这个命令永远完成不了，所以该脚本一直不会执行完，所以该容器永远不会退出。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;TIPs&lt;/strong&gt;:退出时，使用&lt;code&gt;[ctrl + D]&lt;/code&gt;，这样会结束docker当前线程，容器结束，可以使用 &lt;code&gt;[ctrl + P]&lt;/code&gt; &lt;code&gt;[ctrl + Q]&lt;/code&gt; 退出而不终止容器运行&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如下命令，会在指定容器中执行指定命令， &lt;code&gt;[ctrl+D]&lt;/code&gt; 退出后不会终止容器运行&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;docker默认会把容器内部pid=1的作为默认的程序&lt;/p&gt;
+&lt;/blockquote&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,238 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 华为云</title>
+    <link>/tags/%E5%8D%8E%E4%B8%BA%E4%BA%91/</link>
+    <description>Recent content in 华为云 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Thu, 21 Mar 2019 09:42:18 +0800</lastBuildDate>
+    
+	  <atom:link href="/tags/%E5%8D%8E%E4%B8%BA%E4%BA%91/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: Istio初探之Bookinfo样例部署</title>
+      <link>/post/istio-bookinfo-demo/</link>
+      <pubDate>Thu, 21 Mar 2019 09:42:18 +0800</pubDate>
+      
+      <guid>/post/istio-bookinfo-demo/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;之前介绍了 Istio 和 Service Mesh 能给我们带来什么，我们为什么要用 Istio ，但大家对 Istio 的认识可能还没有那么深刻。正如Linux 的创始人 &lt;a href=&#34;https://en.wikipedia.org/wiki/Linus_Torvalds&#34;&gt;Linus Torvalds&lt;/a&gt; 的那句话：&lt;strong&gt;Talk is cheap. Show me the code.&lt;/strong&gt; 这里我们部署一个demo，由四个单独的微服务构成**（注意这里的四个微服务是由不同的语言编写的）**，用来演示多种 Istio 特性。这个应用模仿在线书店的一个分类，显示一本书的信息。页面上会显示一本书的描述，书籍的细节（ISBN、页数等），以及关于这本书的一些评论。&lt;/p&gt;
+&lt;h2 id=&#34;bookinfo-应用&#34;&gt;Bookinfo 应用&lt;/h2&gt;
+&lt;p&gt;Bookinfo 应用分为四个单独的微服务：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;productpage&lt;/code&gt; ：&lt;code&gt;productpage&lt;/code&gt; 微服务会调用 &lt;code&gt;details&lt;/code&gt; 和 &lt;code&gt;reviews&lt;/code&gt; 两个微服务，用来生成页面。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;details&lt;/code&gt; ：这个微服务包含了书籍的信息。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;reviews&lt;/code&gt; ：这个微服务包含了书籍相关的评论。它还会调用 ratings 微服务。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ratings&lt;/code&gt; ：ratings 微服务中包含了由书籍评价组成的评级信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里主要使用&lt;code&gt;reviews&lt;/code&gt;来演示 Istio 特性，&lt;code&gt;reviews&lt;/code&gt; 微服务有 3 个版本：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;v1 版本不会调用 &lt;code&gt;ratings&lt;/code&gt; 服务。&lt;/li&gt;
+&lt;li&gt;v2 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个黑色星形图标来显示评分信息。&lt;/li&gt;
+&lt;li&gt;v3 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个红色星形图标来显示评分信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图展示了这个应用的端到端架构。
+&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/noistio.svg&#34; alt=&#34;Istio 注入之前的 Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Istio 注入之前的 Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;Bookinfo 是一个异构应用，几个微服务是由不同的语言编写的。这些服务对 Istio &lt;strong&gt;并无依赖&lt;/strong&gt;，但是构成了一个有代表性的服务网格的例子：它由多个服务、多个语言构成，并且 reviews 服务具有多个版本。&lt;/p&gt;
+&lt;h2 id=&#34;部署应用&#34;&gt;部署应用&lt;/h2&gt;
+&lt;p&gt;这里 Istio 的安装部署就不在赘述了。&lt;/p&gt;
+&lt;p&gt;值得注意的是：如果使用的是&lt;strong&gt;阿里云&lt;/strong&gt;容器服务安装的 Istio ，需要在 &lt;code&gt;容器服务&lt;/code&gt;-&lt;code&gt;市场&lt;/code&gt;-&lt;code&gt;应用目录&lt;/code&gt; 中选择 &lt;code&gt;gateway&lt;/code&gt; 进行安装，这里提供了多种 &lt;code&gt;gateway&lt;/code&gt; ，我们选择 &lt;code&gt;istio-ingressgateway&lt;/code&gt;，选择直接安装的话会默认创建 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的Service，会自动创建一个经典网络SLB，这里是可以调整的，会在后续的文章中进行详细讲解，这里不做赘述。&lt;/p&gt;
+&lt;p&gt;在 Istio 中运行这一应用，无需对应用自身做出任何改变。我们只要简单的在 Istio 环境中对服务进行配置和运行，具体一点说就是把 Envoy sidecar 注入到每个服务之中。这个过程所需的具体命令和配置方法由运行时环境决定，而部署结果较为一致，如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/withistio.svg&#34; alt=&#34;Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;所有的微服务都和 Envoy sidecar 集成在一起，被集成服务所有的出入流量都被 sidecar 所劫持，这样就为外部控制准备了所需的 Hook，然后就可以利用 Istio 控制平面为应用提供服务路由、遥测数据收集以及策略实施等功能。&lt;/p&gt;
+&lt;h3 id=&#34;下载安装&#34;&gt;下载安装&lt;/h3&gt;
+&lt;p&gt;到 GitHub 中 istio 的 &lt;a href=&#34;https://github.com/istio/istio/releases&#34;&gt;release&lt;/a&gt; 中下载相应版本的 istio 包，下载后将 &lt;code&gt;bin&lt;/code&gt; 目录配置到环境变量 &lt;code&gt;PATH&lt;/code&gt; 中 &lt;code&gt;export PATH=&amp;quot;/istio/bin:$PATH&amp;quot;&lt;/code&gt; ，这里我们使用的是 &lt;code&gt;istio 1.0.5&lt;/code&gt; 版本&lt;/p&gt;
+&lt;p&gt;Bookinfo 这个应用就在 &lt;code&gt;samples/&lt;/code&gt;目录下&lt;/p&gt;
+&lt;h2 id=&#34;在-阿里云容器服务kubernetes-中运行&#34;&gt;在 阿里云容器服务（kubernetes） 中运行&lt;/h2&gt;
+&lt;p&gt;启动应用容器，这里提供两种注入方法：&lt;strong&gt;手工注入&lt;/strong&gt;和&lt;strong&gt;自动注入&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;自动注入&lt;/p&gt;
+&lt;p&gt;需要修改 namespace ，为其添加 label 标签，这样所以在这个 namespace 中创建的应用都会被自动注入 sidecar&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl label namespace {inject-namespace} istio-injection=enabled
+$ kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;手工注入&lt;/p&gt;
+&lt;p&gt;需要使用 istioctl 命令生成注入后应用的配置，然后在部署应用&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f samples/bookinfo/platform/kube/bookinfo.yaml | kubectl apply -f -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于是测试，这里我们使用手工注入的方法。
+上面的命令会启动全部的四个服务，其中也包括了 &lt;code&gt;reviews&lt;/code&gt; 服务的三个版本（&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt; 以及 &lt;code&gt;v3&lt;/code&gt;）&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f bookinfo.yaml | kubectl apply -f -
+service/details created
+deployment.extensions/details-v1 configured
+service/ratings created
+deployment.extensions/ratings-v1 created
+service/reviews created
+deployment.extensions/reviews-v1 created
+deployment.extensions/reviews-v2 created
+deployment.extensions/reviews-v3 created
+service/productpage created
+deployment.extensions/productpage-v1 created
+$ kubectl get po
+NAME                              READY   STATUS    RESTARTS   AGE
+details-v1-8685d68cf9-8fwdb       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+productpage-v1-5fd9fddc97-tx88z   2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+ratings-v1-7c4d756c55-cn76d       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v1-5d868db586-w28q5       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v2-787647c7d9-7sc52       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v3-6964c86584-8728m       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+$ kubectl get svc
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)            AGE
+details              ClusterIP   10.11.224.17    &amp;lt;none&amp;gt;        9080/TCP           1h
+productpage          ClusterIP   10.11.16.86     &amp;lt;none&amp;gt;        9080/TCP           1h
+ratings              ClusterIP   10.11.244.59    &amp;lt;none&amp;gt;        9080/TCP           1h
+reviews              ClusterIP   10.11.162.37    &amp;lt;none&amp;gt;        9080/TCP           1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到 Bookinfo 应用已经正常运行&lt;/p&gt;
+&lt;h3 id=&#34;指定-ingress-和-ip-的端口&#34;&gt;指定 ingress 和 IP 的端口&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;为为应用程序定义入口网关：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;确认网关创建完成&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get gateway
+NAME               AGE
+bookinfo-gateway   1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;快速查询访问地址，这里的是之前在阿里云上创建的 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的 Service&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get svc istio-ingressgateway -n istio-system
+NAME                   TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)                  AGE
+istio-ingressgateway   LoadBalancer   10.11.18.83   xxx.xxx.xxx.xxx   80:xxx/TCP,443:xxx/TCP   2h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;查看效果&#34;&gt;查看效果&lt;/h3&gt;
+&lt;p&gt;访问 http://{EXTERNAL-IP}/productpage 注意：这里最后不能有/，否则将找不到页面
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1ad2jg6p3j21g90mxgo7.jpg&#34; alt=&#34;image&#34;&gt;
+多次刷新浏览器，将在 &lt;code&gt;productpage&lt;/code&gt; 中看到评论的不同的版本，它们会按照 round robin（红星、黑星、没有星星）的方式展现，这三个展示分来来自&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt;和&lt;code&gt;v3&lt;/code&gt;版本，因为还没有使用 Istio 来控制版本的路由，所以这里显示的是以轮询的负载均衡算法进行展示。&lt;/p&gt;
+&lt;h3 id=&#34;请求路由&#34;&gt;请求路由&lt;/h3&gt;
+&lt;p&gt;BookInfo示例部署了三个版本的reviews服务，因此需要设置一个缺省路由。否则当多次访问该应用程序时，会发现有时输出会包含带星级的评价内容，有时又没有。出现该现象的原因是当没有为应用显式指定缺省路由时，Istio会将请求随机路由到该服务的所有可用版本上。&lt;/p&gt;
+&lt;p&gt;在使用 Istio 控制 Bookinfo 版本路由之前，你需要在目标规则中定义好可用的版本 。&lt;/p&gt;
+&lt;p&gt;运行以下命令为 Bookinfo 服务创建的默认的目标规则：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果不需要启用双向TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果需要启用双向 TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all-mtls.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;等待几秒钟，等待目标规则生效。你可以使用以下命令查看目标规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get destinationrules
+NAME          AGE
+details       28s
+productpage   28s
+ratings       28s
+reviews       28s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;将所有微服务的缺省版本设置为v1&#34;&gt;将所有微服务的缺省版本设置为v1&lt;/h3&gt;
+&lt;p&gt;通过运行如下命令，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以通过下面的命令来显示所有已创建的路由规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices
+NAME       AGE
+bookinfo      33m
+details       8s
+productpage   8s
+ratings       8s
+reviews       8s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;显示已创建的详细路由规划：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices -o yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;由于路由规则是通过异步方式分发到代理的，过一段时间后规则才会同步到所有pod上。因此需要等几秒钟后再尝试访问应用。&lt;/p&gt;
+&lt;p&gt;在浏览器中打开 Bookinfo 应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adqyf9dej21g70oitbd.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到 Bookinfo 应用程序的 &lt;code&gt;productpage&lt;/code&gt; 页面，显示的内容中不包含带星的评价信息，这是因为 &lt;code&gt;reviews:v1&lt;/code&gt; 服务不会访问ratings服务。&lt;/p&gt;
+&lt;h3 id=&#34;将来自特定用户的请求路由到reviewsv2&#34;&gt;将来自特定用户的请求路由到reviews:v2&lt;/h3&gt;
+&lt;p&gt;本例中，首先使用 Istio 将100%的请求流量都路由到了 Bookinfo 服务的&lt;code&gt;v1&lt;/code&gt;版本；然后再设置了一条路由规则，路由规则基于请求的 header（例如一个用户cookie）选择性地将特定的流量路由到了 &lt;code&gt;reviews&lt;/code&gt; 服务的&lt;code&gt;v2&lt;/code&gt;版本。&lt;/p&gt;
+&lt;p&gt;通过运行如下命令，把来自测试用户&amp;quot;jason&amp;quot;的请求路由到 &lt;code&gt;reviews:v2 &lt;/code&gt;，以启用ratings服务。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过如下命令确认规则是否创建：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservice reviews -o yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+    {&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;networking.istio.io/v1alpha3&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;VirtualService&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;annotations&amp;#34;&lt;/span&gt;:{},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;namespace&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;default&amp;#34;&lt;/span&gt;},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;spec&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;hosts&amp;#34;&lt;/span&gt;:[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;http&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;match&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;headers&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;end-user&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;exact&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;jason&amp;#34;&lt;/span&gt;}}}],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v2&amp;#34;&lt;/span&gt;}}]},{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v1&amp;#34;&lt;/span&gt;}}]}]}}
+creationTimestamp: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;2019-03-21T06:01:10Z&amp;#34;&lt;/span&gt;
+generation: &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;
+name: reviews
+namespace: default
+resourceVersion: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;62486214&amp;#34;&lt;/span&gt;
+selfLink: /apis/networking.istio.io/v1alpha3/namespaces/default/virtualservices/reviews
+uid: b9e41681-4b9e-11e9-a679-00163e045478
+spec:
+hosts:
+- reviews
+http:
+- match:
+    - headers:
+        end-user:
+        exact: jason
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+- route:
+    - destination:
+        host: reviews
+        subset: v1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;确认规则已创建之后，在浏览器中打开BookInfo应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;以&amp;quot;jason&amp;quot;用户登录 &lt;code&gt;productpage&lt;/code&gt; 页面，您可以在每条评价后面看到星级信息。&lt;/p&gt;
+&lt;p&gt;这里登录用户名为 &lt;code&gt;jason&lt;/code&gt; ，密码随便输入即可&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adtjugp3j21gb0iygoa.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;流量转移&#34;&gt;流量转移&lt;/h3&gt;
+&lt;p&gt;除了基于内容的路由，Istio还支持基于权重的路由规则。&lt;/p&gt;
+&lt;p&gt;首先，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其次，使用下面的命令把50%的流量从reviews:v1转移到reviews:v3:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在浏览器中多次刷新productpage页面，大约有50%的几率会看到页面中出现带红星的评价内容。&lt;/p&gt;
+&lt;p&gt;说明： 注意该方式和使用容器编排平台的部署特性来进行版本迁移是完全不同的。容器编排平台使用了实例scaling来对流量进行管理。而通过Istio，两个版本的reviews服务可以独立地进行扩容和缩容，并不会影响这两个版本服务之间的流量分发。&lt;/p&gt;
+&lt;p&gt;如果觉得 &lt;code&gt;reviews：v3&lt;/code&gt; 微服务已经稳定，你可以通过以下命令， 将 &lt;code&gt;virtual service&lt;/code&gt; 100％的流量路由到 &lt;code&gt;reviews：v3&lt;/code&gt;，从而实现一个灰度发布的功能。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;在华为云cce上运行&#34;&gt;在华为云（CCE）上运行&lt;/h2&gt;
+&lt;p&gt;华为云率先将 Istio 作为产品投入到公有云中进行商业应用，开通方式十分简单，只要在华为云CCE上创建集群，然后申请 Istio 公测即可。&lt;/p&gt;
+&lt;p&gt;为了方便测试 Bookinfo 应用在华为云上提供了一键体验应用，点击即可省去刚刚那一系列的 &lt;code&gt;kubectl&lt;/code&gt; 操作&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afbs7oq4j21g90id0vv.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;一键创建体验应用&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afgth1cgj219b0a7tb1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;点击灰度发布即可&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afjc5hvgj21fv0o1q6q.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;创建金丝雀发布&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afnqyqlhj20ze0o00vl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择灰度发布的组件&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afp1c5ltj20zk0le765.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;填写版本号&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afq846bjj20z80nowgl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择镜像版本&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afra8rmhj21050mfgpb.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;版本创建完成后配置灰度策略&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afwpan6qj21090mste1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择相应策略，策略下发即可&lt;/center&gt;
+&lt;p&gt;总的来说，华为云的 Istio 确实已经是商业化应用，这里只是展示了部分灰度发布的功能。其他比如流量治理，流量监控等功能还没展示，这些功能做的十分细致，值得尝试。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://help.aliyun.com/document_detail/90563.html?spm=a2c4g.11186623.6.759.5dbd1f5fSB2m9T&#34;&gt;在Kubernetes上基于Istio实现Service Mesh智能路由&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://support.huaweicloud.com/bestpractice-cce/cce_bestpractice_0012.html&#34;&gt;基于ISTIO服务网格的灰度发布&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

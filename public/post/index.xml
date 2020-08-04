@@ -1,0 +1,398 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 博客</title>
+    <link>/post/</link>
+    <description>Recent content in 博客 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    
+	  <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: Istio初探之Bookinfo样例部署</title>
+      <link>/post/istio-bookinfo-demo/</link>
+      <pubDate>Thu, 21 Mar 2019 09:42:18 +0800</pubDate>
+      
+      <guid>/post/istio-bookinfo-demo/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;之前介绍了 Istio 和 Service Mesh 能给我们带来什么，我们为什么要用 Istio ，但大家对 Istio 的认识可能还没有那么深刻。正如Linux 的创始人 &lt;a href=&#34;https://en.wikipedia.org/wiki/Linus_Torvalds&#34;&gt;Linus Torvalds&lt;/a&gt; 的那句话：&lt;strong&gt;Talk is cheap. Show me the code.&lt;/strong&gt; 这里我们部署一个demo，由四个单独的微服务构成**（注意这里的四个微服务是由不同的语言编写的）**，用来演示多种 Istio 特性。这个应用模仿在线书店的一个分类，显示一本书的信息。页面上会显示一本书的描述，书籍的细节（ISBN、页数等），以及关于这本书的一些评论。&lt;/p&gt;
+&lt;h2 id=&#34;bookinfo-应用&#34;&gt;Bookinfo 应用&lt;/h2&gt;
+&lt;p&gt;Bookinfo 应用分为四个单独的微服务：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;productpage&lt;/code&gt; ：&lt;code&gt;productpage&lt;/code&gt; 微服务会调用 &lt;code&gt;details&lt;/code&gt; 和 &lt;code&gt;reviews&lt;/code&gt; 两个微服务，用来生成页面。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;details&lt;/code&gt; ：这个微服务包含了书籍的信息。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;reviews&lt;/code&gt; ：这个微服务包含了书籍相关的评论。它还会调用 ratings 微服务。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ratings&lt;/code&gt; ：ratings 微服务中包含了由书籍评价组成的评级信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里主要使用&lt;code&gt;reviews&lt;/code&gt;来演示 Istio 特性，&lt;code&gt;reviews&lt;/code&gt; 微服务有 3 个版本：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;v1 版本不会调用 &lt;code&gt;ratings&lt;/code&gt; 服务。&lt;/li&gt;
+&lt;li&gt;v2 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个黑色星形图标来显示评分信息。&lt;/li&gt;
+&lt;li&gt;v3 版本会调用 &lt;code&gt;ratings&lt;/code&gt; 服务，并使用 1 到 5 个红色星形图标来显示评分信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图展示了这个应用的端到端架构。
+&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/noistio.svg&#34; alt=&#34;Istio 注入之前的 Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Istio 注入之前的 Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;Bookinfo 是一个异构应用，几个微服务是由不同的语言编写的。这些服务对 Istio &lt;strong&gt;并无依赖&lt;/strong&gt;，但是构成了一个有代表性的服务网格的例子：它由多个服务、多个语言构成，并且 reviews 服务具有多个版本。&lt;/p&gt;
+&lt;h2 id=&#34;部署应用&#34;&gt;部署应用&lt;/h2&gt;
+&lt;p&gt;这里 Istio 的安装部署就不在赘述了。&lt;/p&gt;
+&lt;p&gt;值得注意的是：如果使用的是&lt;strong&gt;阿里云&lt;/strong&gt;容器服务安装的 Istio ，需要在 &lt;code&gt;容器服务&lt;/code&gt;-&lt;code&gt;市场&lt;/code&gt;-&lt;code&gt;应用目录&lt;/code&gt; 中选择 &lt;code&gt;gateway&lt;/code&gt; 进行安装，这里提供了多种 &lt;code&gt;gateway&lt;/code&gt; ，我们选择 &lt;code&gt;istio-ingressgateway&lt;/code&gt;，选择直接安装的话会默认创建 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的Service，会自动创建一个经典网络SLB，这里是可以调整的，会在后续的文章中进行详细讲解，这里不做赘述。&lt;/p&gt;
+&lt;p&gt;在 Istio 中运行这一应用，无需对应用自身做出任何改变。我们只要简单的在 Istio 环境中对服务进行配置和运行，具体一点说就是把 Envoy sidecar 注入到每个服务之中。这个过程所需的具体命令和配置方法由运行时环境决定，而部署结果较为一致，如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://istio.io/docs/examples/bookinfo/withistio.svg&#34; alt=&#34;Bookinfo 应用&#34;&gt;&lt;/p&gt;
+&lt;center&gt;Bookinfo 应用&lt;/center&gt;
+&lt;p&gt;所有的微服务都和 Envoy sidecar 集成在一起，被集成服务所有的出入流量都被 sidecar 所劫持，这样就为外部控制准备了所需的 Hook，然后就可以利用 Istio 控制平面为应用提供服务路由、遥测数据收集以及策略实施等功能。&lt;/p&gt;
+&lt;h3 id=&#34;下载安装&#34;&gt;下载安装&lt;/h3&gt;
+&lt;p&gt;到 GitHub 中 istio 的 &lt;a href=&#34;https://github.com/istio/istio/releases&#34;&gt;release&lt;/a&gt; 中下载相应版本的 istio 包，下载后将 &lt;code&gt;bin&lt;/code&gt; 目录配置到环境变量 &lt;code&gt;PATH&lt;/code&gt; 中 &lt;code&gt;export PATH=&amp;quot;/istio/bin:$PATH&amp;quot;&lt;/code&gt; ，这里我们使用的是 &lt;code&gt;istio 1.0.5&lt;/code&gt; 版本&lt;/p&gt;
+&lt;p&gt;Bookinfo 这个应用就在 &lt;code&gt;samples/&lt;/code&gt;目录下&lt;/p&gt;
+&lt;h2 id=&#34;在-阿里云容器服务kubernetes-中运行&#34;&gt;在 阿里云容器服务（kubernetes） 中运行&lt;/h2&gt;
+&lt;p&gt;启动应用容器，这里提供两种注入方法：&lt;strong&gt;手工注入&lt;/strong&gt;和&lt;strong&gt;自动注入&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;自动注入&lt;/p&gt;
+&lt;p&gt;需要修改 namespace ，为其添加 label 标签，这样所以在这个 namespace 中创建的应用都会被自动注入 sidecar&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl label namespace {inject-namespace} istio-injection=enabled
+$ kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;手工注入&lt;/p&gt;
+&lt;p&gt;需要使用 istioctl 命令生成注入后应用的配置，然后在部署应用&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f samples/bookinfo/platform/kube/bookinfo.yaml | kubectl apply -f -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于是测试，这里我们使用手工注入的方法。
+上面的命令会启动全部的四个服务，其中也包括了 &lt;code&gt;reviews&lt;/code&gt; 服务的三个版本（&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt; 以及 &lt;code&gt;v3&lt;/code&gt;）&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ istioctl kube-inject -f bookinfo.yaml | kubectl apply -f -
+service/details created
+deployment.extensions/details-v1 configured
+service/ratings created
+deployment.extensions/ratings-v1 created
+service/reviews created
+deployment.extensions/reviews-v1 created
+deployment.extensions/reviews-v2 created
+deployment.extensions/reviews-v3 created
+service/productpage created
+deployment.extensions/productpage-v1 created
+$ kubectl get po
+NAME                              READY   STATUS    RESTARTS   AGE
+details-v1-8685d68cf9-8fwdb       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+productpage-v1-5fd9fddc97-tx88z   2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+ratings-v1-7c4d756c55-cn76d       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v1-5d868db586-w28q5       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v2-787647c7d9-7sc52       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+reviews-v3-6964c86584-8728m       2/2     Running   &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;          1h
+$ kubectl get svc
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)            AGE
+details              ClusterIP   10.11.224.17    &amp;lt;none&amp;gt;        9080/TCP           1h
+productpage          ClusterIP   10.11.16.86     &amp;lt;none&amp;gt;        9080/TCP           1h
+ratings              ClusterIP   10.11.244.59    &amp;lt;none&amp;gt;        9080/TCP           1h
+reviews              ClusterIP   10.11.162.37    &amp;lt;none&amp;gt;        9080/TCP           1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到 Bookinfo 应用已经正常运行&lt;/p&gt;
+&lt;h3 id=&#34;指定-ingress-和-ip-的端口&#34;&gt;指定 ingress 和 IP 的端口&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;为为应用程序定义入口网关：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;确认网关创建完成&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get gateway
+NAME               AGE
+bookinfo-gateway   1h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;快速查询访问地址，这里的是之前在阿里云上创建的 &lt;code&gt;LoadBalancer&lt;/code&gt; 类型的 Service&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get svc istio-ingressgateway -n istio-system
+NAME                   TYPE           CLUSTER-IP    EXTERNAL-IP       PORT(S)                  AGE
+istio-ingressgateway   LoadBalancer   10.11.18.83   xxx.xxx.xxx.xxx   80:xxx/TCP,443:xxx/TCP   2h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;查看效果&#34;&gt;查看效果&lt;/h3&gt;
+&lt;p&gt;访问 http://{EXTERNAL-IP}/productpage 注意：这里最后不能有/，否则将找不到页面
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1ad2jg6p3j21g90mxgo7.jpg&#34; alt=&#34;image&#34;&gt;
+多次刷新浏览器，将在 &lt;code&gt;productpage&lt;/code&gt; 中看到评论的不同的版本，它们会按照 round robin（红星、黑星、没有星星）的方式展现，这三个展示分来来自&lt;code&gt;v1&lt;/code&gt;、&lt;code&gt;v2&lt;/code&gt;和&lt;code&gt;v3&lt;/code&gt;版本，因为还没有使用 Istio 来控制版本的路由，所以这里显示的是以轮询的负载均衡算法进行展示。&lt;/p&gt;
+&lt;h3 id=&#34;请求路由&#34;&gt;请求路由&lt;/h3&gt;
+&lt;p&gt;BookInfo示例部署了三个版本的reviews服务，因此需要设置一个缺省路由。否则当多次访问该应用程序时，会发现有时输出会包含带星级的评价内容，有时又没有。出现该现象的原因是当没有为应用显式指定缺省路由时，Istio会将请求随机路由到该服务的所有可用版本上。&lt;/p&gt;
+&lt;p&gt;在使用 Istio 控制 Bookinfo 版本路由之前，你需要在目标规则中定义好可用的版本 。&lt;/p&gt;
+&lt;p&gt;运行以下命令为 Bookinfo 服务创建的默认的目标规则：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果不需要启用双向TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果需要启用双向 TLS，请执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/destination-rule-all-mtls.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;等待几秒钟，等待目标规则生效。你可以使用以下命令查看目标规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get destinationrules
+NAME          AGE
+details       28s
+productpage   28s
+ratings       28s
+reviews       28s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;将所有微服务的缺省版本设置为v1&#34;&gt;将所有微服务的缺省版本设置为v1&lt;/h3&gt;
+&lt;p&gt;通过运行如下命令，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以通过下面的命令来显示所有已创建的路由规则：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices
+NAME       AGE
+bookinfo      33m
+details       8s
+productpage   8s
+ratings       8s
+reviews       8s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;显示已创建的详细路由规划：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservices -o yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;由于路由规则是通过异步方式分发到代理的，过一段时间后规则才会同步到所有pod上。因此需要等几秒钟后再尝试访问应用。&lt;/p&gt;
+&lt;p&gt;在浏览器中打开 Bookinfo 应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adqyf9dej21g70oitbd.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;可以看到 Bookinfo 应用程序的 &lt;code&gt;productpage&lt;/code&gt; 页面，显示的内容中不包含带星的评价信息，这是因为 &lt;code&gt;reviews:v1&lt;/code&gt; 服务不会访问ratings服务。&lt;/p&gt;
+&lt;h3 id=&#34;将来自特定用户的请求路由到reviewsv2&#34;&gt;将来自特定用户的请求路由到reviews:v2&lt;/h3&gt;
+&lt;p&gt;本例中，首先使用 Istio 将100%的请求流量都路由到了 Bookinfo 服务的&lt;code&gt;v1&lt;/code&gt;版本；然后再设置了一条路由规则，路由规则基于请求的 header（例如一个用户cookie）选择性地将特定的流量路由到了 &lt;code&gt;reviews&lt;/code&gt; 服务的&lt;code&gt;v2&lt;/code&gt;版本。&lt;/p&gt;
+&lt;p&gt;通过运行如下命令，把来自测试用户&amp;quot;jason&amp;quot;的请求路由到 &lt;code&gt;reviews:v2 &lt;/code&gt;，以启用ratings服务。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过如下命令确认规则是否创建：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get virtualservice reviews -o yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+    {&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;networking.istio.io/v1alpha3&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;VirtualService&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;annotations&amp;#34;&lt;/span&gt;:{},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;namespace&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;default&amp;#34;&lt;/span&gt;},&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;spec&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;hosts&amp;#34;&lt;/span&gt;:[&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;http&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;match&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;headers&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;end-user&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;exact&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;jason&amp;#34;&lt;/span&gt;}}}],&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v2&amp;#34;&lt;/span&gt;}}]},{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;route&amp;#34;&lt;/span&gt;:[{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;destination&amp;#34;&lt;/span&gt;:{&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;reviews&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;subset&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;v1&amp;#34;&lt;/span&gt;}}]}]}}
+creationTimestamp: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;2019-03-21T06:01:10Z&amp;#34;&lt;/span&gt;
+generation: &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;
+name: reviews
+namespace: default
+resourceVersion: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;62486214&amp;#34;&lt;/span&gt;
+selfLink: /apis/networking.istio.io/v1alpha3/namespaces/default/virtualservices/reviews
+uid: b9e41681-4b9e-11e9-a679-00163e045478
+spec:
+hosts:
+- reviews
+http:
+- match:
+    - headers:
+        end-user:
+        exact: jason
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+- route:
+    - destination:
+        host: reviews
+        subset: v1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;确认规则已创建之后，在浏览器中打开BookInfo应用程序的URL: http://{EXTERNAL-IP}/productpage。&lt;/p&gt;
+&lt;p&gt;以&amp;quot;jason&amp;quot;用户登录 &lt;code&gt;productpage&lt;/code&gt; 页面，您可以在每条评价后面看到星级信息。&lt;/p&gt;
+&lt;p&gt;这里登录用户名为 &lt;code&gt;jason&lt;/code&gt; ，密码随便输入即可&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adtjugp3j21gb0iygoa.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;流量转移&#34;&gt;流量转移&lt;/h3&gt;
+&lt;p&gt;除了基于内容的路由，Istio还支持基于权重的路由规则。&lt;/p&gt;
+&lt;p&gt;首先，将所有微服务的缺省版本设置为v1：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其次，使用下面的命令把50%的流量从reviews:v1转移到reviews:v3:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在浏览器中多次刷新productpage页面，大约有50%的几率会看到页面中出现带红星的评价内容。&lt;/p&gt;
+&lt;p&gt;说明： 注意该方式和使用容器编排平台的部署特性来进行版本迁移是完全不同的。容器编排平台使用了实例scaling来对流量进行管理。而通过Istio，两个版本的reviews服务可以独立地进行扩容和缩容，并不会影响这两个版本服务之间的流量分发。&lt;/p&gt;
+&lt;p&gt;如果觉得 &lt;code&gt;reviews：v3&lt;/code&gt; 微服务已经稳定，你可以通过以下命令， 将 &lt;code&gt;virtual service&lt;/code&gt; 100％的流量路由到 &lt;code&gt;reviews：v3&lt;/code&gt;，从而实现一个灰度发布的功能。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;在华为云cce上运行&#34;&gt;在华为云（CCE）上运行&lt;/h2&gt;
+&lt;p&gt;华为云率先将 Istio 作为产品投入到公有云中进行商业应用，开通方式十分简单，只要在华为云CCE上创建集群，然后申请 Istio 公测即可。&lt;/p&gt;
+&lt;p&gt;为了方便测试 Bookinfo 应用在华为云上提供了一键体验应用，点击即可省去刚刚那一系列的 &lt;code&gt;kubectl&lt;/code&gt; 操作&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afbs7oq4j21g90id0vv.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;一键创建体验应用&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afgth1cgj219b0a7tb1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;点击灰度发布即可&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afjc5hvgj21fv0o1q6q.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;创建金丝雀发布&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afnqyqlhj20ze0o00vl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择灰度发布的组件&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afp1c5ltj20zk0le765.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;填写版本号&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afq846bjj20z80nowgl.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择镜像版本&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afra8rmhj21050mfgpb.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;版本创建完成后配置灰度策略&lt;/center&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afwpan6qj21090mste1.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;选择相应策略，策略下发即可&lt;/center&gt;
+&lt;p&gt;总的来说，华为云的 Istio 确实已经是商业化应用，这里只是展示了部分灰度发布的功能。其他比如流量治理，流量监控等功能还没展示，这些功能做的十分细致，值得尝试。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://help.aliyun.com/document_detail/90563.html?spm=a2c4g.11186623.6.759.5dbd1f5fSB2m9T&#34;&gt;在Kubernetes上基于Istio实现Service Mesh智能路由&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://support.huaweicloud.com/bestpractice-cce/cce_bestpractice_0012.html&#34;&gt;基于ISTIO服务网格的灰度发布&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 浅析ServiceMesh &amp; Istio</title>
+      <link>/post/istio-share/</link>
+      <pubDate>Wed, 20 Mar 2019 09:12:28 +0800</pubDate>
+      
+      <guid>/post/istio-share/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;公司于&lt;strong&gt;18年10月&lt;/strong&gt;正式确认服务容器化，到&lt;strong&gt;18年12月4日&lt;/strong&gt;第一个服务正式部署到生产环境kubernetes集群，再到&lt;strong&gt;如今&lt;/strong&gt;已有&lt;strong&gt;23&lt;/strong&gt;个服务完成了生产环境容器化的切换，更多的服务在测试环境容器化部署随时可以切换到生产环境。目前新项目的开发，大部分都直接在测试环境容器化部署，不再需要新购ECS搭建测试环境。随着容器化的深入，服务间的通信和联系变的更加复杂，其中通信的可视化、流量的控制和服务质量的评估问题日益凸显，成为了微服务方案的短板。这个时候&lt;code&gt;Service mesh&lt;/code&gt;就进入了我们的视野。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;service-mesh是什么&#34;&gt;Service mesh是什么&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Service mesh&lt;/code&gt; 又译作 “服务网格”，作为服务间通信的基础设施层。随着规模和复杂性的增长，服务网格越来越难以理解和管理。它的需求包括服务发现、负载均衡、故障恢复、指标收集和监控以及通常更加复杂的运维需求，例如 A/B 测试、金丝雀发布、限流、访问控制和端到端认证等。它负责通过包含现代云原生应用程序的复杂服务拓扑来可靠地传递请求。实际上，服务网格通常通过一组轻量级网络代理来实现，这些代理与应用程序代码一起部署，而不需要感知应用程序本身。&lt;/p&gt;
+&lt;p&gt;**这里注意：**&lt;code&gt;istio&lt;/code&gt;只是&lt;code&gt;Service mesh&lt;/code&gt;服务网格的一种。&lt;/p&gt;
+&lt;h3 id=&#34;服务网格的特点&#34;&gt;服务网格的特点&lt;/h3&gt;
+&lt;p&gt;服务网格有如下几个特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;应用程序间通讯的中间层&lt;/li&gt;
+&lt;li&gt;轻量级网络代理&lt;/li&gt;
+&lt;li&gt;应用程序无感知&lt;/li&gt;
+&lt;li&gt;解耦应用程序的重试/超时、监控、追踪和服务发现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;目前两款流行的服务网格开源软件 &lt;a href=&#34;https://linkerd.io&#34;&gt;Linkerd&lt;/a&gt; 和 &lt;a href=&#34;https://Istio.io&#34;&gt;Istio&lt;/a&gt; 都可以直接在 Kubernetes 中集成，其中 Linkerd 已经成为 CNCF 成员，Istio 在 2018年7月31日宣布 &lt;a href=&#34;https://istio.io/zh/blog/2018/announcing-1.0/&#34;&gt;1.0&lt;/a&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;服务网格的发展历史&#34;&gt;服务网格的发展历史&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Spring Cloud&lt;/p&gt;
+&lt;p&gt;Spring Cloud 诞生于2015年，Spring Cloud 最早在功能层面为微服务治理定义了一系列标准特性，比如：智能路由、服务熔断、服务注册于发现等这些名词我最早看到都是在 Sprint Cloud 相关文章中。同时也有一些缺点，比如：需要在代码级别对诸多组件进行控制，并且都依赖于 Java 的实现，这与微服务的多语言协作背道而驰；没有对资源的调度、devops等提供相关支持，需要借助平台来完成；众所周知的Eureka闭源等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Linkerd&lt;/p&gt;
+&lt;p&gt;Service mesh 这个命名就是来源于Linkerd。Linkerd 很好地结合了 kubernetes 所提供的功能，于2017年加入CNCF。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Istio&lt;/p&gt;
+&lt;p&gt;2017年5月， Google、 IBM 和 Lyft 宣布了Istio的诞生。一经发布，便立即获得Red Hat、F5等大厂响应，社区活跃度高涨，很快超越了 Linkerd，成为了 Service mesh 的代表产品。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;国内服务网格&lt;/p&gt;
+&lt;p&gt;这里不得不提的是国内服务网格的兴起，在 Service mesh 概念具体定义以前，国内的许多厂商就已经开始了微服务进程，同时在做自己的微服务治理产品。而在 Service mesh 概念普及之后，厂商意识到了自己产品也具有 Service mesh 的特点，将自己的服务治理平台进行了改造和完善，推出了自己的 Service mesh 产品。例如，微博、腾讯和华为都有自己的服务网格产品，华为更是已经将产品投入到公有云中进行商业应用。蚂蚁金服的 SOFAMesh 则是针对大流量的生产场景，在 Istio 的架构基础上进行修改并推广。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;istio又是什么&#34;&gt;Istio又是什么&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Istio&lt;/code&gt; 提供了一个完整的解决方案，通过为整个服务网格提供行为洞察和操作控制来满足微服务应用程序的多样化需求。Istio 允许您连接、保护、控制和观测服务。在较高的层次上，Istio 有助于降低这些部署的复杂性，并减轻开发团队的压力。它是一个完全开源的服务网格，可以透明地分层到现有的分布式应用程序上。它也是一个平台，包括允许它集成到任何日志记录平台、遥测或策略系统的 API。Istio 的多样化功能集使您能够成功高效地运行分布式微服务架构，并提供保护、连接和监控微服务的统一方法。&lt;/p&gt;
+&lt;h3 id=&#34;istio的架构&#34;&gt;Istio的架构&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Istio&lt;/code&gt;总的来说由两部分组成：&lt;strong&gt;控制平面&lt;/strong&gt;和&lt;strong&gt;数据平面&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;数据平面由一组以 sidecar 方式部署的智能代理（Envoy）组成。sidecar通过注入的方式和业务容器共存于一个 Pod 中，会劫业务容器的流量，接受控制面组件的控制，可以调节和控制微服务及 Mixer 之间所有的网络通信。&lt;/li&gt;
+&lt;li&gt;控制平面是 Istio 的核心，负责管理和配置代理来路由流量。此外控制平面配置 Mixer 以实施策略和收集遥测数据。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图显示了构成每个面板的不同组件：
+&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65ly1g199o3s4g5j20lw0kijux.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;center&gt;图片为原创，转载请标记出处https://blog.maoxianplay.com/&lt;/center&gt;
+&lt;h4 id=&#34;envoy&#34;&gt;Envoy&lt;/h4&gt;
+&lt;p&gt;Istio 使用 Envoy 代理的扩展版本，Envoy 是以 C++ 开发的高性能代理，用于调解服务网格中所有服务的所有入站和出站流量。Envoy 的许多内置功能被 Istio 发扬光大，例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;动态服务发现&lt;/li&gt;
+&lt;li&gt;负载均衡&lt;/li&gt;
+&lt;li&gt;TLS 终止&lt;/li&gt;
+&lt;li&gt;HTTP/2 &amp;amp; gRPC 代理&lt;/li&gt;
+&lt;li&gt;熔断器&lt;/li&gt;
+&lt;li&gt;健康检查、基于百分比流量拆分的灰度发布&lt;/li&gt;
+&lt;li&gt;故障注入&lt;/li&gt;
+&lt;li&gt;丰富的度量指标&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Envoy 被部署为 sidecar，和对应服务在同一个 Kubernetes pod 中。这允许 Istio 将大量关于流量行为的信号作为属性提取出来，而这些属性又可以在 Mixer 中用于执行策略决策，并发送给监控系统，以提供整个网格行为的信息。&lt;/p&gt;
+&lt;p&gt;Sidecar 代理模型还可以将 Istio 的功能添加到现有部署中，而无需重新构建或重写代码。可以阅读更多来了解为什么我们在设计目标中选择这种方式。&lt;/p&gt;
+&lt;h4 id=&#34;mixer&#34;&gt;Mixer&lt;/h4&gt;
+&lt;p&gt;Mixer 是一个独立于平台的组件，负责在服务网格上执行访问控制和使用策略，并从 Envoy 代理和其他服务收集遥测数据。代理提取请求级属性，发送到 Mixer 进行评估。&lt;/p&gt;
+&lt;p&gt;Mixer 中包括一个灵活的插件模型，使其能够接入到各种主机环境和基础设施后端，从这些细节中抽象出 Envoy 代理和 Istio 管理的服务。&lt;/p&gt;
+&lt;h4 id=&#34;pilot&#34;&gt;Pilot&lt;/h4&gt;
+&lt;p&gt;Pilot 为 Envoy sidecar 提供服务发现功能，为智能路由（例如 A/B 测试、金丝雀部署等）和弹性（超时、重试、熔断器等）提供流量管理功能。它将控制流量行为的高级路由规则转换为特定于 Envoy 的配置，并在运行时将它们传播到 sidecar。&lt;/p&gt;
+&lt;p&gt;Pilot 将平台特定的服务发现机制抽象化并将其合成为符合 Envoy 数据平面 API 的任何 sidecar 都可以使用的标准格式。这种松散耦合使得 Istio 能够在多种环境下运行（例如，Kubernetes、Consul、Nomad），同时保持用于流量管理的相同操作界面。&lt;/p&gt;
+&lt;h4 id=&#34;citadel&#34;&gt;Citadel&lt;/h4&gt;
+&lt;p&gt;Citadel 通过内置身份和凭证管理赋能强大的服务间和最终用户身份验证。可用于升级服务网格中未加密的流量，并为运维人员提供基于服务标识而不是网络控制的强制执行策略的能力。从 0.5 版本开始，Istio 支持基于角色的访问控制，以控制谁可以访问您的服务，而不是基于不稳定的三层或四层网络标识。&lt;/p&gt;
+&lt;h4 id=&#34;galley11版本新增&#34;&gt;Galley(1.1版本新增)&lt;/h4&gt;
+&lt;p&gt;Galley 代表其他的 Istio 控制平面组件，用来验证用户编写的 Istio API 配置。随着时间的推移，Galley 将接管 Istio 获取配置、 处理和分配组件的顶级责任。它将负责将其他的 Istio 组件与从底层平台（例如 Kubernetes）获取用户配置的细节中隔离开来。&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;在云原生架构下，容器的使用给予了异构应用程序的更多可行性，Kubernetes 增强了应用的横向扩容能力，用户可以快速的编排出复杂环境、复杂依赖关系的应用程序，Istio可以使开发者又无须过分关心应用程序的监控、扩展性、服务发现和分布式追踪这些繁琐的事情而专注于程序开发，赋予开发者更多的创造性。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/zh/&#34;&gt;Istio 官方文档 - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/fleeto/istio-for-beginner&#34;&gt;《深入浅出istio》&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: Service Mesh是什么</title>
+      <link>/post/istio-servicemesh/</link>
+      <pubDate>Tue, 19 Mar 2019 16:12:56 +0800</pubDate>
+      
+      <guid>/post/istio-servicemesh/</guid>
+      <description>
+        
+        
+        &lt;p&gt;本文转自&lt;a href=&#34;http://www.servicemesher.com/istio-handbook/concepts-and-principle/what-is-service-mesh.html&#34;&gt;《Istio 服务网格进阶实战》&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;什么是服务网格&#34;&gt;什么是服务网格？&lt;/h1&gt;
+&lt;p&gt;Service mesh 又译作 “服务网格”，作为服务间通信的基础设施层。Buoyant 公司的 CEO Willian Morgan 在他的这篇文章 &lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;WHAT’S A SERVICE MESH? AND WHY DO I NEED ONE?&lt;/a&gt; 中解释了什么是 Service Mesh，为什么云原生应用需要 Service Mesh。&lt;/p&gt;
+&lt;p&gt;服务网格是用于处理服务间通信的专用基础设施层。它负责通过包含现代云原生应用程序的复杂服务拓扑来可靠地传递请求。实际上，服务网格通常通过一组轻量级网络代理来实现，这些代理与应用程序代码一起部署，而不需要感知应用程序本身。——  &lt;a href=&#34;https://twitter.com/wm&#34;&gt;Willian Morgan&lt;/a&gt; Buoyant CEO&lt;/p&gt;
+&lt;p&gt;服务网格（Service Mesh）这个术语通常用于描述构成这些应用程序的微服务网络以及应用之间的交互。随着规模和复杂性的增长，服务网格越来越难以理解和管理。它的需求包括服务发现、负载均衡、故障恢复、指标收集和监控以及通常更加复杂的运维需求，例如 A/B 测试、金丝雀发布、限流、访问控制和端到端认证等。&lt;/p&gt;
+&lt;h2 id=&#34;服务网格的特点&#34;&gt;服务网格的特点&lt;/h2&gt;
+&lt;p&gt;服务网格有如下几个特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;应用程序间通讯的中间层&lt;/li&gt;
+&lt;li&gt;轻量级网络代理&lt;/li&gt;
+&lt;li&gt;应用程序无感知&lt;/li&gt;
+&lt;li&gt;解耦应用程序的重试/超时、监控、追踪和服务发现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;目前两款流行的服务网格开源软件 &lt;a href=&#34;https://linkerd.io&#34;&gt;Linkerd&lt;/a&gt; 和 &lt;a href=&#34;https://Istio.io&#34;&gt;Istio&lt;/a&gt; 都可以直接在 Kubernetes 中集成，其中 Linkerd 已经成为 CNCF 成员，Istio 在 2018年7月31日宣布 &lt;a href=&#34;https://istio.io/zh/blog/2018/announcing-1.0/&#34;&gt;1.0&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;理解服务网格&#34;&gt;理解服务网格&lt;/h2&gt;
+&lt;p&gt;如果用一句话来解释什么是服务网格，可以将它比作是应用程序或者说微服务间的 TCP/IP，负责服务之间的网络调用、限流、熔断和监控。对于编写应用程序来说一般无须关心 TCP/IP 这一层（比如通过 HTTP 协议的 RESTful 应用），同样使用服务网格也就无须关心服务之间的那些原来是通过应用程序或者其他框架实现的事情，比如 Spring Cloud、OSS，现在只要交给服务网格就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;http://philcalcado.com/&#34;&gt;Phil Calçado&lt;/a&gt; 在他的这篇博客 &lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh&lt;/a&gt; 中详细解释了服务网格的来龙去脉：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;从最原始的主机之间直接使用网线相连&lt;/li&gt;
+&lt;li&gt;网络层的出现&lt;/li&gt;
+&lt;li&gt;集成到应用程序内部的控制流&lt;/li&gt;
+&lt;li&gt;分解到应用程序外部的控制流&lt;/li&gt;
+&lt;li&gt;应用程序的中集成服务发现和断路器&lt;/li&gt;
+&lt;li&gt;出现了专门用于服务发现和断路器的软件包/库，如 &lt;a href=&#34;https://finagle.github.io/&#34;&gt;Twitter 的 Finagle&lt;/a&gt; 和 &lt;a href=&#34;https://code.fb.com/networking-traffic/introducing-proxygen-facebook-s-c-http-framework/&#34;&gt;Facebook  的 Proxygen&lt;/a&gt;，这时候还是集成在应用程序内部&lt;/li&gt;
+&lt;li&gt;出现了专门用于服务发现和断路器的开源软件，如 &lt;a href=&#34;http://netflix.github.io/&#34;&gt;Netflix OSS&lt;/a&gt;、Airbnb 的 &lt;a href=&#34;https://github.com/airbnb/synapse&#34;&gt;synapse&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/airbnb/nerve&#34;&gt;nerve&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;最后作为微服务的中间层服务网格出现&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;服务网格的架构如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/00704eQkly1fswh7dbs1pj30id0bpmxl.jpg&#34; alt=&#34;Service Mesh 架构图&#34;&gt;&lt;/p&gt;
+&lt;p&gt;图片来自：&lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;服务网格作为 sidecar 运行，对应用程序来说是透明，所有应用程序间的流量都会通过它，所以对应用程序流量的控制都可以在 serivce mesh 中实现。&lt;/p&gt;
+&lt;h2 id=&#34;服务网格如何工作&#34;&gt;服务网格如何工作？&lt;/h2&gt;
+&lt;p&gt;下面以 Istio 为例讲解服务网格如何在 Kubernetes 中工作。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Istio 将服务请求路由到目的地址，根据其中的参数判断是到生产环境、测试环境还是 staging 环境中的服务（服务可能同时部署在这三个环境中），是路由到本地环境还是公有云环境？所有的这些路由信息可以动态配置，可以是全局配置也可以为某些服务单独配置。&lt;/li&gt;
+&lt;li&gt;当 Istio 确认了目的地址后，将流量发送到相应服务发现端点，在 Kubernetes 中是 service，然后 service 会将服务转发给后端的实例。&lt;/li&gt;
+&lt;li&gt;Istio 根据它观测到最近请求的延迟时间，选择出所有应用程序的实例中响应最快的实例。&lt;/li&gt;
+&lt;li&gt;Istio 将请求发送给该实例，同时记录响应类型和延迟数据。&lt;/li&gt;
+&lt;li&gt;如果该实例挂了、不响应了或者进程不工作了，Istio 将把请求发送到其他实例上重试。&lt;/li&gt;
+&lt;li&gt;如果该实例持续返回 error，Istio 会将该实例从负载均衡池中移除，稍后再周期性得重试。&lt;/li&gt;
+&lt;li&gt;如果请求的截止时间已过，Istio 主动失败该请求，而不是再次尝试添加负载。&lt;/li&gt;
+&lt;li&gt;Istio 以 metric 和分布式追踪的形式捕获上述行为的各个方面，这些追踪信息将发送到集中 metric 系统。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;为何使用服务网格&#34;&gt;为何使用服务网格？&lt;/h2&gt;
+&lt;p&gt;服务网格并没有给我们带来新功能，它是用于解决其他工具已经解决过的问题，只不过这次是在云原生的 Kubernetes 环境下的实现。&lt;/p&gt;
+&lt;p&gt;在传统的 MVC 三层 Web 应用程序架构下，服务之间的通讯并不复杂，在应用程序内部自己管理即可，但是在现今的复杂的大型网站情况下，单体应用被分解为众多的微服务，服务之间的依赖和通讯十分复杂，出现了 twitter 开发的 &lt;a href=&#34;https://twitter.github.io/finagle/&#34;&gt;Finagle&lt;/a&gt;、Netflix 开发的 &lt;a href=&#34;https://github.com/Netflix/Hystrix&#34;&gt;Hystrix&lt;/a&gt; 和 Google 的 Stubby 这样的 “胖客户端” 库，这些就是早期的服务网格，但是它们都仅适用于特定的环境和特定的开发语言，并不能作为平台级的服务网格支持。&lt;/p&gt;
+&lt;p&gt;在云原生架构下，容器的使用给予了异构应用程序的更多可行性，Kubernetes 增强的应用的横向扩容能力，用户可以快速的编排出复杂环境、复杂依赖关系的应用程序，同时开发者又无须过分关心应用程序的监控、扩展性、服务发现和分布式追踪这些繁琐的事情而专注于程序开发，赋予开发者更多的创造性。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://buoyant.io/2017/04/25/whats-a-service-mesh-and-why-do-i-need-one/&#34;&gt;WHAT’S A SERVICE MESH? AND WHY DO I NEED ONE? - buoyant.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/attest-engineering/Istio-a-service-mesh-for-aws-ecs-937f201f847a&#34;&gt;Istio: A service mesh for AWS ECS - medium.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/blog/istio-service-mesh-for-microservices.html&#34;&gt;初次了解 Istio - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.christianposta.com/microservices/application-network-functions-with-esbs-api-management-and-now-service-mesh/&#34;&gt;Application Network Functions With ESBs, API Management, and Now.. Service Mesh? - blog.christianposta.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://philcalcado.com/2017/08/03/pattern_service_mesh.html&#34;&gt;Pattern: Service Mesh - philcalcado.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.servicemesher.com/envoy/&#34;&gt;Envoy 官方文档中文版 - servicemesher.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/zh&#34;&gt;Istio 官方文档 - istio.io&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/servicemesher/awesome-servicemesh/&#34;&gt;servicemesher/awesome-servicemesh - github.com&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,921 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guo Xudong&#39;s Blog·郭旭东的博客 – 部署安装</title>
+    <link>/categories/%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85/</link>
+    <description>Recent content in 部署安装 on Guo Xudong&#39;s Blog·郭旭东的博客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh</language>
+    <lastBuildDate>Fri, 23 Aug 2019 09:36:55 +0800</lastBuildDate>
+    
+	  <atom:link href="/categories/%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Post: GitHub/Gitee 静态页托管页部署SSL证书</title>
+      <link>/post/aliyun-ssl/</link>
+      <pubDate>Fri, 23 Aug 2019 09:36:55 +0800</pubDate>
+      
+      <guid>/post/aliyun-ssl/</guid>
+      <description>
+        
+        
+        &lt;p&gt;本文档介绍了在 &lt;a href=&#34;https://pages.github.com/&#34;&gt;Github&lt;/a&gt; / &lt;a href=&#34;https://gitee.com/help/articles/4136&#34;&gt;Gitee&lt;/a&gt; 的静态页托管Pages服务部署SSL证书，配置HTTPS安全访问的操作说明。&lt;/p&gt;
+&lt;h3 id=&#34;pages服务&#34;&gt;Pages服务&lt;/h3&gt;
+&lt;p&gt;Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用Github或码云Pages托管博客、项目官网等静态网页。常见的静态站点生成器有：Hugo、Jekyll、Hexo等，可以用来生成静态站点。默认情况下，托管的站点使用 &lt;code&gt;github.io&lt;/code&gt; / &lt;code&gt;gitee.io&lt;/code&gt; 域名来访问站点，同时也支持自定义域名，并配置强制使用HTTPS。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：如果要在 Gitee Pages 上配置自定义域名+HTTPS，则需要开启 Gitee Pages Pro 。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;github-pages-服务部署ssl证书&#34;&gt;Github Pages 服务部署SSL证书&lt;/h3&gt;
+&lt;h4 id=&#34;前提条件&#34;&gt;前提条件&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;GitHub 仓库&lt;/li&gt;
+&lt;li&gt;开启 GitHub Pages&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws1.sinaimg.cn/large/ad5fbf65gy1g69e503ukoj21ig0hwad9.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;证书签发&#34;&gt;证书签发&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;购买证书后点击申请&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx2.sinaimg.cn/large/ad5fbf65gy1g69ee2r500j22cc078t9z.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;证书申请&lt;/p&gt;
+&lt;p&gt;如果该域名是由阿里云购买，则选择自动DNS验证，如果不是在阿里云购买的，可以选择手动验证。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/bmiddle/ad5fbf65gy1g69egsu7fuj20ye0swwh3.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;证书签发&lt;/p&gt;
+&lt;p&gt;证书通过申请后，会收到证书签发的邮件。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx2.sinaimg.cn/wap720/ad5fbf65gy1g69epoqw6uj21680cotaj.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;设置自定义域名&#34;&gt;设置自定义域名&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;解析域名&lt;/p&gt;
+&lt;p&gt;在证书签发成功后，添加DNS解析，将绑定了SSL证书的域名解析到 &lt;code&gt;YourRepo.github.io&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws2.sinaimg.cn/large/ad5fbf65gy1g69evivrvqj21mi07it9g.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置域名&lt;/p&gt;
+&lt;p&gt;解析之后将域名添加到 &lt;code&gt;Custom domain&lt;/code&gt; 并且点击 &lt;code&gt;Save&lt;/code&gt; ，Github会自动验证，出现&lt;code&gt;Your site is published at https://YourDomainName.com/&lt;/code&gt;则证明解析成功。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx4.sinaimg.cn/large/ad5fbf65gy1g69esrcn2tj21a210wwk0.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;gitee-pages-pro-服务部署ssl证书&#34;&gt;Gitee Pages Pro 服务部署SSL证书&lt;/h3&gt;
+&lt;h4 id=&#34;前提条件-1&#34;&gt;前提条件&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Gitee 仓库&lt;/li&gt;
+&lt;li&gt;开启 Gitee Pages Pro&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Gitee 需要开启 Gitee Pages Pro 服务才支持自定义域名+HTTPS。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;证书签发-1&#34;&gt;证书签发&lt;/h4&gt;
+&lt;p&gt;证书签发同 Github Pages。这里介绍非阿里云购买的域名，进行证书申请。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;购买证书流程如上&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;申请证书&lt;/p&gt;
+&lt;p&gt;证书验证方式选择&lt;code&gt;手工DNS验证&lt;/code&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;拷贝验证信息&lt;/p&gt;
+&lt;p&gt;拷贝验证信息内的&lt;code&gt;记录值&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;验证解析&lt;/p&gt;
+&lt;p&gt;进入购买域名所在网站进行DNS解析，这里以&lt;a href=&#34;https://www.name.com/zh-cn/&#34;&gt;name.com&lt;/a&gt;为例：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/large/ad5fbf65gy1g69fqad2euj221g0700tt.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;p&gt;解析成功之后，返回阿里云SSL证书管理页面点击&lt;code&gt;验证&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;证书签发&lt;/p&gt;
+&lt;p&gt;签发成功后会收到签发成功的邮件。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;设置自定义域名-1&#34;&gt;设置自定义域名&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;解析域名&lt;/p&gt;
+&lt;p&gt;进入域名所在网站，添加DNS解析记录，将绑定了SSL证书的域名解析到&lt;code&gt;gitee.gitee.io&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws3.sinaimg.cn/large/ad5fbf65gy1g69fyy5it5j21z606mjs9.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置域名&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;域名添加到&lt;code&gt;自定义域名&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://wx2.sinaimg.cn/large/ad5fbf65gy1g69g11wx0qj21a60xiq7m.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置证书&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;证书下载，选择 nginx 类型。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/bmiddle/ad5fbf65gy1g69g3pua7xj20ne0v0jus.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;gitee pages 配置证书，将证书文件与私钥文件贴入并提交。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://ws4.sinaimg.cn/large/ad5fbf65gy1g69g64n1btj21bs0yogq8.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;勾选&lt;code&gt;强制使用HTTPS&lt;/code&gt;，并保存。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;验证&#34;&gt;验证&lt;/h3&gt;
+&lt;p&gt;在Github/Gitee配置成功之后，您可在浏览器中输入 &lt;a href=&#34;https://www.YourDomainName.com&#34;&gt;https://www.YourDomainName.com&lt;/a&gt; 验证证书安装结果。可以正常访问静态托管站点，并且浏览器地址栏显示绿色的小锁标识说明证书安装成功。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 单节点版rancher升级指南</title>
+      <link>/post/rancher-update-2.2.1/</link>
+      <pubDate>Sun, 31 Mar 2019 11:15:35 +0800</pubDate>
+      
+      <guid>/post/rancher-update-2.2.1/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;Rancher 不仅可以在任何云提供商的任何地方部署 Kubernetes 集群，而且还将它们集中在集中式的身份验证和访问控制之下。由于它与资源的运行位置无关，因此您可以轻松地在不同的环境部署你的 kubernetes 集群并操作他们。 Rancher 不是将部署几个独立的 Kubernetes 集群，而是将它们统一为一个单独的托管Kubernetes Cloud。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;目前我们使用的是 rancher 2.1.1版本，在去年 rancher 发布 &lt;code&gt;v2.1.*&lt;/code&gt; 版本的时候做过一次升级，当时遇到了很多问题，虽然都一一解决，但是并没有有效的记录下来，这里在升级 &lt;code&gt;v2.2.*&lt;/code&gt; 版本的时候做一个记录以便在今后升级的时候的提供参考作用。&lt;/p&gt;
+&lt;h2 id=&#34;升级前的准备&#34;&gt;升级前的准备&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;首先查看当前 rancher 版本，记下这个版本号后面需要使用。查看方式就是登陆 rancher 在左下角就可以看到当前版本号，我们这里使用的&lt;code&gt;v2.1.1&lt;/code&gt;版本。&lt;/li&gt;
+&lt;li&gt;打开官方文档，这里推荐对照官方文档进行升级，一般官方文档都会及时更新并提供最佳升级方法，而一般的博客会因为其写作时间、使用版本、部署环境的不同有所偏差。官方文档： &lt;a href=&#34;https://www.cnrancher.com/docs/rancher/v2.x/cn/upgrades/single-node-upgrade/&#34;&gt;https://www.cnrancher.com/docs/rancher/v2.x/cn/upgrades/single-node-upgrade/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;升级&#34;&gt;升级&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;首先获取正在运行的 rancher 容器 ID,由以下命令可知 &lt;code&gt;RANCHER_CONTAINER_ID&lt;/code&gt; 为 &lt;code&gt;83167cb60134&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker ps
+CONTAINER ID        IMAGE                    COMMAND             CREATED             STATUS              
+PORTS                                       NAMES
+83167cb60134        rancher/rancher:latest   &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;entrypoint.sh&amp;#34;&lt;/span&gt;     &lt;span style=&#34;color:#3677a9&#34;&gt;4&lt;/span&gt; months ago        Up &lt;span style=&#34;color:#3677a9&#34;&gt;4&lt;/span&gt; months         0.0.0.0:80-&amp;gt;80/tcp, 0.0.0.0:443-&amp;gt;443/tcp   priceless_newton
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;停止该容器&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker stop {RANCHER_CONTAINER_ID}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;创建正在运行的 Rancher Server 容器的数据卷容器，将在升级中使用，这里命名为 &lt;code&gt;rancher-data&lt;/code&gt; 容器。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;替换{RANCHER_CONTAINER_ID}为上一步中的容器ID。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;替换{RANCHER_CONTAINER_TAG}为你当前正在运行的Rancher版本，如上面的先决条件中所述。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker create --volumes-from {RANCHER_CONTAINER_ID} --name rancher-data rancher/rancher:{RANCHER_CONTAINER_TAG}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;备份 &lt;code&gt;rancher-data&lt;/code&gt; 数据卷容器&lt;/p&gt;
+&lt;p&gt;如果升级失败，可以通过此备份还原Rancher Server，容器命名:rancher-data-snapshot-&amp;lt;CURRENT_VERSION&amp;gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;替换{RANCHER_CONTAINER_ID}为上一步中的容器ID。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;替换{CURRENT_VERSION}为当前安装的Rancher版本的标记。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;替换{RANCHER_CONTAINER_TAG}为当前正在运行的Rancher版本，如先决条件中所述 。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker create --volumes-from {RANCHER_CONTAINER_ID} --name rancher-data-snapshot-{CURRENT_VERSION} rancher/rancher:{RANCHER_CONTAINER_TAG}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;拉取Rancher的最新镜像,这里确保有外网，可能拉取到新的镜像，如果没有外网，这里就需要将镜像上传到私有镜像仓库，将拉取地址设置为私有镜像仓库即可&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker pull rancher/rancher:latest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;通过 &lt;code&gt;rancher-data&lt;/code&gt; 数据卷容器启动新的 Rancher Server 容器。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;这里要注意到，我们这是使用的是独立容器+外部七层负载均衡，是通过阿里云SLB进行SSL证书认证，需要在启动的时候增加&lt;code&gt;--no-cacerts&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ docker run -d --volumes-from rancher-data --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher:latest --no-cacerts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;升级过程会需要一定时间，不要在升级过程中终止升级，强制终止可能会导致数据库迁移错误。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;升级 Rancher Server后， server 容器中的数据会保存到 &lt;code&gt;rancher-data&lt;/code&gt; 容器中，以便将来升级。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;删除旧版本 Rancher Server 容器&lt;/p&gt;
+&lt;p&gt;如果你只是停止以前的Rancher Server容器(并且不删除它),则旧版本容器可能随着主机重启后自动运行，导致容器端口冲突。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;升级成功&lt;/p&gt;
+&lt;p&gt;访问 rancher 可以看到右下角版本已经完成更新。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://wx4.sinaimg.cn/large/ad5fbf65gy1g1lzcmucn6j20ck03qt8p.jpg&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: 阿里云日志服务采集k8s日志并实现livetail功能</title>
+      <link>/post/dashboard-k8s/</link>
+      <pubDate>Thu, 14 Feb 2019 14:07:06 +0800</pubDate>
+      
+      <guid>/post/dashboard-k8s/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;目前的项目日志都是通过Logtail直接采集，投递到OSS持久化，同时可以通过阿里云日志服务、devops自建平台进行查看（虽然大部分人是直接登录ECS查看=。=），
+在开始进行容器化之后，同样遇到日志的问题，目前的解决方案是阿里云日志服务持久化和展现格式化后的日志、使用rancher查看实时日志，
+但是之前由于rancher平台出现一些问题，导致不能及时查看日志的情况，在这个背景下对阿里云日志服务采集k8s日志和livetail进行搭建并调研此方案是否可行。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;简介转自阿里云官方文档&#34;&gt;简介（转自阿里云官方文档）&lt;/h1&gt;
+&lt;p&gt;日志服务（Log Service，简称 LOG）是针对日志类数据的一站式服务，在阿里巴巴集团经历大量大数据场景锤炼而成。您无需开发就能快捷完成日志数据采集、消费、投递以及查询分析等功能，提升运维、运营效率，建立 DT 时代海量日志处理能力。&lt;/p&gt;
+&lt;h1 id=&#34;kubernetes日志采集组件安装&#34;&gt;kubernetes日志采集组件安装&lt;/h1&gt;
+&lt;h2 id=&#34;安装logtail&#34;&gt;安装Logtail&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;进入阿里云容器服务找到集群id
+&lt;img src=&#34;/images/source/log_ser.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;通过ssh登录master节点，或者任意安装了kubectl并配置了该集群kubeconfig的服务器&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;执行命令，将${your_k8s_cluster_id}替换为集群id&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;wget http://logtail-release-cn-hangzhou.oss-cn-hangzhou.aliyuncs.com/kubernetes/alicloud-log-k8s-install.sh -O alicloud-log-k8s-install.sh; chmod &lt;span style=&#34;color:#3677a9&#34;&gt;744&lt;/span&gt; ./alicloud-log-k8s-install.sh; sh ./alicloud-log-k8s-install.sh &lt;span style=&#34;color:#ed9d13&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#40ffff&#34;&gt;your_k8s_cluster_id&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Project k8s-log-${your_k8s_cluster_id}下会自动创建名为config-operation-log的Logstore，用于存储alibaba-log-controller的运行日志。请勿删除此Logstore，否则无法为alibaba-log-controller排查问题。&lt;/li&gt;
+&lt;li&gt;若您需要将日志采集到已有的Project，请执行安装命令sh ./alicloud-log-k8s-install.sh${your_k8s_cluster_id} ${your_project_name} ，并确保日志服务Project和您的Kubernetes集群在同一地域。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;该条命令其实就是执行了一个shell脚本，使用helm安装了采集kubernetes集群日志的组件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-vim&#34; data-lang=&#34;vim&#34;&gt;#!&lt;span style=&#34;color:#ed9d13&#34;&gt;/bin/&lt;/span&gt;bash&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $# -eq &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ] ; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[Invalid Param], use sudo ./install-k8s-log.sh {your-k8s-cluster-id}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;clusterName=$(echo $&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt; | tr &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;[A-Z]&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;[a-z]&amp;#39;&lt;/span&gt;)&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;curl --connect-timeout &lt;span style=&#34;color:#3677a9&#34;&gt;5&lt;/span&gt;  http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/region-id&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $? != &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] ECS meta server connect fail, only support alibaba cloud k8s service&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;regionId=`curl http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/region-id`&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;aliuid=`curl http:&lt;span style=&#34;color:#ed9d13&#34;&gt;//&lt;/span&gt;&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;100&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;200&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;/latest/&lt;/span&gt;meta-data/owner-account-id`&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;helmPackageUrl=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;http://logtail-release-$regionId.oss-$regionId.aliyuncs.com/kubernetes/alibaba-cloud-log.tgz&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;wget $helmPackageUrl -O alibaba-cloud-log.tgz&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $? != &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] download alibaba-cloud-log.tgz from $helmPackageUrl failed&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;project=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;k8s-log-&amp;#34;&lt;/span&gt;$clusterName&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $# -ge &lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    project=$&lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;echo [INFO] your k8s is using project : $project&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;helm install alibaba-cloud-log.tgz --name alibaba-log-controller \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set ProjectName=$project \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set RegionId=$regionId \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set InstallParam=$regionId \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set MachineGroupId=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;k8s-group-&amp;#34;&lt;/span&gt;$clusterName \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set Endpoint=$regionId&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;-intranet.log.aliyuncs.com&amp;#34;&lt;/span&gt; \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set AlibabaCloudUserId=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;:&amp;#34;&lt;/span&gt;$aliuid \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set LogtailImage.Repository=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry.$regionId.aliyuncs.com/log-service/logtail&amp;#34;&lt;/span&gt; \&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    --set ControllerImage.Repository=&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;registry.$regionId.aliyuncs.com/log-service/alibabacloud-log-controller&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;installRst=$?&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; [ $installRst -eq &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; ]; then&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[SUCCESS] install helm package : alibaba-log-controller success.&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;else&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    echo &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;[FAIL] install helm package failed, errno &amp;#34;&lt;/span&gt; $installRst&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;    exit &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;fi&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;命令执行后，会在kubernetes集群中的每个节点运行一个日志采集的pod：logatail-ds，该pod位于kube-system&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/source/log_detail.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;安装完成后，可使用以下命令来查看pod状态，若状态全部成功后，则表示安装完成&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ helm status alibaba-log-controller
+LAST DEPLOYED: Thu Nov &lt;span style=&#34;color:#3677a9&#34;&gt;22&lt;/span&gt; 15:09:35 &lt;span style=&#34;color:#3677a9&#34;&gt;2018&lt;/span&gt;
+NAMESPACE: default
+STATUS: DEPLOYED
+  
+RESOURCES:
+==&amp;gt; v1/ServiceAccount
+NAME                    SECRETS  AGE
+alibaba-log-controller  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/CustomResourceDefinition
+NAME                                   AGE
+aliyunlogconfigs.log.alibabacloud.com  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/ClusterRole
+alibaba-log-controller  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/ClusterRoleBinding
+NAME                    AGE
+alibaba-log-controller  &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/DaemonSet
+NAME        DESIRED  CURRENT  READY  UP-TO-DATE  AVAILABLE  NODE SELECTOR  AGE
+logtail-ds  &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;       &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;       &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;     &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;          &lt;span style=&#34;color:#3677a9&#34;&gt;16&lt;/span&gt;         &amp;lt;none&amp;gt;         &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1beta1/Deployment
+NAME                    DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+alibaba-log-controller  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;        &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;           &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;          &lt;span style=&#34;color:#40ffff&#34;&gt;6d&lt;/span&gt;
+  
+==&amp;gt; v1/Pod(related)
+NAME                                     READY  STATUS   RESTARTS  AGE
+logtail-ds-2fqs4                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-4bz7w                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;         6d
+logtail-ds-6vg88                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-7tp6v                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-9575c                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-bgq84                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-kdlhr                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-lknxw                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-pdxfk                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-pf4dz                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-rzsnw                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-sqhbv                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-vvtwn                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-wwmhg                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-xbp4j                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+logtail-ds-zpld9                         1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+alibaba-log-controller-85f8fbb498-nzhc8  1/1    Running  &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;         6d
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;配置日志组件展示&#34;&gt;配置日志组件展示&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在集群内安装好日志组件后，登录阿里云日志服务控制台，就会发现有一个新的project，名称为k8s-log-{集群id}
+&lt;img src=&#34;/images/source/log_src_de.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;创建Logstore
+&lt;img src=&#34;/images/source/log-1.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据导入
+&lt;img src=&#34;/images/source/log-2.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;选择数据类型中选择docker标准输出
+&lt;img src=&#34;/images/source/log-3.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据源配置，这里可以使用默认的
+&lt;img src=&#34;/images/source/log-4.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;选择数据源
+&lt;img src=&#34;/images/source/log-5.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置好之后等待1-2分钟，日志就会进来了
+&lt;img src=&#34;/images/source/log-6.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;为了快速查询和过滤，需要配置索引
+&lt;img src=&#34;/images/source/log-7.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;添加容器名称、命名空间、pod名称作为索引（后续使用livetail需要）
+&lt;img src=&#34;/images/source/log-8.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;这样就完成了一个k8s集群日志采集和展示的基本流程了&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;livetail功能使用&#34;&gt;livetail功能使用&lt;/h1&gt;
+&lt;h2 id=&#34;背景介绍&#34;&gt;背景介绍&lt;/h2&gt;
+&lt;p&gt;在线上运维的场景中，往往需要对日志队列中进入的数据进行实时监控，从最新的日志数据中提取出关键的信息进而快速地分析出异常原因。在传统的运维方式中，如果需要对日志文件进行实时监控，需要到服务器上对日志文件执行命令tail -f，如果实时监控的日志信息不够直观，可以加上grep或者grep -v进行关键词过滤。日志服务在控制台提供了日志数据实时监控的交互功能LiveTail，针对线上日志进行实时监控分析，减轻运维压力。&lt;/p&gt;
+&lt;h2 id=&#34;使用方法&#34;&gt;使用方法&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;这里选择来源类型为kubernetes，命名空间、pod名称、容器名称为上一步新建的3个索引的内容，过滤关键字的功劳与tail命令后加的grep命令是一样的，用于关键词过滤
+&lt;img src=&#34;/images/source/log-9.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;点击开启livetail，这时就有实时日志展示出来了
+&lt;img src=&#34;/images/source/log-10.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;以上就是阿里云livetail日志服务功能&lt;/strong&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: centos7.2 安装k8s v1.11.0</title>
+      <link>/post/install-k8s/</link>
+      <pubDate>Tue, 14 Aug 2018 20:07:03 +0800</pubDate>
+      
+      <guid>/post/install-k8s/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;最近由于公司业务发展到了瓶颈，原有的技术架构已经逐渐无法满足业务开发和测试的需求，出现了应用测试环境搭建复杂，有许多套（真的很多很多）应用环境，应用在持续集成/持续交付也遇到了很大的困难，经过讨论研究决定对应用和微服务进行容器化，这就是我首次直面docker和k8s的契机.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;kubernetes-介绍&#34;&gt;Kubernetes 介绍&lt;/h1&gt;
+&lt;p&gt;Kubernetes 是 Google 团队发起的开源项目，它的目标是管理跨多个主机的容器，提供基本的部署，维护以及运用伸缩，主要实现语言为
+Go 语言。
+Kubernetes的特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;易学：轻量级，简单，容易理解&lt;/li&gt;
+&lt;li&gt;便携：支持公有云，私有云，混合云，以及多种云平台&lt;/li&gt;
+&lt;li&gt;可拓展：模块化，可插拔，支持钩子，可任意组合&lt;/li&gt;
+&lt;li&gt;自修复：自动重调度，自动重启，自动复制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;准备工作&#34;&gt;准备工作&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;注：以下操作都是在root权限下执行的&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;安装docker-ce，这里使用docker-ce-17.09.0.c版本，安装方法见&lt;a href=&#34;/2018/install-docker&#34;&gt;之前的教程&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;安装Kubeadm&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#安装 Kubeadm 首先我们要配置好阿里云的国内源，执行如下命令：&lt;/span&gt;
+cat &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;&amp;lt;EOF &amp;gt; /etc/yum.repos.d/kubernetes.repo
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;[kubernetes]
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;name=Kubernetes
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;enabled=1
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;gpgcheck=0
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;EOF&lt;/span&gt;
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#之后，执行以下命令来重建yum缓存：&lt;/span&gt;
+yum -y install epel-releaseyum
+clean all
+yum makecache
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;接下来需要安装指定版本的Kubeadm（这里要安装指定版本，因为后续依赖的镜像由于有墙无法拉取，这里我们只有指定版本的镜像），注意：&lt;strong&gt;这里是安装指定版本的Kubeadm，k8s的版本更新之快完全超出你的想象！&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;yum -y install kubelet-1.11.0-0
+yum -y install kubeadm-1.11.0-0
+yum -y install kubectl-1.11.0-0
+yum -y install kubernetes-cni
+   
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#执行命令启动Kubeadm服务：&lt;/span&gt;
+systemctl &lt;span style=&#34;color:#24909d&#34;&gt;enable&lt;/span&gt; kubelet &amp;amp;&amp;amp; systemctl start kubelet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;配置 Kubeadm 所用到的镜像
+这里是重中之重，因为在国内的原因，无法访问到 Google 的镜像库，所以我们需要执行以下脚本来从 Docker Hub 仓库中获取相同的镜像，并且更改 TAG 让其变成与 Google 拉去镜像一致。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;新建一个 Shell 脚本，填入以下代码之后保存&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-vim&#34; data-lang=&#34;vim&#34;&gt;#docker.sh&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;#!&lt;span style=&#34;color:#ed9d13&#34;&gt;/bin/&lt;/span&gt;bash&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;images=(kube-proxy-amd64:v1.&lt;span style=&#34;color:#3677a9&#34;&gt;11&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; kube-scheduler-amd64:v1.&lt;span style=&#34;color:#3677a9&#34;&gt;11&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; kube-controller-manager-amd64:v1.&lt;span style=&#34;color:#3677a9&#34;&gt;11&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; kube-apiserver-amd64:v1.&lt;span style=&#34;color:#3677a9&#34;&gt;11&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; etcd-amd64:&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;2&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;18&lt;/span&gt; coredns:&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt; pause-amd64:&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt; kubernetes-dashboard-amd64:v1.&lt;span style=&#34;color:#3677a9&#34;&gt;8&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt; k8s-dns-sidecar-amd64:&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;14&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;9&lt;/span&gt; k8s-dns-kube-dns-amd64:&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;14&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;9&lt;/span&gt; k8s-dns-dnsmasq-nanny-amd64:&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;14&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;9&lt;/span&gt; )&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;for imageName in ${images[@]} ; do&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;docker pull keveon/$imageName&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;docker tag keveon&lt;span style=&#34;color:#ed9d13&#34;&gt;/$imageName k8s.gcr.io/&lt;/span&gt;$imageName&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;docker rmi keveon/$imageName&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;done&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;# 个人新加的一句，V &lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;11&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt; 必加&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&lt;/span&gt;docker tag da86e6ba6ca1 k8s.gcr.io/pause:&lt;span style=&#34;color:#3677a9&#34;&gt;3&lt;/span&gt;.&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;保存后使用chmod命令赋予脚本执行权限&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;chmod -R &lt;span style=&#34;color:#3677a9&#34;&gt;777&lt;/span&gt; ./docker.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;执行脚本拉取镜像&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sh docker.sh
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#这里就开始了漫长的拉取镜像之路&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;关闭掉swap&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo swapoff -a
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#要永久禁掉swap分区，打开如下文件注释掉swap那一行&lt;/span&gt;
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# sudo vi /etc/stab&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;关闭SELinux的&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 临时禁用selinux&lt;/span&gt;
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 永久关闭 修改/etc/sysconfig/selinux文件设置&lt;/span&gt;
+sed -i &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#39;s/SELINUX=permissive/SELINUX=disabled/&amp;#39;&lt;/span&gt; /etc/sysconfig/selinux
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 这里按回车，下面是第二条命令&lt;/span&gt;
+setenforce &lt;span style=&#34;color:#3677a9&#34;&gt;0&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;关闭防火墙&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;systemctl disable firewalld.service &amp;amp;&amp;amp; systemctl stop firewalld.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;配置转发参数&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 配置转发相关参数，否则可能会出错&lt;/span&gt;
+cat &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;&amp;lt;EOF &amp;gt; /etc/sysctl.d/k8s.conf
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;net.bridge.bridge-nf-call-ip6tables = 1
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;net.bridge.bridge-nf-call-iptables = 1
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;vm.swappiness=0
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;EOF&lt;/span&gt;
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 这里按回车，下面是第二条命令&lt;/span&gt;
+sysctl --system
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;这里就完成了k8s集群搭建的准备工作，集群搭建的话以上操作结束后将操作完的系统制作成系统镜像，方便集群搭建&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;正式安装&#34;&gt;正式安装&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;以下的操作都只在主节点上进行：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;初始化镜像&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubeadm init --kubernetes-version=v1.11.0 --pod-network-cidr=10.10.0.0/16  &lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#这里填写集群所在网段&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;之后的输出会是这样：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;I0712 &lt;span style=&#34;color:#3677a9&#34;&gt;10&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;46&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;30.938979&lt;/span&gt;   &lt;span style=&#34;color:#3677a9&#34;&gt;13461&lt;/span&gt; feature_gate.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;go&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;230&lt;/span&gt;] feature gates: &amp;amp;{&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;map&lt;/span&gt;[]}
+[init] using Kubernetes version: v1&lt;span style=&#34;color:#3677a9&#34;&gt;.11.0&lt;/span&gt;
+[preflight] running pre-flight checks
+I0712 &lt;span style=&#34;color:#3677a9&#34;&gt;10&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;46&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;30.961005&lt;/span&gt;   &lt;span style=&#34;color:#3677a9&#34;&gt;13461&lt;/span&gt; kernel_validator.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;go&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;81&lt;/span&gt;] Validating kernel version
+I0712 &lt;span style=&#34;color:#3677a9&#34;&gt;10&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;46&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;30.961061&lt;/span&gt;   &lt;span style=&#34;color:#3677a9&#34;&gt;13461&lt;/span&gt; kernel_validator.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;go&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;96&lt;/span&gt;] Validating kernel config
+    [WARNING SystemVerification]: docker version is greater than the most recently validated version. Docker version: &lt;span style=&#34;color:#3677a9&#34;&gt;18.03.1&lt;/span&gt;-ce. Max validated version: &lt;span style=&#34;color:#3677a9&#34;&gt;17.03&lt;/span&gt;
+    [WARNING Hostname]: hostname &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;g2-apigateway&amp;#34;&lt;/span&gt; could not be reached
+    [WARNING Hostname]: hostname &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;g2-apigateway&amp;#34;&lt;/span&gt; lookup g2-apigateway on &lt;span style=&#34;color:#3677a9&#34;&gt;100.100.2.138&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;53&lt;/span&gt;: no such host
+[preflight/images] Pulling images required &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; setting up a Kubernetes cluster
+[preflight/images] This might take a minute or two, depending on the speed of your internet connection
+[preflight/images] You can also perform this action in beforehand using &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;kubeadm config images pull&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;
+[kubelet] Writing kubelet environment file with flags to file &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/lib/kubelet/kubeadm-flags.env&amp;#34;&lt;/span&gt;
+[kubelet] Writing kubelet configuration to file &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/lib/kubelet/config.yaml&amp;#34;&lt;/span&gt;
+[preflight] Activating the kubelet service
+[certificates] Generated ca certificate and key.
+[certificates] Generated apiserver certificate and key.
+[certificates] apiserver serving cert is signed &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; DNS names [g2-apigateway kubernetes kubernetes.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;default&lt;/span&gt; kubernetes.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;default&lt;/span&gt;.svc kubernetes.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;default&lt;/span&gt;.svc.cluster.local] and IPs [&lt;span style=&#34;color:#3677a9&#34;&gt;10.96.0.1&lt;/span&gt; &lt;span style=&#34;color:#3677a9&#34;&gt;172.16.8.62&lt;/span&gt;]
+[certificates] Generated apiserver-kubelet-client certificate and key.
+[certificates] Generated sa key and public key.
+[certificates] Generated front-proxy-ca certificate and key.
+[certificates] Generated front-proxy-client certificate and key.
+[certificates] Generated etcd/ca certificate and key.
+[certificates] Generated etcd/server certificate and key.
+[certificates] etcd/server serving cert is signed &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; DNS names [g2-apigateway localhost] and IPs [&lt;span style=&#34;color:#3677a9&#34;&gt;127.0.0.1&lt;/span&gt; ::&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;]
+[certificates] Generated etcd/peer certificate and key.
+[certificates] etcd/peer serving cert is signed &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; DNS names [g2-apigateway localhost] and IPs [&lt;span style=&#34;color:#3677a9&#34;&gt;172.16.8.62&lt;/span&gt; &lt;span style=&#34;color:#3677a9&#34;&gt;127.0.0.1&lt;/span&gt; ::&lt;span style=&#34;color:#3677a9&#34;&gt;1&lt;/span&gt;]
+[certificates] Generated etcd/healthcheck-client certificate and key.
+[certificates] Generated apiserver-etcd-client certificate and key.
+[certificates] valid certificates and keys now exist in &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/pki&amp;#34;&lt;/span&gt;
+[kubeconfig] Wrote KubeConfig file to disk: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/admin.conf&amp;#34;&lt;/span&gt;
+[kubeconfig] Wrote KubeConfig file to disk: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/kubelet.conf&amp;#34;&lt;/span&gt;
+[kubeconfig] Wrote KubeConfig file to disk: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/controller-manager.conf&amp;#34;&lt;/span&gt;
+[kubeconfig] Wrote KubeConfig file to disk: &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/scheduler.conf&amp;#34;&lt;/span&gt;
+[controlplane] wrote Static Pod manifest &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; component kube-apiserver to &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/manifests/kube-apiserver.yaml&amp;#34;&lt;/span&gt;
+[controlplane] wrote Static Pod manifest &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; component kube-controller-manager to &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/manifests/kube-controller-manager.yaml&amp;#34;&lt;/span&gt;
+[controlplane] wrote Static Pod manifest &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; component kube-scheduler to &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/manifests/kube-scheduler.yaml&amp;#34;&lt;/span&gt;
+[etcd] Wrote Static Pod manifest &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; a local etcd instance to &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/manifests/etcd.yaml&amp;#34;&lt;/span&gt;
+[init] waiting &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; the kubelet to boot up the control plane as Static Pods from directory &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/etc/kubernetes/manifests&amp;#34;&lt;/span&gt;
+[init] this might take a minute or longer &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;if&lt;/span&gt; the control plane images have to be pulled
+[apiclient] All control plane components are healthy after &lt;span style=&#34;color:#3677a9&#34;&gt;41.001672&lt;/span&gt; seconds
+[uploadconfig] storing the configuration used in ConfigMap &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kubeadm-config&amp;#34;&lt;/span&gt; in the &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kube-system&amp;#34;&lt;/span&gt; Namespace
+[kubelet] Creating a ConfigMap &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kubelet-config-1.11&amp;#34;&lt;/span&gt; in namespace kube-system with the configuration &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; the kubelets in the cluster
+[markmaster] Marking the node g2-apigateway as master by adding the label &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;node-role.kubernetes.io/master=&amp;#39;&amp;#39;&amp;#34;&lt;/span&gt;
+[markmaster] Marking the node g2-apigateway as master by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[patchnode] Uploading the CRI Socket information &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/run/dockershim.sock&amp;#34;&lt;/span&gt; to the Node API object &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;g2-apigateway&amp;#34;&lt;/span&gt; as an annotation
+[bootstraptoken] using token: o337m9.ceq32wg9g2gro7gx
+[bootstraptoken] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; nodes to get long term certificate credentials
+[bootstraptoken] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstraptoken] configured RBAC rules to allow certificate rotation &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; all node client certificates in the cluster
+[bootstraptoken] creating the &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;cluster-info&amp;#34;&lt;/span&gt; ConfigMap in the &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kube-public&amp;#34;&lt;/span&gt; namespace
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+mkdir -p &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;$&lt;/span&gt;HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;$&lt;/span&gt;HOME/.kube/config
+sudo chown &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;$&lt;/span&gt;(id -u):&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;$&lt;/span&gt;(id -g) &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;$&lt;/span&gt;HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kubectl apply -f [podnetwork].yaml&amp;#34;&lt;/span&gt; with one of the options listed at:
+https:&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;//kubernetes.io/docs/concepts/cluster-administration/addons/
+&lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;&lt;/span&gt;
+You can now join any number of machines by running the following on each node
+as root:
+
+kubeadm join &lt;span style=&#34;color:#3677a9&#34;&gt;10.10.207.253&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;6443&lt;/span&gt; --token t69z6h.lr2etdbg9mfx5r15 --discovery-token-ca-cert-hash sha256:&lt;span style=&#34;color:#3677a9&#34;&gt;90e3&lt;/span&gt;a748c0eb4cb7058f3d0ee8870ee5d746214ab0589b5e841fd5d68fec8f00
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;这里注意最后一行：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;kubeadm join &lt;span style=&#34;color:#3677a9&#34;&gt;10.10.207.253&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;6443&lt;/span&gt; --token t69z6h.lr2etdbg9mfx5r15 --discovery-token-ca-cert-hash sha256:&lt;span style=&#34;color:#3677a9&#34;&gt;90e3&lt;/span&gt;a748c0eb4cb7058f3d0ee8870ee5d746214ab0589b5e841fd5d68fec8f00
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;证明集群主节点安装成功，这里要记得保存这条命令，以便之后各个节点加入集群&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;配置kubetl认证信息&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#24909d&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#40ffff&#34;&gt;KUBECONFIG&lt;/span&gt;=/etc/kubernetes/admin.conf
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 如果你想持久化的话，直接执行以下命令【推荐】&lt;/span&gt;
+&lt;span style=&#34;color:#24909d&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;export KUBECONFIG=/etc/kubernetes/admin.conf&amp;#34;&lt;/span&gt; &amp;gt;&amp;gt; ~/.bash_profile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;安装flanel网络&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mkdir -p /etc/cni/net.d/
+
+cat &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;&amp;lt;EOF&amp;gt; /etc/cni/net.d/10-flannel.conf
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;{
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;name&amp;#34;: &amp;#34;cbr0&amp;#34;,
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;type&amp;#34;: &amp;#34;flannel&amp;#34;,
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;delegate&amp;#34;: {
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;isDefaultGateway&amp;#34;: true
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;}
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;EOF&lt;/span&gt;
+
+mkdir /usr/share/oci-umount/oci-umount.d -p
+
+mkdir /run/flannel/
+
+cat &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;lt;&amp;lt;EOF&amp;gt; /run/flannel/subnet.env
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;FLANNEL_NETWORK=10.244.0.0/16
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;FLANNEL_SUBNET=10.244.1.0/24
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;FLANNEL_MTU=1450
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;FLANNEL_IPMASQ=true
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;EOF&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;最后需要新建一个flannel.yml文件：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ClusterRole&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;rbac.authorization.k8s.io/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;rules&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiGroups&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;resources&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- pods&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;verbs&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- get&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiGroups&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;resources&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- nodes&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;verbs&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- list&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- watch&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiGroups&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;resources&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- nodes/status&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;verbs&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- patch&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ClusterRoleBinding&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;rbac.authorization.k8s.io/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;roleRef&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiGroup&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;rbac.authorization.k8s.io&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ClusterRole&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;subjects&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ServiceAccount&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;namespace&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-system&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ServiceAccount&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;namespace&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-system&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;ConfigMap&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;v1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-flannel-cfg&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;namespace&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-system&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tier&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;data&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;cni-conf.json&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;|
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;    {&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;: &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;cbr0&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;: &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;flannel&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;delegate&amp;#34;: &lt;/span&gt;{&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;isDefaultGateway&amp;#34;: &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;net-conf.json&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;|
+&lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;    {&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;Network&amp;#34;: &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.10.0.0/16&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#这里换成集群所在的网段&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;Backend&amp;#34;: &lt;/span&gt;{&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;&amp;#34;Type&amp;#34;: &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;vxlan&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;}&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;caption&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;Image from: [**Pexels**](https://www.pexels.com)&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;focal_point&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;  &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;preview_only&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;---&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;apiVersion&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;extensions/v1beta1&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;kind&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;DaemonSet&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-flannel-ds&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;namespace&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-system&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tier&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;template&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;metadata&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;labels&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tier&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;app&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;spec&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;hostNetwork&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;nodeSelector&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;beta.kubernetes.io/arch&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;amd64&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;tolerations&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;key&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;node-role.kubernetes.io/master&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;operator&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;Exists&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;effect&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;NoSchedule&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;serviceAccountName&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;initContainers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;install-cni&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;quay.io/coreos/flannel:v0&lt;span style=&#34;color:#3677a9&#34;&gt;.9.1&lt;/span&gt;-amd64&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;command&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- cp&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;args&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- -f&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- /etc/kube-flannel/cni-conf.json&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- /etc/cni/net.d/&lt;span style=&#34;color:#3677a9&#34;&gt;10&lt;/span&gt;-flannel.conf&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumeMounts&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cni&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;mountPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/cni/net.d&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel-cfg&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;mountPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/kube-flannel/&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;containers&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-flannel&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;image&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;quay.io/coreos/flannel:v0&lt;span style=&#34;color:#3677a9&#34;&gt;.9.1&lt;/span&gt;-amd64&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;command&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;[&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/opt/bin/flanneld&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;--ip-masq&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;--kube-subnet-mgr&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;]&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;securityContext&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;privileged&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;env&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;POD_NAME&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;valueFrom&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;fieldRef&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;fieldPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;metadata.name&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;POD_NAMESPACE&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;valueFrom&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;fieldRef&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;fieldPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;metadata.namespace&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumeMounts&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;run&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;mountPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/run&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel-cfg&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;mountPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/kube-flannel/&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;    &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;volumes&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;run&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;hostPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/run&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;cni&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;hostPath&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;path&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;/etc/cni/net.d&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;- &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;flannel-cfg&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;        &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;configMap&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#666&#34;&gt;            &lt;/span&gt;&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;name&lt;/span&gt;:&lt;span style=&#34;color:#666&#34;&gt; &lt;/span&gt;kube-flannel-cfg&lt;span style=&#34;color:#666&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;执行：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl create -f ./flannel.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;默认情况下，master节点不参与工作负载，但如果希望安装出一个all-in-one的k8s环境，则可以执行以下命令：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;让master节点成为一个node节点：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl taint nodes --all node-role.kubernetes.io/master-
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;查看节点信息：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get nodes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;会看到如下的输出：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;NAME            STATUS     ROLES     AGE       VERSION
+k8s-master      Ready      master    18h       v1.11.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;以下是节点配置&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在配置好主节点之后，就可以配置集群的其他节点了，这里建议直接安装之前做好准备工作的系统镜像
+进入节点机器之后，直接执行之前保存好的命令&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubeadm join 10.10.207.253:6443 --token t69z6h.lr2etdbg9mfx5r15 --discovery-token-ca-cert-hash sha256:90e3a748c0eb4cb7058f3d0ee8870ee5d746214ab0589b5e841fd5d68fec8f00
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;执行完后会看到：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;[preflight] running pre-flight checks
+        [WARNING RequiredIPVSKernelModulesAvailable]: the IPVS proxier will not be used, because the following required kernel modules are not loaded: [ip_vs_wrr ip_vs_sh ip_vs ip_vs_rr] or no builtin kernel ipvs support: &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;map&lt;/span&gt;[ip_vs_rr:{} ip_vs_wrr:{} ip_vs_sh:{} nf_conntrack_ipv4:{} ip_vs:{}]
+you can solve this problem with following methods:
+&lt;span style=&#34;color:#3677a9&#34;&gt;1.&lt;/span&gt; Run &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;modprobe -- &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; to load missing kernel modules;
+&lt;span style=&#34;color:#3677a9&#34;&gt;2.&lt;/span&gt; Provide the missing builtin kernel ipvs support
+
+I0725 &lt;span style=&#34;color:#3677a9&#34;&gt;09&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;59&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;27.929247&lt;/span&gt;   &lt;span style=&#34;color:#3677a9&#34;&gt;10196&lt;/span&gt; kernel_validator.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;go&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;81&lt;/span&gt;] Validating kernel version
+I0725 &lt;span style=&#34;color:#3677a9&#34;&gt;09&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;59&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;27.929356&lt;/span&gt;   &lt;span style=&#34;color:#3677a9&#34;&gt;10196&lt;/span&gt; kernel_validator.&lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;go&lt;/span&gt;:&lt;span style=&#34;color:#3677a9&#34;&gt;96&lt;/span&gt;] Validating kernel config
+[discovery] Trying to connect to API Server &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.10.207.253:6443&amp;#34;&lt;/span&gt;
+[discovery] Created cluster-info discovery client, requesting info from &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;https://10.10.207.253:6443&amp;#34;&lt;/span&gt;
+[discovery] Requesting info from &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;https://10.10.207.253:6443&amp;#34;&lt;/span&gt; again to validate TLS against the pinned public key
+[discovery] Cluster info signature and contents are valid and TLS certificate validates against pinned roots, will use API Server &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.10.207.253:6443&amp;#34;&lt;/span&gt;
+[discovery] Successfully established connection with API Server &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;10.10.207.253:6443&amp;#34;&lt;/span&gt;
+[kubelet] Downloading configuration &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; the kubelet from the &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;kubelet-config-1.11&amp;#34;&lt;/span&gt; ConfigMap in the kube-system namespace
+[kubelet] Writing kubelet configuration to file &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/lib/kubelet/config.yaml&amp;#34;&lt;/span&gt;
+[kubelet] Writing kubelet environment file with flags to file &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/lib/kubelet/kubeadm-flags.env&amp;#34;&lt;/span&gt;
+[preflight] Activating the kubelet service
+[tlsbootstrap] Waiting &lt;span style=&#34;color:#6ab825;font-weight:bold&#34;&gt;for&lt;/span&gt; the kubelet to perform the TLS Bootstrap...
+[patchnode] Uploading the CRI Socket information &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;/var/run/dockershim.sock&amp;#34;&lt;/span&gt; to the Node API object &lt;span style=&#34;color:#ed9d13&#34;&gt;&amp;#34;k8s-node1&amp;#34;&lt;/span&gt; as an annotation
+
+This node has joined the cluster:
+* Certificate signing request was sent to master and a response
+was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run &lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt;kubectl get nodes&lt;span style=&#34;color:#a61717;background-color:#e3d2d2&#34;&gt;&amp;#39;&lt;/span&gt; on the master to see this node join the cluster.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;这里就表示执行完毕了，可以去主节点执行命令：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get nodes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;可以看到节点已加入集群：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;NAME        STATUS    ROLES     AGE       VERSION
+k8s-master  Ready     master    20h       v1.11.0
+k8s-node1   Ready     &amp;lt;none&amp;gt;    20h       v1.11.0
+k8s-node2   Ready     &amp;lt;none&amp;gt;    20h       v1.11.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这期间可能需要等待一段时间，状态才会全部变为ready&lt;/p&gt;
+&lt;h1 id=&#34;kubernetes-dashboard安装&#34;&gt;kubernetes-dashboard安装&lt;/h1&gt;
+&lt;p&gt;详见：&lt;a href=&#34;/2018/dashboard-k8s&#34;&gt;kubernetes安装dashboard&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;采坑指南&#34;&gt;采坑指南&lt;/h1&gt;
+&lt;p&gt;有时会出现master节点一直处于notready的状态，这里可能是没有启动flannel，只需要按照上面的教程配置好flannel，然后执行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl create -f ./flannel.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Post: centos7安装指定版本的docker</title>
+      <link>/post/install-docker/</link>
+      <pubDate>Tue, 14 Aug 2018 20:05:21 +0800</pubDate>
+      
+      <guid>/post/install-docker/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在使用&lt;strong&gt;centos7&lt;/strong&gt;，并使用荫安装搬运工的时候，往往不希望安装最新版本的搬运工，而是希望安装与自己熟悉或者当前业务环境需要的版本，例如目前Kubernetes支持的最新搬运工版本为v17.03，所以就产生了安装指定版本码头工人的需求。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;安装步骤&#34;&gt;安装步骤&lt;/h1&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 安装依赖包&lt;/span&gt;
+yum install -y yum-utils device-mapper-persistent-data lvm2
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 添加Docker软件包源&lt;/span&gt;
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#关闭测试版本list（只显示稳定版）&lt;/span&gt;
+sudo yum-config-manager --enable docker-ce-edge
+sudo yum-config-manager --enable docker-ce-test
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;# 更新yum包索引&lt;/span&gt;
+yum makecache fast
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#NO.1 直接安装Docker CE （will always install the highest  possible version，可能不符合你的需求）&lt;/span&gt;
+yum install docker-ce
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#NO.2 指定版本安装&lt;/span&gt;
+yum list docker-ce --showduplicates|sort -r 
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#找到需要安装的&lt;/span&gt;
+yum install docker-ce-17.09.0.ce -y
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#启动docker&lt;/span&gt;
+systemctl start docker &amp;amp; systemctl &lt;span style=&#34;color:#24909d&#34;&gt;enable&lt;/span&gt; docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;采坑指南&#34;&gt;采坑指南&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当然本着万事皆有坑的原则，这里也是有坑的，在安装中也是会遇到如下的问题&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在执行一下命令的时候：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;yum install docker-ce-17.03.0.ce -y
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;会出现如下的报错：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;--&amp;gt; Finished Dependency Resolution
+Error: Package: docker-ce-17.03.0.ce-1.el7.centos.x86_64 (docker-ce-stable)
+        Requires: docker-ce-selinux &amp;gt;= 17.03.0.ce-1.el7.centos
+        Available: docker-ce-selinux-17.03.0.ce-1.el7.centos.noarch (docker-ce-stable)
+            docker-ce-selinux = 17.03.0.ce-1.el7.centos
+        Available: docker-ce-selinux-17.03.1.ce-1.el7.centos.noarch (docker-ce-stable)
+            docker-ce-selinux = 17.03.1.ce-1.el7.centos
+        Available: docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch (docker-ce-stable)
+            docker-ce-selinux = 17.03.2.ce-1.el7.centos
+You could try using --skip-broken to work around the problem
+You could try running: rpm -Va --nofiles --nodigest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在出现这个问题之后，需要执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#要先安装docker-ce-selinux-17.03.2.ce，否则安装docker-ce会报错&lt;/span&gt;
+yum install https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
+
+&lt;span style=&#34;color:#999;font-style:italic&#34;&gt;#然后再安装 docker-ce-17.03.2.ce，就能正常安装&lt;/span&gt;
+yum install docker-ce-17.03.2.ce-1.el7.centos
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+  </channel>
+</rss>
