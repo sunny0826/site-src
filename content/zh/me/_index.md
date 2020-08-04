@@ -4,9 +4,24 @@ linkTitle: "关于"
 menu:
   main:
     weight: 99
-image: https://tva1.sinaimg.cn/large/ad5fbf65ly1ghekqqku0tj21hc280nes.jpg
-content: 郭旭东，2018年4月加入[凯京科技](https://www.keking.com)。曾任高级研发和运维开发工程师、[阿里云MVP](https://mvp.aliyun.com/mvp/detail/426)、CCF 会员，现任凯京科技研发中心技术支持部运维负责人，负责公司运维团队。热爱开源，乐于分享。云原生爱好者、实践者，专注于云原生及周边干货知识分享，实践达人，demo 小王子。
 ---
+<div  class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none"></div>
+          <div class="d-none d-xl-block col-xl-2 td-toc d-print-none mt-5"></div>
+          <main class="col-12 col-md-6 col-xl-8 pl-md-5 pr-md-4" role="main">
+<h1 class="section-title">关于</h1>
+<div class="pageinfo pageinfo-primary">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <p>郭旭东，2018年4月加入[凯京科技](https://www.keking.com)。曾任高级研发和运维开发工程师、[阿里云MVP](https://mvp.aliyun.com/mvp/detail/426)、CCF 会员，现任凯京科技研发中心技术支持部运维负责人，负责公司运维团队。热爱开源，乐于分享。云原生爱好者、实践者，专注于云原生及周边干货知识分享，实践达人，demo 小王子。</p>
+      </div>
+      <div class="col-md-4 d-flex flex-row-reverse">
+        <img class="img-fluid w-50 md-1" src="https://tva1.sinaimg.cn/large/ad5fbf65ly1ghekqqku0tj21hc280nes.jpg" alt="about image">
+      </div>
+    </div>
+  </div>
+</div>
 <center><h1 class="md-5">联系方式</h1></center>
 
 ---
@@ -40,3 +55,5 @@ content: 郭旭东，2018年4月加入[凯京科技](https://www.keking.com)。�
 <center><img class="img-fluid w-5" src="https://tva1.sinaimg.cn/large/ad5fbf65ly1ghelpfjpb8j205005074d.jpg" alt="about image"></center>
 
 <center>扫码关注</center>
+</main>
+</div>
