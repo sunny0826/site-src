@@ -34,6 +34,9 @@ pygmentsStyle = "tango"
  # Docsy: First one is picked as the Twitter card image if not set on page.
 images = ["img/logo-head.png"]
 
+# Enable comments by entering your Disqus shortname
+disqusShortname = "gxd"
+
 # Top-level navigation (horizontal)
 
 # Docsy: Configure the format of URLs per section.
@@ -168,8 +171,6 @@ no = 'Sorry to hear that. Please <a href="https://github.com/sunny0826/guoxudong
 	url = "Mailto:sunnydog0826@gmail.com"
 	icon = "fa fa-envelope"
         desc = "Discussion and help from your fellow users"
-
-disqusShortname = "gxd"
 
 # Taxonomies.
 [taxonomies]

@@ -31,7 +31,7 @@
 	{{ end }}
 	<!-- 赞赏 -->
 	{{ partial "zanshang.html" }}
-	{{ if (.Site.Params.DisqusShortname) }}
+	{{ if (.Site.DisqusShortname) }}
 	<br />
 	{{ partial "disqus-comment.html" . }}
 	<br />
