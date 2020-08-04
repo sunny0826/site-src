@@ -59,3 +59,5 @@ other = "最近更新于"
 other = "查看全部文章"
 [related]
 other = "相关阅读"
+[recent]
+other = "最新博客"

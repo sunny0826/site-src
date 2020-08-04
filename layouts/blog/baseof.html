@@ -11,11 +11,45 @@
       <div class="td-main">
         <div class="row flex-xl-nowrap">
           <div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none"></div>
-          <div class="d-none d-xl-block col-xl-2 td-toc d-print-none mt-5">
+          <div class="d-none d-xl-block col-xl-3 td-toc d-print-none mt-5">
             {{ partial "toc.html" . }}
+            <hr>
+            {{ $query := where site.RegularPages "Type" "blog" }}
+            {{ $query = sort $query "Date" "desc" }}
+            {{ $query = first 5 $query }}    
+            <div class="article-widget">
+              <div class="hr-light"></div>
+              <h5>{{ T "recent" }}</h5>
+              <ul>
+                {{ range $item := $query}}
+                <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                {{ end }}
+              </ul>
+            </div>
+            {{ $related := site.RegularPages.Related . | first 5 }}
+            {{ with $related }}
+            <hr>
+            <div class="article-widget">
+              <div class="hr-light"></div>
+              <h5>{{ T "related" }}</h5>
+              <ul>
+                {{ range . }}
+                <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                {{ end }}
+              </ul>
+            </div>
+            {{ end }}
+            <hr>
+            <h5>{{ T "categories" }}</h5>
+            <div>
+              {{ range $key, $taxonomy := .Site.Taxonomies.categories }}
+              <a class="button button-primary button-small button-rounded mb-2"
+		          href="{{ `categories/` | relLangURL }}{{ $key | urlize | lower }}" style="display: inline-block;">{{ $key }}</a>
+              {{ end }}
+            </div>
           </div>
 
-          <main class="col-12 col-md-6 col-xl-8 pl-md-5 pr-md-4" role="main">
+          <main class="col-12 col-md-6 col-xl-7 pl-md-5 pr-md-4" role="main">
             {{ with .CurrentSection.OutputFormats.Get "rss" -}}
             <a class="button button-glow button-border button-rounded button-primary td-rss-button d-none d-lg-block" href="{{ .Permalink | safeURL }}" target="_blank">
               RSS <i class="fa fa-rss ml-2 "></i>

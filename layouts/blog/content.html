@@ -31,19 +31,6 @@
 	{{ end }}
 	<!-- 赞赏 -->
 	{{ partial "zanshang.html" }}
-	{{ $related := site.RegularPages.Related . | first 5 }}
-	{{ with $related }}
-	<hr>
-	<div class="article-widget">
-		<div class="hr-light"></div>
-		<h3>{{ T "related" }}</h3>
-		<ul>
-			{{ range . }}
-			<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-			{{ end }}
-		</ul>
-	</div>
-	{{ end }}
 	{{ if (.Site.Params.DisqusShortname) }}
 	<br />
 	{{ partial "disqus-comment.html" . }}
