@@ -47,6 +47,14 @@
 		          href="{{ `categories/` | relLangURL }}{{ $key | urlize | lower }}" style="display: inline-block;">{{ $key }}</a>
               {{ end }}
             </div>
+            <hr>
+            <h5>{{ T "tags" }}</h5>
+            <div>
+              {{ range $key, $taxonomy := .Site.Taxonomies.tags }}
+              <a class="button button-royal button-small button-rounded mb-2"
+		          href="{{ `tags/` | relLangURL }}{{ $key | urlize | lower }}" style="display: inline-block;">{{ $key }}</a>
+              {{ end }}
+            </div>
           </div>
 
           <main class="col-12 col-md-6 col-xl-7 pl-md-5 pr-md-4" role="main">
