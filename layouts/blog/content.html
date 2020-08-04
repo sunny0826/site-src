@@ -1,5 +1,5 @@
 {{ $page := .Page }}
-<div class="td-content">
+<div class="td-content" id="road">
 	<h1>{{ .Title }}</h1>
 	{{ with .Params.description }}<div class="lead">{{ . | markdownify }}</div>{{ end }}
 	<div class="td-byline mb-4">
@@ -38,5 +38,15 @@
 	{{ end }}
 
 	{{ partial "pager.html" . }}
-
+	<script src="https://my.openwrite.cn/js/readmore.js" type="text/javascript"></script>
+	<script>
+		const btw = new BTWPlugin();
+		btw.init({
+			id: 'road',
+			blogId: '18752-1575602900012-529',
+			name: '云原生之路',
+			qrcode: 'https://guoxudong.io/publication/contact_me/qr_weixin.jpg',
+			keyword: 'road',
+		});
+	</script>
 </div>
