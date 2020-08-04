@@ -1,6 +1,7 @@
 ---
 title: "关于"
 linkTitle: "关于"
+type: about
 menu:
   main:
     weight: 99
