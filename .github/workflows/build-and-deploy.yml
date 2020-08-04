@@ -18,7 +18,7 @@ jobs:
       - name: Build
         # remove --minify tag if you do not need it
         # docs: https://gohugo.io/hugo-pipes/minification/
-        run: git submodule update --init --recursive && hugo
+        run: cd themes/docsy && git submodule update -f --init && cd ../.. && hugo
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
