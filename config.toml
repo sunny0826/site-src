@@ -1,4 +1,4 @@
-baseURL = "/"
+baseURL = "https://guoxudong.io"
 languageCode = "zh"
 title = "Guo Xudong's Blog"
 theme = ["docsy"]
