@@ -22,11 +22,12 @@ menu:
     </div>
   </div>
 </div>
-<center><h1 class="md-5">联系方式</h1></center>
+
+## 联系方式
 
 ---
 
-### 微信
+<center><h3 class="md-5">微信</h3></center>
 
 <center><img class="img-fluid w-5" src="https://tva4.sinaimg.cn/large/ad5fbf65ly1ghelq5ndvkj2050050dfz.jpg" alt="about image"></center>
 
@@ -34,7 +35,7 @@ menu:
 
 ---
 
-### GitHub
+<center><h3 class="md-5">GitHub</h3></center>
 
 <center><img class="img-fluid w-5" src="https://tvax3.sinaimg.cn/large/ad5fbf65ly1ghelosouakj2050050745.jpg" alt="about image"></center>
 
@@ -42,7 +43,7 @@ menu:
 
 ---
 
-### 邮箱
+<center><h3 class="md-5">邮箱</h3></center>
 
 <center><img class="img-fluid w-5" src="https://tvax3.sinaimg.cn/large/ad5fbf65ly1gheloxweaej2050050dfo.jpg" alt="about image"></center>
 
@@ -50,7 +51,7 @@ menu:
 
 ---
 
-### 微信公众号
+<center><h3 class="md-5">微信公众号</h3></center>
 
 <center><img class="img-fluid w-5" src="https://tva1.sinaimg.cn/large/ad5fbf65ly1ghelpfjpb8j205005074d.jpg" alt="about image"></center>
 
