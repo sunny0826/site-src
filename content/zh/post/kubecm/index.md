@@ -167,6 +167,7 @@ kubecm ns kube-system
 
 ## 视频介绍
 
+{{< blocks/bilibili src="//player.bilibili.com/player.html?aid=88259938&cid=150776221&page=1" >}}
 
 ## 结语
 
