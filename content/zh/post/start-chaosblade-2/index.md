@@ -33,9 +33,11 @@ projects: []
 
 在上篇文章中，我们介绍了如何安装 **ChaosBlade Operator**，并进行了简单的使用。从本章开始，所有的实践章节，都会有配套的 [katacode](https://katacoda.com/) 交互式教程，读者可用通过 katacode，在浏览器上操作真实的 Kubernetes 和 ChaosBlade。
 
+{{% pageinfo color="primary" %}}
 > KataCoda 教程：《ChaosBlade Pod 实验场景》
 >
 > 地址：[https://katacoda.com/guoxudong/courses/chaosblade/pod-experiment](https://katacoda.com/guoxudong/courses/chaosblade/pod-experiment)
+{{% /pageinfo %}}
 
 ## 实验对象：Pod
 

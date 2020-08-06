@@ -35,9 +35,11 @@ projects: []
 
 [chaosblade.io](https://chaosblade.io/) 官网已经正式上线，在官网的[互动教程](https://chaosblade.io/try/)模块，也可以找到 ChaosBlade 的 KataCoda 教程，目前官网由我维护，有任何问题，欢迎在 [ISSUE](https://github.com/chaosblade-io/chaosblade-website/issues) 中进行反馈。
 
+{{% pageinfo color="primary" %}}
 > KataCoda 教程：《ChaosBlade Node 实验场景》
 >
 > 地址：[https://katacoda.com/guoxudong/courses/chaosblade/chaosblade-node-experiment](https://katacoda.com/guoxudong/courses/chaosblade/chaosblade-node-experiment)
+{{% /pageinfo %}}
 
 ## 实验对象：Node
 
@@ -45,7 +47,7 @@ projects: []
 
 ## Node 实验场景
 
-同[上篇文章](./start-chaosblade-2)，本篇默认已安装 [guestbook](https://github.com/cloudnativeapp/guestbook?spm=5176.2020520152.0.0.7c5f16ddH8myx6) 应用和 ChaosBlade Operator。
+同[上篇文章](../start-chaosblade-2)，本篇默认已安装 [guestbook](https://github.com/cloudnativeapp/guestbook?spm=5176.2020520152.0.0.7c5f16ddH8myx6) 应用和 ChaosBlade Operator。
 
 ### 节点资源相关场景
 
