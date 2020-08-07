@@ -289,7 +289,7 @@ sys     0m0.001s
 
 **开始实验**
 
-`oss_container_network_by_id.yaml` 内容：
+`loss_container_network_by_id.yaml` 内容：
 
 ```yaml
 apiVersion: chaosblade.io/v1alpha1
