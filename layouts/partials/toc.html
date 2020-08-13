@@ -1,6 +1,7 @@
 {{ partial "page-meta-links.html" . }}
 {{ if not .Params.notoc }}
 {{ with .TableOfContents }}
+<h5>{{ T "catalogues" }}</h5>
 {{ if ge (len .) 200 }}
 {{ . }}
 {{ end }}

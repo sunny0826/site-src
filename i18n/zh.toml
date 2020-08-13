@@ -61,3 +61,5 @@ other = "查看全部文章"
 other = "相关阅读"
 [recent]
 other = "最新博客"
+[catalogues]
+other = "目录"
