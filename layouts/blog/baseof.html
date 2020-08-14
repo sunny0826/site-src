@@ -13,7 +13,6 @@
           <div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none"></div>
           <div class="d-none d-xl-block col-xl-3 td-toc d-print-none mt-5">
             {{ partial "toc.html" . }}
-            <hr>
             {{ $query := where site.RegularPages "Type" "blog" }}
             {{ $query = sort $query "Date" "desc" }}
             {{ $query = first 5 $query }}    
@@ -26,9 +25,9 @@
                 {{ end }}
               </ul>
             </div>
+            <hr>
             {{ $related := site.RegularPages.Related . | first 5 }}
             {{ with $related }}
-            <hr>
             <div class="article-widget">
               <div class="hr-light"></div>
               <h5>{{ T "related" }}</h5>
@@ -38,8 +37,8 @@
                 {{ end }}
               </ul>
             </div>
-            {{ end }}
             <hr>
+            {{ end }}
             <h5>{{ T "categories" }}</h5>
             <div>
               {{ range $key, $taxonomy := .Site.Taxonomies.categories }}
