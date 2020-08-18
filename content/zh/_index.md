@@ -9,7 +9,7 @@ linkTitle: "郭旭东的博客"
 		关于我<i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
 	<a class="button button-glow button-rounded button-action mr-3 mb-4 social weixin" href=#>
-		微信公众号 <i class="fab fa-weixin ml-2 "></i>
+		公众号 <i class="fab fa-weixin ml-2 "></i>
     <img class="qrcode" src="/img/qrcode_no.jpg" alt="微信二维码">
 	</a>
   <div class="mx-auto mt-5">
