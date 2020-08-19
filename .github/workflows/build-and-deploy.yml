@@ -19,6 +19,8 @@ jobs:
         # remove --minify tag if you do not need it
         # docs: https://gohugo.io/hugo-pipes/minification/
         run: git submodule update --init --recursive && hugo
+        env:
+          HUGO_ENV: production
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
