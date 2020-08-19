@@ -61,7 +61,7 @@ quality = 75
 anchor = "smart"
 
 # [services]
-# [services.googleAnalytics]
+[services.googleAnalytics]
 id = "UA-173948186-1"
 
 # Docsy: Language configuration
