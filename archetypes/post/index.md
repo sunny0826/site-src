@@ -3,8 +3,8 @@
 
 title: "{{ replace .Name "-" " " | title }}"
 subtitle: ""
-summary: ""
-authors: []
+summary: "{{ replace .Name "-" " " | title }}"
+authors: ["guoxudong"]
 tags: []
 categories: []
 date: {{ .Date }}

@@ -1,6 +1,7 @@
 ---
 title: "当码农遇见公益"
 date: 2019-09-29T09:52:11+08:00
+lastmod: 2019-09-29T09:52:11+08:00
 draft: false
 type: blog
 banner: "https://tvax1.sinaimg.cn/large/ad5fbf65gy1g7gejyynd0j21hc0zkwr2.jpg"
