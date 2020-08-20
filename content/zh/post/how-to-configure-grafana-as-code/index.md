@@ -88,12 +88,18 @@ Jsonnet 还有有一个名为 Jsonnet bundler 的工具，有点类似于 Golang
 
 这是两个现成的库：
 
-- https://github.com/grafana/grafonnet-libs
+- https://github.com/grafana/grafonnet-lib
 - https://github.com/grafana/jsonnet-libs/tree/master/grafana-builder
 
 其中最突出的是 Grafonnet，也是 Holmes 和 Pivotto 在演示中使用的，这是一个非常简洁的库，提供了：创建 Dashboard ，创建 panel，创建 single stat panel 等基本功能。
 
 ![](https://tva4.sinaimg.cn/large/ad5fbf65gy1ghw9403k2zj22bc1avk2w.jpg)
+
+## 演示
+
+然后他们进行了快速演示。
+
+{{< blocks/bilibili src="//player.bilibili.com/player.html?aid=796818511&bvid=BV18C4y1t7rZ&cid=226548812&page=1" >}}
 
 ## 未来
 

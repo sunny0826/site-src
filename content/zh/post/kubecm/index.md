@@ -5,7 +5,7 @@ title: "Kubecm：管理你的 kubeconfig"
 subtitle: "帮助你管理杂乱无章的 kubeconfig"
 summary: "介绍一款小工具：kubecm，帮助你管理杂乱无章的 kubeconfig。 "
 authors: ["guoxudong"]
-tags: ["kubernetes"]
+tags: ["kubernetes","kubecm"]
 categories: ["kubernetes"]
 date: 2019-12-09T10:07:46+08:00
 lastmod: 2019-12-09T10:07:46+08:00
