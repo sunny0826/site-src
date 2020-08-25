@@ -1,7 +1,7 @@
 ---
 # Documentation: https://sourcethemes.com/academic/docs/managing-content/
 
-title: "云中谁寄锦书来，云效帮你免费生成七夕情书"
+title: "云中谁寄锦书来，免费生成一封七夕情书吧"
 subtitle: ""
 summary: "在七夕节制作一封云上情书吧"
 authors: ["guoxudong"]
