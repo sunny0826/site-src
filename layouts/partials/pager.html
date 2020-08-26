@@ -1,4 +1,4 @@
 <div class="entry-shang pt-5">
-  <a {{if .PrevInSection}}href="{{.PrevInSection.RelPermalink}}"{{end}} class="button button-glow button-rounded button-raised button-primary {{if not .PrevInSection}} disabled{{end}} float-left"><span class="mr-1">←</span> {{ T "ui_pager_prev" }}</a>
-  <a {{if .NextInSection}}href="{{.NextInSection.RelPermalink}}"{{end}} class="button button-glow button-rounded button-raised button-primary {{if not .NextInSection}} disabled{{end}} float-right">{{ T "ui_pager_next" }} <span class="ml-1">→</span></a>  
+  <a {{if .PrevInSection}}href="{{.PrevInSection.RelPermalink}}"{{end}} class=".-text-primary float-left">{{if .PrevInSection}}<i class="fas fa-angle-left"></i> {{.PrevInSection.LinkTitle }}{{end}}</a>
+  <a {{if .NextInSection}}href="{{.NextInSection.RelPermalink}}"{{end}} class=".-text-primary float-right">{{if .NextInSection}}{{ .NextInSection.LinkTitle }} <i class="fas fa-angle-right"></i>{{end}}</a>
 </div>
