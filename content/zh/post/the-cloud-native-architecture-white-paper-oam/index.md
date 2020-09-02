@@ -43,7 +43,7 @@ OAM 是什么？OAM 能做什么？我们为什么需要 OAM？每每被同事�
 
 ### 以应用为中心
 
-今年是 Kubernetes 项目诞生的第六年，在这六年中，以 Kubernetes 为首的云原生技术快速的改变着我们的技术架构，一个又一个的应用被拆分成微服务，打包成容器，运行在 Kubernetes 上。然而随着微服务越拆越多，管理微服务的难度也呈指数型增长，Kubernetes 中并没有”应用“这一概念，提供给我们的只有 deployment、StatefulSet 这样工作负载粒度的资源，而一个应用，可能由多个 Deployment、Service、以及各种相关配套资源组成（如：HPA 用于弹性伸缩、Ingress 用于外部访问等）。Kubernetes 并没有提供给我们一个统一的资源或者说是方法来管理这些相关资源，各个公司只能开发自己的 PASS 平台或设立规范约束自己的应用。
+今年是 Kubernetes 项目诞生的第六年，在这六年中，以 Kubernetes 为首的云原生技术快速的改变着我们的技术架构，一个又一个的应用被拆分成微服务，打包成容器，运行在 Kubernetes 上。然而随着微服务越拆越多，管理微服务的难度也呈指数型增长，Kubernetes 中并没有”应用“这一概念，提供给我们的只有 deployment、StatefulSet 这样工作负载粒度的资源，而一个应用，可能由多个 Deployment、Service、以及各种相关配套资源组成（如：HPA 用于弹性伸缩、Ingress 用于外部访问等）。Kubernetes 并没有提供给我们一个统一的资源或者说是方法来管理这些相关资源，各个公司只能开发自己的 PaaS 平台或设立规范约束自己的应用。
 
 OAM 的出现补充了“应用”这一概念，建立对应用和它所需的运维能力定义与描述的标准规范。换言之，OAM 既是标准“应用定义”同时也是帮助封装、组织和管理 Kubernetes 中各种“运维能力”的工具。通过 OAM 中应用的可交付对象 - Application Configuration，我们可以轻松的掌握我们的应用到底有那些 Kubernetes 工作负载组成，这些工作负载都使用了哪些运维特性，这些内容都会以 Kubernetes API 对象的形式展示，查看起来和查看 Deployment 与 Service 资源一样方便。
 
