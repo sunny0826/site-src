@@ -5,7 +5,7 @@ title: "听说，阿里云给它的 OpenAPI 开发了一套编程语言"
 subtitle: ""
 summary: "这回是 OpenAPI as code 了"
 authors: ["guoxudong"]
-tags: ["阿里云"]
+tags: ["阿里云","OpenAPI"]
 categories: ["阿里云"]
 date: 2020-09-01T11:49:12+08:00
 lastmod: 2020-09-01T11:49:12+08:00
@@ -37,7 +37,7 @@ Darabonba(原名 TeaDSL)，是一种 OpenAPI 应用的领域特定语言。可�
 Darabonba 目前支持：**Java**、**C#**、**TypeScript**、**PHP**、**Golang** 和 **Python** 代码的生成，除了解析器和多语言生成器，还提供了：
 
 - [VS Code 插件](https://github.com/aliyun/darabonba-vscode)：提供语法高亮、代码提示、代码格式化、语法检查等功能。
-- [CLI](https://github.com/aliyun/darabonba-vscode)：命令行工具，快速在本地拉起一个 Darabonba 项目。
+- [CLI](https://github.com/aliyun/darabonba-cli)：命令行工具，快速在本地拉起一个 Darabonba 项目。
 - [Darabonba 模块仓库](https://darabonba.api.aliyun.com/module)：模块仓库，提供 Darabonba 模块的发布和下载。
 
 ### Darabonba 语言优势
@@ -162,9 +162,9 @@ $ dara install
 
 ![ECS 模块](https://tva2.sinaimg.cn/large/ad5fbf65gy1gic1orwhjoj21h70q3gr4.jpg)
 
-可以在 `Detail` 中看到所有可以调用的接口，通过还可以点击其他 tab 可以查看版本、安装方式等内容：
+可以在 `Detail` 中看到所有可以调用的接口，通过还可以点击其他 tab 可以查看版本、安装方法等内容：
 
-![ECS 模块](https://tvax2.sinaimg.cn/large/ad5fbf65ly1gibbruwd1zj21at0pqadt.jpg)
+![](https://tvax2.sinaimg.cn/large/ad5fbf65ly1gibbruwd1zj21at0pqadt.jpg)
 
 也可通过命令单独安装模块：
 
@@ -241,7 +241,7 @@ $ dara codegen python ./tmp
 
 命令执行成功后，就可以看到 Python 代码已经生成了：
 
-![image](https://tva4.sinaimg.cn/large/ad5fbf65gy1gic21suu35j208a05h3yh.jpg)
+![](https://tva4.sinaimg.cn/large/ad5fbf65gy1gic21suu35j208a05h3yh.jpg)
 
 如果代码还没有写完，想检查是否有语法错误，可以使用 `check` 命令检查：
 
