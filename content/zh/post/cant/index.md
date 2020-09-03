@@ -18,21 +18,11 @@ image:
 ---
 这里的**黑话**，其实就是 GitHub 上的一些**迷之缩写**，这些歪果老司机们在 GitHub 上肆无忌惮的使用着他们的“黑话”，让我们这些非英语母语国家的新司机在 code review 时经常是一脸懵逼 + 黑人问好...
 
-image:
-  caption: "Image from: [**Pexels**](https://www.pexels.com)"
-  focal_point: ""
-  preview_only: false
----
-<center>
 ![image](https://wx3.sinaimg.cn/thumb180/ad5fbf65gy1g2b5dhfuqqj206506cq2t.jpg)
-![image](https://ws1.sinaimg.cn/thumb180/ad5fbf65gy1g2b5dvubm6j2069050a9x.jpg)
-![image](https://ws1.sinaimg.cn/thumb180/ad5fbf65gy1g2b5fe5ahmj20c80bhdg8.jpg)
-</center>
-image:
-  caption: "Image from: [**Pexels**](https://www.pexels.com)"
-  focal_point: ""
-  preview_only: false
----
+
+![image](https://wx3.sinaimg.cn/thumb180/ad5fbf65gy1g2b5dvubm6j2069050a9x.jpg)
+
+![image](https://wx3.sinaimg.cn/thumb180/ad5fbf65gy1g2b5fe5ahmj20c80bhdg8.jpg)
 
 记住下面这些“**黑话**”，以后我们也可以愉快的在 GitHub 上装逼了~
 

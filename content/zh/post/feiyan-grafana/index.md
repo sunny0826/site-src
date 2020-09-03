@@ -63,7 +63,7 @@ projects: []
 
     这里只要将全国确诊数 `gntotal` 与 当前时间戳组合返回即可，其他指标也是这种方式。
 
-    ```
+    ```python
     @app.post('/query')
     def query():
         print(request.json)
@@ -84,7 +84,7 @@ projects: []
 
     取出数据中的名称以及确诊、疑似、治愈和死亡数，`append` 到 `rows` 中即可。
 
-    ```
+    ```python
     @app.post('/query')
     def query():
         print(request.json)
@@ -165,7 +165,7 @@ projects: []
 
 将代码打包成为 docker 镜像，就可以运行在任意环境以及 K8S 集群了，镜像已上传 dockerhub 直接拉取镜像，开箱即食。
 
-```
+```Dockerfile
 # Dockerfile
 FROM python:3.7.3-alpine3.9
 
@@ -187,13 +187,13 @@ ENTRYPOINT ["uwsgi","--ini","uwsgi.ini"]
 
 - 拉取镜像
 
-```
+```shell
 docker pull guoxudongdocker/feiyan-datasource
 ```
 
 - 运行镜像
 
-```
+```shell
 docker run -d --name datasource -p 8088:3000 guoxudongdocker/feiyan-datasource
 ```
 
@@ -211,7 +211,7 @@ docker run -d --name datasource -p 8088:3000 guoxudongdocker/feiyan-datasource
 
 - 使用 K8S 部署（可选）
 
-    ```
+    ```shell
     kubectl apply -f deploy.yaml
     ```
 
@@ -221,4 +221,4 @@ docker run -d --name datasource -p 8088:3000 guoxudongdocker/feiyan-datasource
 
 导入 Dashboard 的 `json` 文件和部署 K8S 的 `yaml` 文件都可以在 GitHub 上找到。
 
-项目地址：https://github.com/sunny0826/wuhan2020-grafana
+项目地址：[https://github.com/sunny0826/wuhan2020-grafana](https://github.com/sunny0826/wuhan2020-grafana)
