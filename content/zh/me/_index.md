@@ -14,7 +14,7 @@ menu:
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <p>郭旭东，2018年4月加入<a href="https://www.keking.com">凯京科技</a>。曾任高级研发和运维开发工程师、<a href="https://mvp.aliyun.com/mvp/detail/426">阿里云MVP</a>、CCF 会员，现任凯京科技研发中心技术支持部运维负责人，负责公司运维团队。热爱开源，乐于分享。云原生爱好者、实践者，专注于云原生及周边干货知识分享，实践达人，demo 小王子。</p>
+        <p>郭旭东，2018年4月加入<a href="https://www.keking.com">凯京科技</a>。曾任高级研发和运维开发工程师、<a href="https://mvp.aliyun.com/mvp/detail/426">阿里云MVP</a>、<a href="https://cloudnative.to/">云原生社区</a>上海站站长、CCF 会员，现任凯京科技研发中心技术支持部运维负责人，负责公司运维团队。热爱开源，乐于分享。云原生爱好者、实践者，专注于云原生及周边干货知识分享，实践达人，demo 小王子。</p>
       </div>
       <div class="col-md-4 d-flex flex-row-reverse">
         <img class="img-fluid w-50 md-1" src="https://tva1.sinaimg.cn/large/ad5fbf65ly1ghekqqku0tj21hc280nes.jpg" alt="about image">

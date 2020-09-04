@@ -3,7 +3,7 @@ about:
   enable : true
   title : "关于"
   image : "https://tva3.sinaimg.cn/large/ad5fbf65ly1ghds6bthggj21dv0rsb29.jpg"
-  content : "郭旭东，宠物达人，柴猫双全，[阿里云MVP](https://mvp.aliyun.com/mvp/detail/426)，CCF 会员，现任凯京科技研发中心技术支持部运维负责人。"
+  content : "郭旭东，宠物达人，柴猫双全，[阿里云MVP](https://mvp.aliyun.com/mvp/detail/426)，[云原生社区](https://cloudnative.to/)上海站站长，CCF 会员，现任凯京科技研发中心技术支持部运维负责人。"
   button:
     enable : true
     label : "了解详情"
