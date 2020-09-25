@@ -18,7 +18,7 @@ jobs:
       - name: Build
         # remove --minify tag if you do not need it
         # docs: https://gohugo.io/hugo-pipes/minification/
-        run: git submodule update --init --recursive && hugo
+        run: hugo
         env:
           HUGO_ENV: production
       - name: Deploy
