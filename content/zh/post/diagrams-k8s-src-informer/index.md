@@ -1,7 +1,7 @@
 ---
 # Documentation: https://sourcethemes.com/academic/docs/managing-content/
 
-title: "图解 K8S 源码 - Informer 篇"
+title: "图解 K8S 源码 - Informer 篇（上）"
 subtitle: ""
 summary: "图解 K8S 源码中的 Informer 机制及 Reflector 实现。"
 authors: ["guoxudong"]
