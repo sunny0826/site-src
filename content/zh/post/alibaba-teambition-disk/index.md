@@ -20,9 +20,11 @@ Teambition 网盘自开放内测申请以来已经过去了数月，上周五终
 
 从官网可以看出 Teambition 网盘准确的抓到了个人网盘用户的痛点：**上传下载限速**、**各种广告弹窗**、**隐私安全**以及**操作困难**，而作为工作学习套件的一部分还增加了协作功能，除了分享资源，还提供了各种协作功能，大大提升协作效率。
 
+目前 Teambition 网盘还处于 Beta 内测版，申请地址：[https://survey.aliyun.com/apps/zhiliao/jqBinngVQ](https://survey.aliyun.com/apps/zhiliao/jqBinngVQ)
+
 ## 优势
 
-目前 Teambition 网盘还处于 Beta 内测版，申请地址：[https://survey.aliyun.com/apps/zhiliao/jqBinngVQ](https://survey.aliyun.com/apps/zhiliao/jqBinngVQ)
+总的来说优势体现在不限速、无广告、隐私安全和协作方面。
 
 ### 速度
 
