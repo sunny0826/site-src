@@ -21,7 +21,7 @@ slides:
   height: "500px"
   items:
   - title: "公众号全新上线！"
-    content: "【云原生之路】  全新上线!<br>博客与公众号实时同步<br>[精选文章](https://yq.aliyun.com/users/qobuwfliws7q2)同步上传云栖社区&阿里云开发者社区<br>依托阿里云生态 交流&分享:heart:"
+    content: "<br>博客与公众号实时同步:heart:"
     align: "left"
     overlay_color: "#555"  # An HTML color value.
     overlay_img: "wechat_home.png"  # Image path relative to your `static/img/` folder.
