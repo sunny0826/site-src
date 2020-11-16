@@ -111,11 +111,11 @@ steps:
 
 - 有修改的子项目
 
-    ![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g6vm2ul2zfj21ky148jx0.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1gkr5icm3onj21o016e4ij.jpg)
 
 - 无修改的子项目
 
-    ![image](https://wx1.sinaimg.cn/large/ad5fbf65gy1g6vm49on4kj21jk11iaf7.jpg)
+    ![image](https://tvax3.sinaimg.cn/large/ad5fbf65gy1gkr5j5olenj21o014inf9.jpg)
 
 
 ## Kubernetes 发布状态检查
