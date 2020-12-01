@@ -20,19 +20,26 @@ try:
 slides:
   height: "500px"
   items:
-  - title: "公众号全新上线！"
-    content: "<br>博客与公众号实时同步:heart:"
+  - title: "云原生社区 meetup 上海站"
+    content: "上海市虹桥万科中心 成功召开:smile:<br>[查看回顾](https://i.cloudnative.to/academy/meetup/01-shanghai)"
+    align: "left"
+    overlay_color: "#555"  # An HTML color value.
+    overlay_img: "shanghai-meetup.png"  # Image path relative to your `static/img/` folder.
+    overlay_filter: 0.5  # Darken the image. Value in range 0-1.
+
+  - title: "扫码关注公众号"
+    content: "<br>了解更多云原生知识:heart:"
     align: "left"
     overlay_color: "#555"  # An HTML color value.
     overlay_img: "wechat_home.png"  # Image path relative to your `static/img/` folder.
     overlay_filter: 0  # Darken the image. Value in range 0-1.
 
-  - title: "KubeCon 2019"
-    content: "上海世博中心 |   中国上海<br>ServiceMesher 社区代表团合影<br>Kubernetes 正当时<br>Cloud Native 未来可期:smile:"
-    align: "center"
-    overlay_color: "#333"  # An HTML color value.
-    overlay_img: "kubecon.jpg"  # Image path relative to your `static/img/` folder.
-    overlay_filter: 0.5  # Darken the image. Value in range 0-1.
+  # - title: "KubeCon 2019"
+  #   content: "上海世博中心 |   中国上海<br>ServiceMesher 社区代表团合影<br>Kubernetes 正当时<br>Cloud Native 未来可期:smile:"
+  #   align: "center"
+  #   overlay_color: "#333"  # An HTML color value.
+  #   overlay_img: "kubecon.jpg"  # Image path relative to your `static/img/` folder.
+  #   overlay_filter: 0.5  # Darken the image. Value in range 0-1.
 
   - title: "毛线"
     content: "代码小助手一号<br>也是域名：[maoxianplay.com](https://blog.maoxianplay.com)的来源<br>没错，我就是给我的猫买了域名:smile:"
