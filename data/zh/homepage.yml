@@ -21,7 +21,7 @@ slides:
   height: "500px"
   items:
   - title: "云原生社区 meetup 上海站"
-    content: "上海市虹桥万科中心 成功召开:smile:<br>[查看回顾](https://i.cloudnative.to/academy/meetup/01-shanghai)"
+    content: "2020年11月28日 | 上海市虹桥万科中心  成功召开:smile:<br>[查看回顾](https://i.cloudnative.to/academy/meetup/01-shanghai)"
     align: "left"
     overlay_color: "#555"  # An HTML color value.
     overlay_img: "shanghai-meetup.png"  # Image path relative to your `static/img/` folder.
