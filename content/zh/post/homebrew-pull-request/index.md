@@ -111,7 +111,7 @@ end
 与自建 homebrew-tap 不同，向官方提交 PR，需要使用源码构建，不能只推送构建好的二进制文件！同时必须有 test 部分，否则将无法合并代码。
 {{% /alert %}}
 
-这里附上一份 [kind]() 的脚本供大家参考：
+这里附上一份 [kind](https://github.com/kubernetes-sigs/kind) 的脚本供大家参考：
 
 ```ruby
 class Kind < Formula
