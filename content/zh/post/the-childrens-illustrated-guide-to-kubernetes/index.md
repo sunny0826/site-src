@@ -29,7 +29,7 @@ image:
 
 __献给所有试图向孩子们解释软件工程的家长。__
 
-![](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4nwu2t40sj20qo0hswqv.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwu2t40sj20qo0hswqv.jpg)
 
 很久很久以前，有一个叫 Phippy 的应用程序。她是一个简单的应用程序，由 PHP 编写且只有一个页面。她住在一个需要和其他可怕的应用程序分享环境的主机中，她不认识这些应用程序并且不愿意和他们来往。她希望她能拥有一个属于自己的环境：只有她自己和她可以称之为家的 Web 服务器。
 
@@ -64,11 +64,11 @@ __献给所有试图向孩子们解释软件工程的家长。__
 
 Kubernetes 使用标签作为“名牌”来标识事物。它可以根据这些标签进行查询。标签是开放性的：你可以用他们来表示角色、稳定性或其他重要的属性。
 
-![](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4nwyt7gtqj20qo0hsdso.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwyt7gtqj20qo0hsdso.jpg)
 
 船长建议应用程序把她的容器搬到船上的一个船舱中。Phippy 很高兴地把她的容器搬到 Kube 船长巨轮的船舱内。Phippy 觉得这里像家一样。
 
-![](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4nwzc5uqej20qo0hswlp.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwzc5uqej20qo0hswlp.jpg)
 
 在 Kubernetes 中，Pod 代表一个可运行的工作单元。通常，你会在 Pod 中运行一个容器。但是对于一些容器紧密耦合的情况，你可以选择在同一个 Pod 中运行多个容器。Kubernetes 负责将你的 Pod 和网络以及 Kubernetes 的其余环境相连。
 

@@ -35,7 +35,7 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 - GitHub 仓库
 - 开启 GitHub Pages
 
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g69e503ukoj21ig0hwad9.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69e503ukoj21ig0hwad9.jpg)
 
 #### 证书签发
 

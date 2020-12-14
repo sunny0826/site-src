@@ -70,7 +70,7 @@ DevOps 文化早已在我司落地，这也是为什么我们有将近百人的�
 经过调研我们选择了 [drone CI](https://drone.io/) 进行 GitOps ，通过自己开发不同功能的插件，完善了我们的整个 CI/CD 流水线。而插件的开发也并不是从头开始，而是直接 fork 现有的插件进行定制化的二次开发，有兴趣的可以到我的 [GitHub](https://github.com/sunny0826/drone-dingtalk-message)   和 [DockerHub](https://cloud.docker.com/repository/list) 上查看。
 
 将项目配置进行了分离，配置使用单独的 git 仓库维护，同时整合了镜像安全扫描，钉钉通知等功能。
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vvfow9w9j21k810243r.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vvfow9w9j21k810243r.jpg)
 
 由于 drone CI 的配置文件 `.drone.yml` 需要统一规范，所以我们在自己的 DevOps 平台开发了 Drone 配置页面，帮助开发自主配置。我们提供了 `Java` 、 `Node` 、 `Python` 三种配置模板，并且由于 DevOps 平台已与 GitLab 集成，可以直接将生成的 `.drone.yml` 文件插入到相应 git 项目中。
 
@@ -78,7 +78,7 @@ DevOps 文化早已在我司落地，这也是为什么我们有将近百人的�
 
 同时也提供了钉钉构建通知，在构建成功后会发送到相应的开发群组中，如果需希望自动发布的话，也可点击通知中的连接自行发布。
 
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vvrigyvlj20ec0bh40u.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vvrigyvlj20ec0bh40u.jpg)
 
 ### 自研平台配合钉钉 Outgoing 功能实现 ChatOps
 
@@ -88,7 +88,7 @@ DevOps 文化早已在我司落地，这也是为什么我们有将近百人的�
 
 小助手机器人的诞生，极大的提高了咨询类工作的效率，同时也释放了运维人员的工作时间，运维人员可以将更多精力投注到更有技术含量的事情上。
 
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4vwfdgd2xj20iu0ajwgc.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vwfdgd2xj20iu0ajwgc.jpg)
 
 小助手机器人还有运维版本，功能包括：批量操作虚拟机、重启服务、DNS 解析、Kubernetes 信息检测&操作等功能，由于还是测试版本，这里就不做详细介绍了。
 

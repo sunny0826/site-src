@@ -181,7 +181,7 @@ trigger:
 > 注意这里的钉钉 token 是 webhook 中 `https://oapi.dingtalk.com/robot/send?access_token=` 后这部分
 ![WX20190521-105337](https://ws2.sinaimg.cn/large/ad5fbf65gy1g38r1mkoztj20iy0ezgmg.jpg)
 
-![WX20190521-104942@2x](https://ws1.sinaimg.cn/large/ad5fbf65gy1g38qxizsg1j21ia0tujtb.jpg)
+![WX20190521-104942@2x](https://tva2.sinaimg.cn/large/ad5fbf65gy1g38qxizsg1j21ia0tujtb.jpg)
 
 ## 构建结果
 

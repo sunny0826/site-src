@@ -3,7 +3,7 @@ title: "阿里云 ACK 挂载 NAS 数据卷"
 date: 2019-07-08T15:09:56+08:00
 draft: false
 type: blog
-banner: "https://ws1.sinaimg.cn/large/ad5fbf65gy1g4siutx8nrj21mf15oaby.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g4siutx8nrj21mf15oaby.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -27,7 +27,7 @@ image:
 
 在挂载 NAS 之前，首先要先购买 NAS 文件存储，这里推荐购买存储包，100G 的 SSD 急速型一年只需1400多，而容量型只要279，对于我这种只有少量 NAS 存储需求的人来说是是靠谱的，因为我只需要5G的左右的存储空间，SSD 急速型 NAS 一年只要18块，完美。
 
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4sglwrx0gj22wa09gae4.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sglwrx0gj22wa09gae4.jpg)
 
 选择想要创建 NAS 所在 VPC 和 区域
 
@@ -72,7 +72,7 @@ df -h
 
 就可以看到结果：
 
-![image](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4sh6xwyt8j20lj0850tq.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sh6xwyt8j20lj0850tq.jpg)
 
 ## Kubernetes 集群挂载 NAS 数据卷
 

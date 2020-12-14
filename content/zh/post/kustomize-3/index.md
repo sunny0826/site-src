@@ -206,7 +206,7 @@ image:
 
 ### 查看生产版本
 
-![WX20190507-110850](https://ws1.sinaimg.cn/large/ad5fbf65ly1g2skt3rp4yj20aq010glj.jpg)
+![WX20190507-110850](https://tva2.sinaimg.cn/large/ad5fbf65ly1g2skt3rp4yj20aq010glj.jpg)
 
 ### 总结
 

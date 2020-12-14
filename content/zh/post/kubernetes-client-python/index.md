@@ -3,7 +3,7 @@ title: "由一封邮件看 Mailing List 在开源项目中的重要性"
 date: 2019-07-04T09:16:41+08:00
 draft: false
 type: blog
-banner: "https://ws1.sinaimg.cn/large/ad5fbf65gy1g4nkephdw7j21qf15odp5.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nkephdw7j21qf15odp5.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

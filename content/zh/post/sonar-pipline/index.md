@@ -59,7 +59,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 
 2. SonarQube生成token，**这个token不会显示第二次，所以一定要记住**
 
-    ![image](https://ws1.sinaimg.cn/mw690/ad5fbf65ly1g0u5902q6nj213f0hgwgn.jpg)
+    ![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0u5902q6nj213f0hgwgn.jpg)
 
 3. SonarQube配置Dependency-Check
 
@@ -149,7 +149,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 查看sonar报告，这里有两种方式
 
 - 可直接登录SonarQube查看报告
-![image](https://ws1.sinaimg.cn/mw690/ad5fbf65ly1g0u6vbspv5j21260myadw.jpg)
+![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0u6vbspv5j21260myadw.jpg)
 
 - 也可直接在jenkins页面点击SonarQube图标进入，点击以下标记均可进去
 ![image](https://ws2.sinaimg.cn/mw690/ad5fbf65ly1g0u6xzcryhj21fn0q7wkm.jpg)

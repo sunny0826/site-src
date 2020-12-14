@@ -79,7 +79,7 @@ image:
 
 目前，我们的平台分布在6个地区，3个在自己的数据中心，3个在公有云。
 
-![](https://ws1.sinaimg.cn/large/ad5fbf65gy1g50klup6yaj212w0ftq4h.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g50klup6yaj212w0ftq4h.jpg)
 <center>分布式部署</center>
 
 > Helm global values
@@ -148,7 +148,7 @@ foo.world:                # Release name
 
 这是部署工作流的所有步骤，最后一步将在多个生产集群上同时部署应用程序。
 
-![](https://ws1.sinaimg.cn/large/ad5fbf65gy1g50ldllp33j20mw0bxglz.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g50ldllp33j20mw0bxglz.jpg)
 <center>Jenkins deployment steps</center>
 
 ## Secrets 怎么办

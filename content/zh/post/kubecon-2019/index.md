@@ -52,7 +52,7 @@ image:
 
 Keynote 上还提到了中国在整个云原生运动中的巨大贡献，中国的 K8s contributors 已经在全球所有贡献者中排名第二，超过 10% 的 CNCF 会员来自中国，26%的 Kubernetes 的认证供应商来自中国，同时也公布了蚂蚁金服作为黄金会员加入 CNCF。
 
-![48125038821_66fcf00e96_o](https://ws1.sinaimg.cn/large/ad5fbf65gy1g4lghq7jo9j20xc0m87o8.jpg)
+![48125038821_66fcf00e96_o](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4lghq7jo9j20xc0m87o8.jpg)
 
 平均每小时一个的分组会议，我的日程安排的满满的，但就这样还是出现了由于到晚了无法进入分组会议室的情况，注意这里不是因为到晚了不让进，而是进去都没有站的地方！可见人气之旺！让我有了像是上学时候穿梭在教学楼，赶人气高的选修课的错觉。
 
