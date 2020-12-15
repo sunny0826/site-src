@@ -85,7 +85,7 @@ DevOps 应该用于大型分布式应用程序，例如电子商务站点或托�
 它不应该用于关键任务应用程序，如银行，电力设施和其他敏感数据站点。此类应用程序需要对生产环境进行严格的访问控制，详细的变更管理策略，完善的数据中心访问控制策略。
 
 # DevOps 的生命周期
-![devops Lifecycle](http://wx3.sinaimg.cn/large/ad5fbf65gy1g1wekkedpcj20k509mjrp.jpg)
+![devops Lifecycle](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wekkedpcj20k509mjrp.jpg)
 
 DevOps 是开发和运维之间的深度集成。在不了解 DevOps 生命周期的情况下，是无法真正理解 DevOps 的。
 

@@ -86,7 +86,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 
     **[系统管理]**-**[系统设置]**-**[SonarQube servers]**
 
-    ![image](http://wx3.sinaimg.cn/large/ad5fbf65ly1g0u50l8q4lj215o0b3myw.jpg)
+    ![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g0u50l8q4lj215o0b3myw.jpg)
 
 6. sonar添加webhook
 

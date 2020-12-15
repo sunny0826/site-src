@@ -3,7 +3,7 @@ title: "Kubecon 2019 见闻：云原生未来可期"
 date: 2019-07-02T10:18:18+08:00
 draft: false
 type: blog
-banner: "http://wx3.sinaimg.cn/large/ad5fbf65gy1g4k6mh797pj21900u07it.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g4k6mh797pj21900u07it.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -65,7 +65,7 @@ Keynote 上还提到了中国在整个云原生运动中的巨大贡献，中国
 
 平时都是在网上与社区的朋友们进行交流，讨论技术，交流经验。而 KubeCon 就变成了一场网友面基大会，见到了很多有过交流和帮助过我的朋友，包括 Jimmy 、 小剑 、秀龙老哥...等等，同时也认识了不少新朋友。与去年11月的 KubeCon 相比，社区的朋友越来越多，在短短半年内 Service Mesh 相关书籍已经出版了4本，而作者都是社区成员，可见社区的活跃。
 
-![](http://wx3.sinaimg.cn/large/ad5fbf65gy1g4k6mh797pj21900u07it.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g4k6mh797pj21900u07it.jpg)
 
 ## 写在最后
 

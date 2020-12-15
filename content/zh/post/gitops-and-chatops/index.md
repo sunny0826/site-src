@@ -74,7 +74,7 @@ DevOps 文化早已在我司落地，这也是为什么我们有将近百人的�
 
 由于 drone CI 的配置文件 `.drone.yml` 需要统一规范，所以我们在自己的 DevOps 平台开发了 Drone 配置页面，帮助开发自主配置。我们提供了 `Java` 、 `Node` 、 `Python` 三种配置模板，并且由于 DevOps 平台已与 GitLab 集成，可以直接将生成的 `.drone.yml` 文件插入到相应 git 项目中。
 
-![image](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4vvoqggfoj22lk16aagu.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vvoqggfoj22lk16aagu.jpg)
 
 同时也提供了钉钉构建通知，在构建成功后会发送到相应的开发群组中，如果需希望自动发布的话，也可点击通知中的连接自行发布。
 

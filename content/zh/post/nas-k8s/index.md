@@ -34,7 +34,7 @@ image:
 ## 添加挂载点
 
 - 点击添加挂载点
-![image](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4sgp0dos2j22ky0iowkr.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sgp0dos2j22ky0iowkr.jpg)
 
 - 选择 VPC 网络、交换机和权限组
 ![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g4sgpwqrgoj20xu0vowib.jpg)

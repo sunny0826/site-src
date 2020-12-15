@@ -25,7 +25,7 @@ image:
 
 感谢 `kubernetes-dev` 的 Mailing List ！早上在浏览邮件时发现了下面这封有趣的邮件：
 
-![image](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4nkmrb8scj21780q0afv.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nkmrb8scj21780q0afv.jpg)
 
 接触 Kubernetes 也有不短的时间了，也见证了 Kubernetes 干掉 Swarm 和 Mesos 成为容器编排领域的事实标准的过程。在享受 Kubernetes 及其生态圈带来的便利的同时也在为 Kubernetes 及 CNCF 项目进行贡献。而使用 [`kubectl`](https://github.com/kubernetes/kubectl)、[`rancher`](https://github.com/rancher/rancher) 甚至是 [`kui`](https://github.com/IBM/kui) 这些 CLI 和 UI 工具对 Kubernetes 集群进行操作和观察。
 

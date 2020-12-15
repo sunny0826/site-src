@@ -24,7 +24,7 @@ image:
 ## Kubernetes 儿童插图指南
 
 ![](https://ws4.sinaimg.cn/large/ad5fbf65gy1g4nwsdbr8wj20qo0hs0w2.jpg)
-![](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4nwt5keovj210u0shmyc.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwt5keovj210u0shmyc.jpg)
 ![](https://wx4.sinaimg.cn/large/ad5fbf65gy1g4nwteb85hj20qo0hsk5v.jpg)
 
 __献给所有试图向孩子们解释软件工程的家长。__
@@ -50,7 +50,7 @@ __献给所有试图向孩子们解释软件工程的家长。__
 鲸鱼耸了耸肩。“对不起，孩子。”他说着，消失在海面下。就在 Phippy 甚至开始绝望时，一位驾驶着巨轮的船长出现在海平线上。这艘船由几十个绑在一起的木筏组成，但从外面来看，它就像一艘巨轮。
 “你好呀，这位 PHP 应用程序朋友。我是 Kube 船长。”睿智的老船长说。
 
-![](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4nwxm9w44j20qo0hsn3b.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwxm9w44j20qo0hsn3b.jpg)
 
 “Kubernetes” 在希腊语中是船长的意思。我们可以从这个单词中得到 Cybernetic 和 Gubernatorial 这两个词组。Kubernetes 项目专注于构建一个健壮的平台，用于在生产环境中运行数千个容器。
 
@@ -60,7 +60,7 @@ __献给所有试图向孩子们解释软件工程的家长。__
 
 “很高兴认识你。”船长一边说，一边在她身上贴上了一张标有姓名的标签。
 
-![](https://wx3.sinaimg.cn/large/ad5fbf65gy1g4nwygks8xj20qo0hs0zy.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4nwygks8xj20qo0hs0zy.jpg)
 
 Kubernetes 使用标签作为“名牌”来标识事物。它可以根据这些标签进行查询。标签是开放性的：你可以用他们来表示角色、稳定性或其他重要的属性。
 

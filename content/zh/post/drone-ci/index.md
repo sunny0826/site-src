@@ -187,7 +187,7 @@ trigger:
 
 添加 `.drone.yml` 文件后，向 master 分支提交代码即可出发 CI 构建
 
-![WX20190521-105809@2x](https://wx3.sinaimg.cn/large/ad5fbf65gy1g38r68yb8pj21l40sawit.jpg)
+![WX20190521-105809@2x](https://tva2.sinaimg.cn/large/ad5fbf65gy1g38r68yb8pj21l40sawit.jpg)
 
 CI 结束后，会在钉钉机器人所在群收到通知
 

@@ -47,7 +47,7 @@ eDEX-UI 可以通过 `settings.json` 文件进行配置，配置包括执行的 
 
 `settings.json` 在 Mac 系统中，存放在 `/Users/guoxudong/Library/Application Support/eDEX-UI` 中，默认的工作目录也是这个路径
 
-![image](https://wx3.sinaimg.cn/large/ad5fbf65gy1g2jflhunukj21h30tck0r.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2jflhunukj21h30tck0r.jpg)
 
 这里可以看到我选择使用 `zsh` 和 `tron-disrupted` 主题，并将工作目录改为了我的用户空间
 
