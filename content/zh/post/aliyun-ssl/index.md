@@ -47,7 +47,7 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
     如果该域名是由阿里云购买，则选择自动DNS验证，如果不是在阿里云购买的，可以选择手动验证。
 
-    ![image](https://wx1.sinaimg.cn/bmiddle/ad5fbf65gy1g69egsu7fuj20ye0swwh3.jpg)
+    ![image](https://tva2.sinaimg.cn/bmiddle/ad5fbf65gy1g69egsu7fuj20ye0swwh3.jpg)
 
     ![image](https://wx2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg)
 

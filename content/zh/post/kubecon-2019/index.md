@@ -40,7 +40,7 @@ image:
 
 午饭后短暂旁听了华为主办的 Apache ServiceComb Meetup ，虽然时间短暂，只有不到1个小时，但是对于国内运作开源项目，尤其是 Apache 项目有个更深的理解，同时让我联想到了之前在 [《从开源小白到 Apache Member ，阿里工程师的成长笔记》](https://developer.aliyun.com/article/704943) 阿里巴巴技术专家望陶成为的文章，中国的开源软件和开发者在开源领域起到越来越重要的作用。
 
-![IMG_2470](https://wx1.sinaimg.cn/large/ad5fbf65gy1g4lcxc767gj23402c07wi.jpg)
+![IMG_2470](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4lcxc767gj23402c07wi.jpg)
 
 下午参加了由 CNCF, VMware, 阿里云和 PingCAP 联合主办的中国原创CNCF项目社区沙龙，聆听了 [Harbor](https://github.com/goharbor/harbor) 、 [Dragonfly](https://github.com/dragonflyoss/Dragonfly) 、 [TiKV](https://github.com/tikv/tikv) 三个中国原创 CNCF 项目的分享，同时 李响、Dan Kohn 等大佬也在会上发言表达了对国内 CNCF 开源项目的肯定及期待。而在会上也结识了阿里云容器镜像服务的开发小哥，作为阿里云的资深用户与开发小哥进行了交流，了解一些容器镜像服务方面的新功能，同时也反应了在使用中遇到的问题，总的来说收获颇丰。
 

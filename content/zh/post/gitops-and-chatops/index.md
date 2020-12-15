@@ -48,7 +48,7 @@ GitOps 是一种实现持续交付的模型，它的核心思想是将应用系�
 
 ChatOps 以聊天室（聊天群），即实时聊天软件为中心，通过一系列的机器人去对接后台的各种服务，开发&测试&运维人员只需要在聊天窗口中与机器人对话，即可与后台服务进行交互，整个工作的展开就像是使唤一个智能助手那样简单自然。
 
-![ChatOps](https://wx1.sinaimg.cn/large/ad5fbf65gy1g4vr2yialfj20rp0bbmyd.jpg)
+![ChatOps](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vr2yialfj20rp0bbmyd.jpg)
 
 ChatOps 带来了很多好处：
 

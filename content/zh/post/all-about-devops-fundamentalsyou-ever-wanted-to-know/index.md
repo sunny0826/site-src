@@ -136,7 +136,7 @@ DevOps 软件开发实践，开发人员定期将代码修改合并到中央存�
 
 是通过机器可读定义文件（代码库）管理和配置计算机数据中心的过程，而不是物理硬件配置或交互式配置工具。
 
-![](https://wx1.sinaimg.cn/large/ad5fbf65gy1g2v5f38rbij20sg0g0764.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2v5f38rbij20sg0g0764.jpg)
 
 **Amazon 定义 IaC 为：**
 

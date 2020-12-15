@@ -3,7 +3,7 @@ title: "玩转 Drone CI"
 date: 2019-09-11T13:53:09+08:00
 draft: false
 type: blog
-banner: "https://wx1.sinaimg.cn/large/ad5fbf65gy1g6vnfwh6a2j21hc120dpl.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g6vnfwh6a2j21hc120dpl.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

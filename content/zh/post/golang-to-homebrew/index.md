@@ -3,7 +3,7 @@ title: "Golang 装逼指南 Ⅱ：在 Homwebrew 上发布 Golang 项目"
 date: 2019-07-25T16:27:57+08:00
 draft: false
 type: blog
-banner: "https://wx1.sinaimg.cn/large/ad5fbf65gy1g5c8gzc1gwj21qi15otcf.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g5c8gzc1gwj21qi15otcf.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

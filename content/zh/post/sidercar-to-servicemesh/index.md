@@ -20,7 +20,7 @@ image:
 
 ## 什么是边车模式
 
-![](http://wx1.sinaimg.cn/large/ad5fbf65ly1g18zhnoh76j20dw0dw752.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65ly1g18zhnoh76j20dw0dw752.jpg)
 
 在 [Azure Architecture Center](https://docs.microsoft.com/en-us/azure/architecture/patterns/) 的云设计模式中是这么介绍边车模式的：
 

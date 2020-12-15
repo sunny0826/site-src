@@ -3,7 +3,7 @@ title: "记一次使用 Kustomize 时遇到的愚蠢问题"
 date: 2019-07-03T13:44:50+08:00
 draft: false
 type: blog
-banner: "https://wx1.sinaimg.cn/large/ad5fbf65gy1g4mmuqm6n2j2098048a9z.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g4mmuqm6n2j2098048a9z.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -45,4 +45,4 @@ image:
 
 好吧，issue 关的是有道理的...
 
-![](https://wx1.sinaimg.cn/large/ad5fbf65gy1g4mmuqm6n2j2098048a9z.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4mmuqm6n2j2098048a9z.jpg)

@@ -144,7 +144,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 
 ## 运行
 执行jenkins构建，构建成功后会显示如下，则证明sonar代码扫描成功且通过代码质量阈检查
-![image](https://wx1.sinaimg.cn/mw690/ad5fbf65ly1g0u6qrh8qrj21fu0q2dmw.jpg)
+![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0u6qrh8qrj21fu0q2dmw.jpg)
 
 查看sonar报告，这里有两种方式
 
