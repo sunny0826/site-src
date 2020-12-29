@@ -114,7 +114,7 @@ $ kubectl graph pods --field-selector status.phase=Running -n kube-system | dot 
 
 Neo4j 可以展示更为丰富且美观的关系图。在导入 kubernetes resource 之前，需要创建一个 Neo4j 数据库：
 
-![创建 neo4j 数据了](https://tvax1.sinaimg.cn/large/ad5fbf65gy1gm4o4b56mzj21z41kw46d.jpg)
+![创建 neo4j 数据库](https://tvax1.sinaimg.cn/large/ad5fbf65gy1gm4o4b56mzj21z41kw46d.jpg)
 
 数据库创建好后，点击 `Start` 运行并点击 `Open` 打开 `Neo4j Browser`：
 
