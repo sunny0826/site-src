@@ -34,7 +34,7 @@ Imperative 和 Declarative 也就是**命令式**和**声明式**的 IaC，他�
 
 其实这个问题早就引起了开发者的广泛讨论，为了解决这个问题很多项目都做出了尝试，如 Helm 这样采用 template 的方式，或 kustomize 这样采用 overlay 的方式对 YAML 进行抽象和简化。 
 
-目前比较受欢迎的还有一种方式，就是采用常规编程语言通过代码来生成声明式的配置，然后再基于声明式的配置进行部署，这样既不会重复造轮子，同时常规编程语言的可读性、代码量以及编写的难易程度都比直接编写 Yaml 文件要简单的多。比如我之前介绍过的 `Grabana` 就是采用这种模式，使用 Golang 来生成 Grafana Dashboard 配置并部署，详见：[《Grabana：使用 Golang 或 Yaml 生成 Grafana Dashboard》](./grabana-create-grafana-dashboard)。 
+目前比较受欢迎的还有一种方式，就是采用常规编程语言通过代码来生成声明式的配置，然后再基于声明式的配置进行部署，这样既不会重复造轮子，同时常规编程语言的可读性、代码量以及编写的难易程度都比直接编写 Yaml 文件要简单的多。比如我之前介绍过的 `Grabana` 就是采用这种模式，使用 Golang 来生成 Grafana Dashboard 配置并部署，详见：[《Grabana：使用 Golang 或 Yaml 生成 Grafana Dashboard》](../grabana-create-grafana-dashboard)。 
 
 这种方式融合了 Imperative 和 Declarative 的优点是一个非常不错的选择。
 
