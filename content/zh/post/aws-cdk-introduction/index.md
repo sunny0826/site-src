@@ -54,7 +54,7 @@ AWS CDK 目前支持的语言有：
 AWS CDK 还提供了十分完善的脚手架工具，以 Python 为例，只需新建目录，并在目录中执行如下命令，即可拉起一套的 CDK Python 代码：
 
 ```bash
-cdk init app --language python
+$ cdk init app --language python
 ```
 
 之后只需在 `app/app_stack.py` 中编写相应代码即可，非常方便。
