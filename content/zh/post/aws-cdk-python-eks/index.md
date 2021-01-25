@@ -204,6 +204,15 @@ cluster.add_auto_scaling_group_capacity(
 
 在检查无误后就可以开始部署了，执行命令 `cdk deploy` 并输入 `y` 确认，之后可以看到部署的进度条。如果部署中间出现错误， CDK 会自动进行回滚，之前创建和修改的资源都会被恢复原样，可以放心使用。
 
+![部署成功](https://tva2.sinaimg.cn/large/ad5fbf65gy1gmzpw3ltfkj21920h2n2q.jpg)
+
+到这里，EKS 集群就已经部署成功了，执行两条命令，就能生成 `kubeconfig` 并使用 `kubectl` 访问了。
+
+```bash
+$ aws eks updata-kubeconfig ...
+$ aws eks get-token ...
+```
+
 ### 销毁
 
 在完成测试后，执行命令 `cdk destroy` 对创建的资源进行释放。
