@@ -7,8 +7,10 @@
 		<span>
 			{{ $page.ReadingTime }} {{ T "minute_read" }}
 		</span> ·
+		<span>{{ T "post_posts_in" }} </span><time datetime="{{  $.PublishDate.Format " 2006-01-02" }}" 
+			class="text-muted">{{ .PublishDate.Format $.Site.Params.time_format_blog }}</time> ·
 		<span>{{ T "last_updated" }} </span><time datetime="{{  $.Lastmod.Format "2006-01-02" }}"
-			class="text-muted">{{ $.Date.Format $.Site.Params.time_format_blog  }}</time> ·
+			class="text-muted">{{ .Lastmod.Format $.Site.Params.time_format_blog  }}</time> ·
 		{{ range $index, $elements:= .Params.Categories }}
 		<a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}">{{ if ne $index 0 }}, {{ end }}
 			{{ . | title }}</a>
