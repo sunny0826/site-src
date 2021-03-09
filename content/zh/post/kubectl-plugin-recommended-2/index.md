@@ -67,7 +67,7 @@ $ kubectl iexec --help
 
 ### open-svc
 
-日常工作中，常常需要使用 `kubectl port-forward` 命令来在本地访问部署在 k8s 中的服务，`open-svc` 则简化了这一步骤，输入命令，直接打开浏览器访问 k8s 中的服务。
+日常工作中，常常需要使用 `kubectl port-forward` 命令来在本地访问部署在 k8s 中的服务，`open-svc` 则简化了这一步骤，输入命令，相应服务会直接在浏览器中弹出。
 
 项目地址：https://github.com/superbrothers/kubectl-open-svc-plugin
 
