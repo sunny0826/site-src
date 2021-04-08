@@ -1,0 +1,10 @@
+{
+    "name": "guoxudong-hugo",
+    "version": "0.0.1",
+    "description": "guoxudong blog",
+    "dependencies": {},
+    "devDependencies": {
+        "autoprefixer": "^9.8.6",
+        "postcss-cli": "^7.1.2"
+    }
+}
