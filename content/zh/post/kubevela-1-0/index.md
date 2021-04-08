@@ -230,7 +230,7 @@ $ vela show webservice --web
 
 对于**最终用户（应用开发团队）**，KubeVela 是一个简单、易用且高拓展的云原生应用管理工具，其可以让开发者以极低的心智负担和上手成本在 Kubernetes 上部署应用，只需一行命令 `vela up` 即可拉起一整套云原生应用。
 
-对于**平台团队**，KubeVela 是一个可以任意扩展的云原生平台内核，平台工程师可以轻松的将 Kubernetes 生态中的能力，通过 KubeVela 以类似插件的形象注入到 Kubernetes 集群中，简单高效且易于维护。
+对于**平台团队**，KubeVela 是一个可以任意扩展的云原生平台内核，平台工程师可以轻松的将 Kubernetes 生态中的能力，通过 KubeVela 以类似插件的形式注入到 Kubernetes 集群中，简单高效且易于维护。
 
 ![](https://tva4.sinaimg.cn/large/ad5fbf65gy1gp9zu2k1iaj20q00ds0yt.jpg)
 
