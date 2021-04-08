@@ -22,7 +22,7 @@ jobs:
         # remove --minify tag if you do not need it
         # docs: https://gohugo.io/hugo-pipes/minification/
         # run: git submodule update --init --recursive && hugo
-        run: cd themes/docsy && git submodule update -f --init && cd ../.. && hugo
+        run: git submodule update -f --init && hugo
         env:
           HUGO_ENV: production
       - name: Deploy
