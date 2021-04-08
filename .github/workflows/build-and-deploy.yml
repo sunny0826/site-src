@@ -19,7 +19,7 @@ jobs:
           extended: true
         
       - name: Hugo init
-        run: npm install -g -D --save postcss postcss-cli@8.0.0 && npm install -g -D --save autoprefixer
+        run: npm install -D --save postcss postcss-cli@8.0.0 && npm install -D --save autoprefixer
       - name: Build
         # remove --minify tag if you do not need it
         # docs: https://gohugo.io/hugo-pipes/minification/
