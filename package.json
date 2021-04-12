@@ -2,7 +2,9 @@
     "name": "guoxudong-hugo",
     "version": "0.0.1",
     "description": "guoxudong blog",
-    "dependencies": {},
+    "dependencies": {
+        "postcss": "^8.2.10"
+    },
     "devDependencies": {
         "autoprefixer": "^9.8.6",
         "postcss-cli": "^7.1.2"

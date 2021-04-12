@@ -111,12 +111,12 @@ copyright = "Guo Xudong"
 # privacy_policy = "https://policies.google.com/privacy"
 
 # Docsy: Google Custom Search Engine ID. Remove or comment out to disable search.
-gcs_engine_id = "000891850077446260437:bhwy2nhukpg"
+# gcs_engine_id = "000891850077446260437:bhwy2nhukpg"
 
 #Enable offline search with Lunr.js
-# offlineSearch = false
-# offlineSearchSummaryLength = 200
-# offlineSearchMaxResults = 25
+offlineSearch = true
+offlineSearchSummaryLength = 200
+offlineSearchMaxResults = 25
 
 # Text label for the version menu in the top bar of the website.
 version_menu = "v0.3.0"
