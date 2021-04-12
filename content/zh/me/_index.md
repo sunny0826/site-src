@@ -31,7 +31,7 @@ menu:
 
 <center><img class="img-fluid w-5" src="https://tva4.sinaimg.cn/large/ad5fbf65ly1ghelq5ndvkj2050050dfz.jpg" alt="about image"></center>
 
-<center>添加微信，请注明姓名-公司信息</center>
+<center>添加微信，请注明姓名-公司信息及添加原因</center>
 
 ---
 
@@ -47,7 +47,7 @@ menu:
 
 <center><img class="img-fluid w-5" src="https://tvax3.sinaimg.cn/large/ad5fbf65ly1gheloxweaej2050050dfo.jpg" alt="about image"></center>
 
-<center><a href="mailto:sunnydog0826@gmail.com">sunnydog0826@gmail.com</a></center>
+<center><a href="mailto:guoxudong.dev@gmail.com">guoxudong.dev@gmail.com</a></center>
 
 ---
 
