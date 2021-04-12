@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "description": "guoxudong blog",
     "dependencies": {
+        "jquery": "^3.6.0",
         "postcss": "^8.2.10"
     },
     "devDependencies": {
