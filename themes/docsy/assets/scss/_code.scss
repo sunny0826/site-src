@@ -4,13 +4,18 @@
 	// Highlighted code.
     .highlight {
         @extend .card;
-	
+        
         margin: 2rem 0;
-        padding: 0;
-	    
+        padding: 1rem;
+        background-color: $gray-100;
+
+        pre, div {
+            background-color: inherit !important;
+        }
+
         pre {
             margin: 0;
-            padding: 1rem;
+            padding: 0;
         }
     }
 
