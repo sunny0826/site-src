@@ -46,13 +46,12 @@ disqusShortname = "gxd"
 # Docsy: Configuration for Goldmark markdown parser, which is default from 
 # Hugo 0.60 onwards. https://github.com/yuin/goldmark/
 [markup]
-[markup.goldmark]
-[markup.goldmark.renderer]
-# Allow Goldmark to render raw HTML:
+  [markup.goldmark]
+    [markup.goldmark.renderer]
       unsafe = true
-[markup.highlight]
+  [markup.highlight]
       # See a complete list of available styles at https://xyproto.github.io/splash/docs/all.html
-      style = "native"
+      style = "dracula"
 
 # Docsy: Image processing configuration.
 [imaging]

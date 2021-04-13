@@ -1,0 +1,54 @@
+// Content formatting.
+
+.td-content {
+	// Highlighted code.
+    .highlight {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+        background-color: $gray-100;
+    }
+
+    // Inline code
+    p code, li > code, table code {
+        color: inherit;
+        padding: 0.2em 0.4em;
+        margin: 0;
+        font-size: 85%;
+        word-break: normal;
+        color: #d14;
+        background: rgba(27,31,35,.05);
+        border-radius: $border-radius;
+
+        br {
+            display: none;
+        }
+    }
+
+
+    // Code blocks
+    pre {
+        word-wrap: normal;
+        background-color: $gray-100;
+        padding: $spacer;
+     
+
+        > code {
+            padding: 0;
+            margin: 0;
+            font-size: 100%;
+            word-break: normal;
+            white-space: pre;
+            border: 0;
+        }
+    }
+
+    strong {
+        color: rgba(41, 111, 255, 1);
+    }
+
+    img {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
+
+}
