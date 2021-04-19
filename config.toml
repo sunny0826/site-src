@@ -118,16 +118,16 @@ offlineSearchSummaryLength = 200
 offlineSearchMaxResults = 25
 
 # Text label for the version menu in the top bar of the website.
-version_menu = "v0.3.0"
+#version_menu = "v0.3.0"
 
 # The major.minor version tag for the version of the docs represented in this
 # branch of the repository. Used in the "version-banner" partial to display a
 # version number for this doc set.
-version = "v0.3.0"
+#version = "v0.3.0"
 
 # Flag used in the "version-banner" partial to decide whether to display a 
 # banner on every page indicating that this is an archived version of the docs.
-archived_version = false
+#archived_version = false
 
 # A link to latest version of the docs. Used in the "version-banner" partial to
 # point people to the main doc site.
