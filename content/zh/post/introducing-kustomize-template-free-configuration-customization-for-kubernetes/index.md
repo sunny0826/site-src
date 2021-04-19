@@ -3,7 +3,7 @@ title: "Kustomize: 无需模板定制你的 kubernetes 配置"
 date: 2019-04-15T17:23:21+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g24hv1hekoj21y012cqc6.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g24hv1hekoj21y012cqc6.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "本文介绍了 Kubernetes 原生的应用管理工具 Kustomize。"

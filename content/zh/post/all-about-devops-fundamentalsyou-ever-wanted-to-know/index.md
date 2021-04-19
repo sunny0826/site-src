@@ -3,7 +3,7 @@ title: "什么是 DevOps ？DevOps 是如何工作的？"
 date: 2019-05-09T09:55:11+08:00
 draft: false
 type: blog
-banner: "https://wx4.sinaimg.cn/large/ad5fbf65gy1g2uu2lvbzcj21hc0u042j.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g2uu2lvbzcj21hc0u042j.jpg"
 author: "Pramod Chandrayan"
 authorlink: "https://medium.com/@pramod.pandey83"
 translator: "郭旭东"
@@ -56,7 +56,7 @@ _“DevOps 可以为我们的终端客户持续提供价值的人员，流程和
 ## DevOps 是如何工作的？
 如上所述，DevOps 没有任何固定的规则和实践，但它更像是通过来自不同部门具有不同的技能的团队在一起以实现预期的结果的文化。那么它实际上是如何工作的，让我通过下图简要解释一下：
 
-![](https://ws2.sinaimg.cn/large/ad5fbf65gy1g2v3dnchftj20jg065dgv.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2v3dnchftj20jg065dgv.jpg)
 
 因此，开发人员，QA 和运维团队使用 CI/CD 实践来实现客户的预期目标。开发人员编写代码并将其提交到 GitHub 等源码控制工具。DevOps 工程师使用 CI 工具来提取代码，来进行自动化测试，并通过 CD 工具部署到处理生产或测试服务器。
 
@@ -65,7 +65,7 @@ _“DevOps 可以为我们的终端客户持续提供价值的人员，流程和
 ## DevOps工具在DevOps周期的各个阶段：
 
 如下所示：
-![](https://ws2.sinaimg.cn/large/ad5fbf65gy1g2v3ukk6kzj20xc0e5dvj.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2v3ukk6kzj20xc0e5dvj.jpg)
 
 DevOps 工程师可以使用多种工具在整个 DevOps 生命周期的每个阶段获取期望的结果。
 
@@ -173,7 +173,7 @@ wiki 中介绍：
 
 让我们看看由 veritis 带给您的以下信息图表。
 
-![](https://ws4.sinaimg.cn/large/ad5fbf65gy1g390lc1h7jj20rs2ffapj.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g390lc1h7jj20rs2ffapj.jpg)
 
 以上给出的图表清楚地阐述了 DevOps 实践的主要好处：
 
@@ -213,7 +213,7 @@ DevOps 的实践就是将团队整合在一起，打破 IT 组织内部的孤岛
 
 ### 2. 从传统基础设施转向微服务架构
 
-![](https://wx2.sinaimg.cn/large/ad5fbf65gy1g390r8z5r5j21fp0otjwk.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g390r8z5r5j21fp0otjwk.jpg)
 
 多年来，这些公司一直存在遗留的基础设施，但如果他们必须快速创新，他们必须摆脱这种方法并采用更具可扩展性的微服务架构。将基础设施即代码与微服务一起使用是迈向持续创新未来的又一步。
 
@@ -223,7 +223,7 @@ _确实，将开发与部署转变为现代的软件开发方案可能会很痛�
 
 ### 3. 开发和运维工具集的冲突
 
-![](https://ws2.sinaimg.cn/large/ad5fbf65gy1g390s7jogmj20p00egjsv.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g390s7jogmj20p00egjsv.jpg)
 
 开发团队的目标和指标完全不同，因此他们可能需要一个运维团队可能不需要的工具集。因此，必须将两个团队聚集在一起，以了解他们两者可以合作的位置，并整合对他们两者都有意义的工具，并统一他们可以监控的目标和指标。
 

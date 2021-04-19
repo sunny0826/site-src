@@ -3,7 +3,7 @@ title: "困难的 Kubernetes"
 date: 2019-04-24T10:18:46+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g2dicvhncxj20xc0hi7wh.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g2dicvhncxj20xc0hi7wh.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "虽然 Kubernetes 赢得了容器战争，但是其仍然很难使用并且引起很多事故。"

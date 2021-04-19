@@ -3,7 +3,7 @@ title: "GitHub/Gitee 静态页托管页部署SSL证书"
 date: 2019-08-23T09:36:55+08:00
 draft: false
 type: blog
-banner: "https://ws4.sinaimg.cn/large/ad5fbf65gy1g69glqoddyj21jk15odie.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g69glqoddyj21jk15odie.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -41,7 +41,7 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
 1. 购买证书后点击申请
 
-    ![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g69ee2r500j22cc078t9z.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69ee2r500j22cc078t9z.jpg)
 
 2. 证书申请
 
@@ -49,13 +49,13 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
     ![image](https://tva2.sinaimg.cn/bmiddle/ad5fbf65gy1g69egsu7fuj20ye0swwh3.jpg)
 
-    ![image](https://wx2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg)
+    ![image](https://tva2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg)
 
 3. 证书签发
 
     证书通过申请后，会收到证书签发的邮件。
 
-    ![image](https://wx2.sinaimg.cn/wap720/ad5fbf65gy1g69epoqw6uj21680cotaj.jpg)
+    ![image](https://tva2.sinaimg.cn/wap720/ad5fbf65gy1g69epoqw6uj21680cotaj.jpg)
 
 #### 设置自定义域名
 
@@ -63,13 +63,13 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
     在证书签发成功后，添加DNS解析，将绑定了SSL证书的域名解析到 `YourRepo.github.io` 。
 
-    ![image](https://ws2.sinaimg.cn/large/ad5fbf65gy1g69evivrvqj21mi07it9g.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69evivrvqj21mi07it9g.jpg)
 
 2. 配置域名
 
     解析之后将域名添加到 `Custom domain` 并且点击 `Save` ，Github会自动验证，出现`Your site is published at https://YourDomainName.com/`则证明解析成功。
     
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g69esrcn2tj21a210wwk0.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69esrcn2tj21a210wwk0.jpg)
 
 ### Gitee Pages Pro 服务部署SSL证书
 
@@ -94,13 +94,13 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
     拷贝验证信息内的`记录值`。
 
-    ![image](https://wx2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg)
+    ![image](https://tva2.sinaimg.cn/bmiddle/ad5fbf65gy1g69eo1wls7j20ya0r0418.jpg)
 
 4. 验证解析
 
     进入购买域名所在网站进行DNS解析，这里以[name.com](https://www.name.com/zh-cn/)为例：
 
-    ![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g69fqad2euj221g0700tt.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69fqad2euj221g0700tt.jpg)
 
     解析成功之后，返回阿里云SSL证书管理页面点击`验证`.
 
@@ -120,17 +120,17 @@ Github/Gitee的Pages是一个免费的静态网页托管服务，您可以使用
 
     1. 域名添加到`自定义域名`
 
-        ![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g69g11wx0qj21a60xiq7m.jpg)
+        ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69g11wx0qj21a60xiq7m.jpg)
 
     2. 配置证书
 
         - 证书下载，选择 nginx 类型。
 
-            ![image](https://ws4.sinaimg.cn/bmiddle/ad5fbf65gy1g69g3pua7xj20ne0v0jus.jpg)
+            ![image](https://tva2.sinaimg.cn/bmiddle/ad5fbf65gy1g69g3pua7xj20ne0v0jus.jpg)
 
         - gitee pages 配置证书，将证书文件与私钥文件贴入并提交。
 
-            ![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g69g64n1btj21bs0yogq8.jpg)
+            ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g69g64n1btj21bs0yogq8.jpg)
 
         - 勾选`强制使用HTTPS`，并保存。
 

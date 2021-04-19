@@ -37,7 +37,7 @@ image:
 ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sgp0dos2j22ky0iowkr.jpg)
 
 - 选择 VPC 网络、交换机和权限组
-![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g4sgpwqrgoj20xu0vowib.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sgpwqrgoj20xu0vowib.jpg)
 
 ## Linux 挂载 NAS 数据卷
 
@@ -54,7 +54,7 @@ sudo yum install nfs-utils
 
 这里阿里云早就进行了优化，点击创建的文件系统，页面上就可以 copy 挂载命令。页面提供了挂载地址的 copy 和挂载命令的 copy 功能。
 
-![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g4sh2i33wnj22w40yyn55.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4sh2i33wnj22w40yyn55.jpg)
 
 挂载命令：
 
@@ -86,7 +86,7 @@ K8S 的持久数据卷挂载大同小异，流程都是：__创建PV__ -> __创�
 
 这里要注意的是：__挂载点域名使用上面面的挂载地址__
 
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g4shuiiyyqj20hc0hp0tz.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4shuiiyyqj20hc0hp0tz.jpg)
 
 ### 创建存储声明（PVC）
 
@@ -94,7 +94,7 @@ __选择 NAS__ -> __已有存储卷__
 
 选择刚才创建的存储卷
 
-![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g4shv5vs1kj20hx0bvt9g.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4shv5vs1kj20hx0bvt9g.jpg)
 
 ### 使用PVC
 

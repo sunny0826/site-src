@@ -3,7 +3,7 @@ title: "解决 Nginx-Ingress 重定向失败问题"
 date: 2019-08-16T11:15:37+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g61duu66q4j20dw08ft8w.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g61duu66q4j20dw08ft8w.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

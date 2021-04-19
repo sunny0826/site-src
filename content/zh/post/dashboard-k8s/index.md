@@ -3,7 +3,7 @@ title: "阿里云日志服务采集k8s日志并实现livetail功能"
 date: 2019-02-14T14:07:06+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t0tydo76j21qi15oaqs.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t0tydo76j21qi15oaqs.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "阿里云日志服务采集k8s日志和livetail功能调研"

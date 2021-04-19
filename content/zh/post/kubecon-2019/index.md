@@ -27,7 +27,7 @@ image:
 
 参与本次大会不仅仅是因为可以接触到最新的 Kubernetes & Cloud Native 实践，更是因为可以与很多神交已久的朋友会面，同时也可以与很多业界大牛面对面的交流，获取宝贵的经验。
 
-![48124131751_3fc63103d5_o](https://ws2.sinaimg.cn/large/ad5fbf65gy1g4lbp87794j22bc1jknpe.jpg)
+![48124131751_3fc63103d5_o](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4lbp87794j22bc1jknpe.jpg)
 
 ## 国内云原生开源力量强劲
 
@@ -35,7 +35,7 @@ image:
 
 作为 [ServiceMesher](http://servicemesher.com) 社区的一员，与会议的组织者在社区中都很熟悉了，虽然没有注册 SOFAStack Workshop 会议，但也很自然的混进去了。作为金融级分布式框架 SOFAStack ，是用于快速构建金融级分布式架构的一套中间件，也是建立于蚂蚁金服海量金融场景锤炼出来的最佳实践。而此次的 Workshop 更是经过了精心的准备，准备了充足的材料，并在蚂蚁同学的帮助了使用 SOFAStack 实践了 __使用 SOFAStack 快速构建微服务__ 、 __SOFABoot 动态模块实践__ 、 __使用 Seata 保障支付一致性__ 、 __基于 Serverless 轻松构建云上应用__ 和 __使用 CloudMesh 轻松实践 Service Mesh__ 五个demo。在 Service Mesh 方面，蚂蚁的同学异常的活跃，是 Istio 中文文档翻译和 [ServiceMesher](http://servicemesher.com) 社区的主要组织者。
 
-![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g4lcu8mpmsj21480tokjl.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4lcu8mpmsj21480tokjl.jpg)
 <center>《未来架构-从服务化到云原生》作者敖小剑老师现场签名</center>
 
 午饭后短暂旁听了华为主办的 Apache ServiceComb Meetup ，虽然时间短暂，只有不到1个小时，但是对于国内运作开源项目，尤其是 Apache 项目有个更深的理解，同时让我联想到了之前在 [《从开源小白到 Apache Member ，阿里工程师的成长笔记》](https://developer.aliyun.com/article/704943) 阿里巴巴技术专家望陶成为的文章，中国的开源软件和开发者在开源领域起到越来越重要的作用。
@@ -58,7 +58,7 @@ Keynote 上还提到了中国在整个云原生运动中的巨大贡献，中国
 
 而在赞助商展示区也有不少的收获，与rancher、kong、jenkins等开源软件的开发者进行了交流，同时也获得了不少小礼品。最大的收获就是在阿里云展台与张磊大神的合影。
 
-![IMG_2536](https://wx2.sinaimg.cn/large/ad5fbf65gy1g4lh0fv4x5j23402c0qv7.jpg)
+![IMG_2536](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4lh0fv4x5j23402c0qv7.jpg)
 <center>与张磊大神的合影</center>
 
 ## ServiceMesher 社区的壮大

@@ -3,7 +3,7 @@ title: "阿里云环境Istio初探"
 date: 2019-03-13T15:45:43+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g117v91a61j21qi15otcd.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g117v91a61j21qi15otcd.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "极简的istio样例部署，可以帮助新手快速入门，相较官方提供的Bookinfo应用更容易上手。"
@@ -23,7 +23,7 @@ image:
 ### 部署istio
 istio有多种部署方式，阿里云、华为云等云服务商均提供一键安装，同时也可以通过GitHub下载release包，使用```install/kubernetes/istio-demo.yaml```部署，或者使用helm部署。**这里采用阿里云容器服务一键部署istio**。
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g117xxixlvj20a00ajdgb.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g117xxixlvj20a00ajdgb.jpg)
 
 ### 部署两个版本的服务
 这里选择一个简单的Python项目作为服务端，这里使用[崔秀龙](https://github.com/fleeto)老哥的[flaskapp](https://github.com/fleeto/flaskapp/blob/master/app/main.py)服务，该服务的作用就是提供2个url路径：
@@ -120,7 +120,7 @@ deployment.extensions/flaskapp-v2 created
 
 在rancher查看注入情况
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1045ku3dcj20cj05kglp.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1045ku3dcj20cj05kglp.jpg)
 
 这里也可以使用```kubectl describe po flaskapp-v1-7d4f9b8459-2ncnf```命令查看Pod容器，这里可以看到Pod中多了一个容器，名为```istio-proxy```，这就表示注入成功了。而前面```istio-init```的初始化容器，这个容器是用于初始化劫持的。
 
@@ -270,7 +270,7 @@ v2
 
 #### kiali查看调用情况
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g104tydblxj21az0li40i.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g104tydblxj21az0li40i.jpg)
 
 可以看到流量都进入了v2版本中
 

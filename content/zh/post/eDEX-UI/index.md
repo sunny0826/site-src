@@ -3,7 +3,7 @@ title: "炫酷的终端软件 eDEX-UI"
 date: 2019-04-29T11:55:47+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g2jfg79sy3j21hc0tztfr.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g2jfg79sy3j21hc0tztfr.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "eDEX-UI 是一个全屏且跨平台、可定制的终端模拟器，具有先进的监控和触摸屏支持。它的外观类似科幻的计算机界面。在保持未来感的外观和感觉的同时，它努力保持一定的功能水平并可用于现实场景，其更大的目标是将科幻用户体验纳入主流。"

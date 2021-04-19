@@ -3,7 +3,7 @@ title: "如何构建混合Kubernetes平台"
 date: 2019-08-06T14:01:30+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g5q0b3o8laj20jg06sq36.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g5q0b3o8laj20jg06sq36.jpg"
 author: "David Donchez"
 authorlink: "https://medium.com/@david.donchez"
 translator: "郭旭东"
@@ -36,7 +36,7 @@ image:
 
 我们做出这个选择主要是出于技术原因，但也因为我们需要快速提供基础设施来满足 Dailymotion 的业务需求。并且对托管的应用程序（如地理分布，可伸缩性和弹性）有一些要求。
 
-![](https://ws2.sinaimg.cn/large/ad5fbf65gy1g5py1vm2k2j20hd0bbjtq.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5py1vm2k2j20hd0bbjtq.jpg)
 <center>Dailymotion 的 GKE 集群</center>
 
 Dailymotion 作为一个全球性的视频平台，需要通过减少延迟来改善用户体验。之前我们仅在巴黎提供 [API](https://developer.dailymotion.com/) ，但这样并非最佳，我们希望能够在欧洲、亚洲以及美国托管我们的应用程序。
@@ -45,7 +45,7 @@ Dailymotion 作为一个全球性的视频平台，需要通过减少延迟来�
 
 此外，Google Cloud 的网络和负载均衡服务非常棒。它可以将我们的用户路由到最近的集群，并且在发生故障的情况下，流量会自动路由到另一个区域而无需任何人为干预。
 
-![](https://wx4.sinaimg.cn/large/ad5fbf65gy1g5pytelbwnj20jg0avq4x.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5pytelbwnj20jg0avq4x.jpg)
 <center>Google 负载均衡监控</center>
 
 我们的平台同样需要使用 GPU，而 Google Cloud 允许我们以非常有效的方式直接在我们的 Kubernetes 集群中使用它们。
@@ -64,7 +64,7 @@ Dailymotion 多年来在全球拥有自己的内容分发网络，每月有超�
 
 我的目前拥有6个数据中心的2500多台服务器。所有这些都使用 Saltstack 进行配置，我们开始准备所有需要的公式来创建主节点、工作节点以及 Etcd 集群。
 
-![](https://wx2.sinaimg.cn/large/ad5fbf65gy1g5pzm4m985j20jg06tgm7.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5pzm4m985j20jg06tgm7.jpg)
 
 ### 网络部分
 
@@ -91,11 +91,11 @@ Dailymotion 多年来在全球拥有自己的内容分发网络，每月有超�
 
 经过近2年的构建、测试和微调，我们发现自己拥有完整的 Kubernetes 技术栈，可以接收部分流量。
 
-![](https://wx2.sinaimg.cn/large/ad5fbf65gy1g5q0b3o8laj20jg06sq36.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5q0b3o8laj20jg06sq36.jpg)
 
 目前，我们的路由策略非常简单，但足以解决我们的问题。除了我们的公共IP（Google Cloud和Dailymotion）之外，我们还使用AWS Route 53 来定义策略并将终端用户流量引入我们选择的集群。
 
-![](https://ws2.sinaimg.cn/large/ad5fbf65gy1g5q0ds3spjj20jg07a0tk.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5q0ds3spjj20jg07a0tk.jpg)
 <center>使用Route 53的路由策略示例</center>
 
 在 Google Cloud 上很简单，因为我们为所有群集使用唯一的IP，并且用户被路由到他最近的 GKE 群集。对于我们来说，我们不使用相同的技术，因此我们每个群集都有不同的IP。

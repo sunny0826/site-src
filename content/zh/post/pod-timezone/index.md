@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["kubernetes"]
 categories: ["问题解决"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t1f80hkgj21qo15oglu.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t1f80hkgj21qo15oglu.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "解决容器中时区问题。"

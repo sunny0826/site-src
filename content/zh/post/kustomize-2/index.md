@@ -3,7 +3,7 @@ title: "使用 Kustomize 帮你管理 kubernetes 应用（二）： Kustomize �
 date: 2019-04-19T16:05:02+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g2816bavnxj21qi15oacw.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g2816bavnxj21qi15oacw.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "本篇为系列文章第二篇，手把手教你使用 Kustomize 的两种方式。"
@@ -21,7 +21,7 @@ image:
 ## 定制配置
 在这个工作流方式中，所有的配置文件（ YAML 资源）都为用户所有，存在于私有 repo 中。其他人是无法使用的。
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g2813d1ia7j20qo0f0dgk.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g2813d1ia7j20qo0f0dgk.jpg)
 
 1. 创建一个目录用于版本控制
 
@@ -70,7 +70,7 @@ image:
 ## 使用现成的配置
 在这个工作流方式中，可从别人的 repo 中 fork kustomize 配置，并根据自己的需求来配置。
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g281xyfebej20qo0f0dgr.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g281xyfebej20qo0f0dgr.jpg)
 
 1. 通过 fork/modify/rebase 等方式获得配置
 

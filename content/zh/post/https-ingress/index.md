@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["kubernetes","阿里云","rancher"]
 categories: ["kubernetes"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t15tmebvj21qi15oah8.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t15tmebvj21qi15oah8.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "devops平台率先在公司内使用kubernetes集群提供后端服务，但是由于之前一直处于探索阶段，所以使用的事http的方式提供后端服务，但是在开发统一入口后，出现了访问HTTPS页面的跨域问题，由此引出了后端服务配置SSL证书的问题。"

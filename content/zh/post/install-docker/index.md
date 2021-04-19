@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["容器", "Linux"]
 categories: ["部署安装"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t18xk06xj21qq15ods6.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t18xk06xj21qq15ods6.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "在使用CentOS7，并使用荫安装搬运工的时候，往往不希望安装最新版本的搬运工，而是希望安装与自己熟悉或者当前业务环境需要的版本，例如目前Kubernetes支持的最新搬运工版本为v17.03，所以就产生了安装指定版本 docker 的需求。"

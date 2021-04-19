@@ -3,7 +3,7 @@ title: "解决kubernetes中ingress-nginx配置问题"
 date: 2019-03-06T14:42:05+08:00
 draft: false
 type: blog
-banner: "https://ws4.sinaimg.cn/large/ad5fbf65gy1g61hrqctjnj20dw099aa9.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g61hrqctjnj20dw099aa9.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "随着公司容器化的深入，越来越多的服务陆续迁移到kubernetes集群中，有些问题在测试环境并未凸显，但是在生产环境中这些问题就显得格外的扎眼。这里就对实践中kubernetes集群中的7层负载均衡器ingress遇到的问题进行总结。"
@@ -26,7 +26,7 @@ Ingress是kubernetes API的标准资源类型之一，其本质就是一组基�
 
 Ingress控制器(Ingress Controller)可以由任何具有反向代理(HTTP/HTTPS)功能的服务程序实现，如Nginx、Envoy、HAProxy、Vulcand和Traefik等。Ingress控制器本身也作为Pod对象与被代理的运行为Pod资源的应用运行于同一网络中。我们在这里选择了NGINX Ingress Controller，由于对NGINX的配置较为熟悉，同时我们使用的kubernetes是阿里云的容器服务，构建集群的时候，容器服务会自带NGINX Ingress Controller。
 
-![image](http://wx2.sinaimg.cn/large/ad5fbf65ly1g0t3yj7wecj20w50doab9.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t3yj7wecj20w50doab9.jpg)
 
 ## 根据实际情况Ingress调优
 
@@ -95,7 +95,7 @@ image:
 
 有一个数据导出功能，需要将大量数据进行处理，然后以Excel格式返回，在导出一个大约3W条数据的时候，出现访问超时情况。
 
-![image](https://ws2.sinaimg.cn/mw690/ad5fbf65ly1g0ubdwwzo5j21b30bjaat.jpg)
+![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0ubdwwzo5j21b30bjaat.jpg)
 
 #### 解决方法
 

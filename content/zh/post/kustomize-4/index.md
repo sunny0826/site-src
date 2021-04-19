@@ -3,7 +3,7 @@ title: "使用 Kustomize 帮你管理 kubernetes 应用（四）：简述核心�
 date: 2019-05-23T12:50:12+08:00
 draft: false
 type: blog
-banner: "https://ws4.sinaimg.cn/large/ad5fbf65gy1g3bbl0silkj21qi15o7bb.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g3bbl0silkj21qi15o7bb.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

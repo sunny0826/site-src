@@ -3,7 +3,7 @@ title: "轻量快速的 CI 工具 Drone"
 date: 2019-05-21T08:59:00+08:00
 draft: false
 type: blog
-banner: "https://ws2.sinaimg.cn/large/ad5fbf65gy1g38swbabmaj21jk15ognu.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g38swbabmaj21jk15ognu.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -179,7 +179,7 @@ trigger:
 - dingding： 钉钉机器人 token
 
 > 注意这里的钉钉 token 是 webhook 中 `https://oapi.dingtalk.com/robot/send?access_token=` 后这部分
-![WX20190521-105337](https://ws2.sinaimg.cn/large/ad5fbf65gy1g38r1mkoztj20iy0ezgmg.jpg)
+![WX20190521-105337](https://tva2.sinaimg.cn/large/ad5fbf65gy1g38r1mkoztj20iy0ezgmg.jpg)
 
 ![WX20190521-104942@2x](https://tva2.sinaimg.cn/large/ad5fbf65gy1g38qxizsg1j21ia0tujtb.jpg)
 
@@ -191,7 +191,7 @@ trigger:
 
 CI 结束后，会在钉钉机器人所在群收到通知
 
-![WX20190521-110009](https://ws4.sinaimg.cn/large/ad5fbf65gy1g38r8cttcrj20e90bzacr.jpg)
+![WX20190521-110009](https://tva2.sinaimg.cn/large/ad5fbf65gy1g38r8cttcrj20e90bzacr.jpg)
 
 
 ## 插件支持

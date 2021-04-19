@@ -3,7 +3,7 @@ title: "语义化版本控制规范（SemVer）"
 date: 2019-07-06T09:40:42+08:00
 draft: false
 type: blog
-banner: "https://wx4.sinaimg.cn/large/ad5fbf65gy1g4oq86rm4xj21qi15otci.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g4oq86rm4xj21qi15otci.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

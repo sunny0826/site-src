@@ -3,7 +3,7 @@ title: "Jenkins Pipeline集成Sonar进行代码质量检测"
 date: 2019-03-07T9:14:39+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0u28qlkvrj21pj15o4ji.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0u28qlkvrj21pj15o4ji.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "在devops理念中，CI/CD毫无疑问是最重要的一环，而代码质量检查则是CI中必不可少的一步。在敏捷开发的思想下，代码的迭代周期变短，交付速度提升，这个时候代码的质量就很难保证，测试只能保证功能完整与可用，而代码的质量纯靠review的话效率又很低，这个时候sonar..."
@@ -55,7 +55,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 
     **[系统管理]**-**[插件管理]**-**[可选插件]**-**[SonarQube Scanner for Jenkins]**
 
-    ![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g0u4q3ae1bj20t90233yt.jpg)
+    ![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g0u4q3ae1bj20t90233yt.jpg)
 
 2. SonarQube生成token，**这个token不会显示第二次，所以一定要记住**
 
@@ -70,7 +70,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
     [INFO] Dependency-Check XML report does not exists. Please check property sonar.dependencyCheck.reportPath:/data/jenkinsHome/workspace/xxx/${WORKSPACE}/dependency-check-report.xml
     ```
 
-    ![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g0yvjjcvdaj211b0jhgod.jpg)
+    ![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g0yvjjcvdaj211b0jhgod.jpg)
 
 4. 在pom.xml文件中添加
 
@@ -94,7 +94,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 
     **[配置]**-**[web回调接口]**-**[URL]**
 
-    ![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g0v4m590vhj212k0pw0vo.jpg)
+    ![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g0v4m590vhj212k0pw0vo.jpg)
 
 7. 编辑jenkins pipeline
 
@@ -152,7 +152,7 @@ jenkins、sonarqube服务已经搭建完成，jenkins安装sonar插件```SonarQu
 ![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0u6vbspv5j21260myadw.jpg)
 
 - 也可直接在jenkins页面点击SonarQube图标进入，点击以下标记均可进去
-![image](https://ws2.sinaimg.cn/mw690/ad5fbf65ly1g0u6xzcryhj21fn0q7wkm.jpg)
+![image](https://tva2.sinaimg.cn/mw690/ad5fbf65ly1g0u6xzcryhj21fn0q7wkm.jpg)
 
 ## 其他
 

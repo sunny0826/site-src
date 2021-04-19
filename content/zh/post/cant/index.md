@@ -3,7 +3,7 @@ title: "GitHub 黑话指南"
 date: 2019-04-22T09:11:24+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g2b5fe5ahmj20c80bhdg8.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g2b5fe5ahmj20c80bhdg8.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "这里总结了一些在 GitHub 上常见的<黑话>，这些乱七八糟的缩写着实给很多新司机带来了许多困扰 :)"

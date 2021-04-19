@@ -3,7 +3,7 @@ title: "4月29日 云栖社区分享PPT -- 阿里云容器服务的优势与调�
 date: 2019-04-30T18:46:24+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g2kv2e5abdj20qo0f04cm.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g2kv2e5abdj20qo0f04cm.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

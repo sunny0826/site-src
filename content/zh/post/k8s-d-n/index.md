@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["kubernetes"]
 categories: ["问题解决"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t1c036hkj21qi15odl1.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t1c036hkj21qi15odl1.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "kubernetes解决删除的namespace一直处于Terminating状态的情况。"

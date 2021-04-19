@@ -3,7 +3,7 @@ title: "Devops入门手册"
 date: 2019-04-09T13:21:56+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wiaimt98j21qi15owk9.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wiaimt98j21qi15owk9.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "“DevOps”这个词是 “development” 和 “operations”这两个词的组合。它是一种促进开发和运维团队之间的协作，以自动化和可重复的方式更快地将代码部署到生产中的文化。"
@@ -23,7 +23,7 @@ DevOps 帮助团体提高软件和服务的交付速度。它使团队能够更�
 
 简而言之， DevOps 可以定义为通过更好的沟通和协作，使开发和运维保持一致。
 
-![what is devops](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wbobryucj20db07dq2w.jpg)
+![what is devops](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wbobryucj20db07dq2w.jpg)
 
 本手册中，您将学到：
 
@@ -113,22 +113,22 @@ DevOps 是开发和运维之间的深度集成。在不了解 DevOps 生命周�
 
 # DevOps 的工作流
 
-![ DevOps Work Flow ](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wewdq1elj20g009fa9y.jpg)
+![ DevOps Work Flow ](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wewdq1elj20g009fa9y.jpg)
 
 工作流允许排列和分离用户最需要的任务。它还能够在配置任务时反应其最理想过程。
 
 # DevOps 与敏捷有什么不同？ DevOps VS Agile
 这是一个典型的IT流程
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wfmrcbafj20nq05wdg0.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wfmrcbafj20nq05wdg0.jpg)
 
 敏捷解决了客户和开发人员沟通中的问题
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wfn81bchj20no05q3ys.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wfn81bchj20no05q3ys.jpg)
 
 DevOps 解决了开发人员运维人员沟通中的问题
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1wfnk7fi3j20nt05vt90.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1wfnk7fi3j20nt05vt90.jpg)
 
 | 敏捷 | DevOps |
 | --- | --- |

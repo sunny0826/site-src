@@ -2,7 +2,7 @@
 title: "Service Mesh是什么"
 date: 2019-03-19T16:12:56+08:00
 draft: flase
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g188a7s4ttj21qi15ogpc.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g188a7s4ttj21qi15ogpc.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "现在Service Mesh很热，但是到底什么事Service Mesh，Service Mesh能为我们做什么，我们为什么要用Service Mesh。"
@@ -52,7 +52,7 @@ Service mesh 又译作 “服务网格”，作为服务间通信的基础设施
 
 服务网格的架构如下图所示：
 
-![Service Mesh 架构图](http://wx4.sinaimg.cn/large/00704eQkly1fswh7dbs1pj30id0bpmxl.jpg)
+![Service Mesh 架构图](http://tva2.sinaimg.cn/large/00704eQkly1fswh7dbs1pj30id0bpmxl.jpg)
 
 图片来自：[Pattern: Service Mesh](http://philcalcado.com/2017/08/03/pattern_service_mesh.html)
 

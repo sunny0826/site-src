@@ -3,7 +3,7 @@ title: "从边车模式到 Service Mesh"
 date: 2019-04-10T14:03:25+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g1yqu5v6y7j21qi15on1j.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g1yqu5v6y7j21qi15on1j.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "谈谈从边车模式这一分布式架构的设计模式到 Service Mesh 的演变。"
@@ -88,7 +88,7 @@ Service Mesh 将底层那些难以控制的网络通讯统一管理，诸如：�
 
 >随着应用程序复杂性的增加，服务网格将成为实现服务到服务的能力的现实选择。
 
-![](http://wx4.sinaimg.cn/large/ad5fbf65gy1g1yqgvxvzrj20sg0fxgnw.jpg)
+![](http://tva2.sinaimg.cn/large/ad5fbf65gy1g1yqgvxvzrj20sg0fxgnw.jpg)
 
 随着我们的微服务越来越细分，我们所要管理的服务正在成倍的增长着，Kubernetes 提供了丰富的功能，使得我们可以快速的部署和调度这些服务，同时也提供了我们熟悉的方式来实现那些复杂的功能，但是当临界点到来时，可能就是我们真正要去考虑使用 Service Mesh 的时候了。
 

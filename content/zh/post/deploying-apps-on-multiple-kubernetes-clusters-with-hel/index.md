@@ -3,7 +3,7 @@ title: "使用 Helm 在多集群部署应用"
 date: 2019-07-14T14:16:56+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g51gkx94erj21qy15owly.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g51gkx94erj21qy15owly.jpg"
 author: "Smaine Kahlouch"
 authorlink: "https://medium.com/@smainklh"
 translator: "郭旭东"
@@ -49,7 +49,7 @@ image:
 
 我们使用 [Chartmuseum](https://chartmuseum.com/) 作为私有仓库来存储 chart ，每个环境都有一个 。这样我们就可以在__环境之间实现明确的隔离__，并且确保该 chart 在生产环境中使用之前已经过测试。
 
-![](https://wx2.sinaimg.cn/large/ad5fbf65gy1g50h10d4xbj20ys0ee75e.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g50h10d4xbj20ys0ee75e.jpg)
 <center>每个环境的 Chart 仓库</center>
 
 值得注意的是，当开发人员 push 代码到他们的 dev 分支时，他们的 chart 版本也会自动 push 到 dev 环境的 Chartmuseum 。因此，所有开发人员都使用相同的 dev 存储库，他们必须小心的指定自己的 chart 版本，以避免使用其他人的对 chart 的更改。

@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["kubernetes"]
 categories: ["kubernetes"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t1d4atzlj21qf15oq8r.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t1d4atzlj21qf15oq8r.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "根据Pod对象的requests和limits属性，kubernetes将Pod对象归类到BestEffort、Burstable和Guaranteed三个服务质量（Quality of Service，QoS）类别。"

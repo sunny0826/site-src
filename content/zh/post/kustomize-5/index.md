@@ -3,7 +3,7 @@ title: "使用 Kustomize 帮你管理 kubernetes 应用（五）：配合 kubedo
 date: 2019-07-03T15:20:31+08:00
 draft: false
 type: blog
-banner: "http://wx2.sinaimg.cn/large/ad5fbf65gy1g4mm41w485j21qc15oq6d.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g4mm41w485j21qc15oq6d.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"

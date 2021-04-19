@@ -34,8 +34,8 @@ image:
 
 对该报错进行了搜索，搜索到如下结果：
 
-![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g4mmee8ctxj21900ns44c.jpg)
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g4mmgrdz0fj21ou1b6wro.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4mmee8ctxj21900ns44c.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4mmgrdz0fj21ou1b6wro.jpg)
 
 ？？？ 为何这个 issue 没有解决就被提出者关闭了？
 

@@ -2,7 +2,7 @@
 title: "浅析ServiceMesh & Istio"
 date: 2019-03-20T09:12:28+08:00
 draft: flase
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g19a5834ojj21m515oq8p.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g19a5834ojj21m515oq8p.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "在云原生架构下，容器的使用给予了异构应用程序的更多可行性，Kubernetes 增强了应用的横向扩容能力，用户可以快速的编排出复杂环境、复杂依赖关系的应用程序，Istio可以使开发者又无须过分关心应用程序的监控、扩展性、服务发现和分布式追踪这些繁琐的事情而专注于程序开发，赋予开发者更多的创造性。"
@@ -62,7 +62,7 @@ image:
 * 控制平面是 Istio 的核心，负责管理和配置代理来路由流量。此外控制平面配置 Mixer 以实施策略和收集遥测数据。
 
 下图显示了构成每个面板的不同组件：
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g199o3s4g5j20lw0kijux.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g199o3s4g5j20lw0kijux.jpg)
 
 <center>图片为原创，转载请标记出处https://blog.maoxianplay.com/</center>
 

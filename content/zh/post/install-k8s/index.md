@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["容器", "kubernetes"]
 categories: ["部署安装"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t1a2z4m7j21rt15otlh.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t1a2z4m7j21rt15otlh.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "最近由于公司业务发展到了瓶颈，原有的技术架构已经逐渐无法满足业务开发和测试的需求，出现了应用测试环境搭建复杂，有许多套（真的很多很多）应用环境，应用在持续集成/持续交付也遇到了很大的困难，经过讨论研究决定对应用和微服务进行容器化，这就是我首次直面docker和k8s的契机。"

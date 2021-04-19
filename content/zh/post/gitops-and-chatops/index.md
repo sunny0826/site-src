@@ -3,7 +3,7 @@ title: "GitOps 与 ChatOps 的落地实践"
 date: 2019-07-11T09:24:17+08:00
 draft: false
 type: blog
-banner: "https://wx2.sinaimg.cn/large/ad5fbf65gy1g4vxi3840tj21l215on1f.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vxi3840tj21l215on1f.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -33,7 +33,7 @@ GitOps 是一种实现持续交付的模型，它的核心思想是将应用系�
 
 通过应用 GitOps ，应用系统的基础架构和应用程序代码可以快速查找来源——基础架构和应用程序代码都存放在 gitlab 、或者 github 等版本控制系统上。这使开发团队可以提高开发和部署速度并提高应用系统可靠性。
 
-![](https://wx4.sinaimg.cn/large/ad5fbf65gy1g4vpmjzylfj20qy09tq4b.jpg)
+![](https://tva2.sinaimg.cn/large/ad5fbf65gy1g4vpmjzylfj20qy09tq4b.jpg)
 
 将 GitOps 应用在持续交付流水线上，有诸多优势和特点：
 

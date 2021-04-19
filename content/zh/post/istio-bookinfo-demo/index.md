@@ -2,7 +2,7 @@
 title: "Istio初探之Bookinfo样例部署"
 date: 2019-03-21T09:42:18+08:00
 draft: flase
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g1agvmgy2aj21qi15odmu.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g1agvmgy2aj21qi15odmu.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "正如Linux 的创始人 Linus Torvalds 的那句话：Talk is cheap. Show me the code. 这里我们部署一个demo，由四个单独的微服务构成（注意这里的四个微服务是由不同的语言编写的），用来演示多种 Istio 特性。"
@@ -136,7 +136,7 @@ reviews              ClusterIP   10.11.162.37    <none>        9080/TCP         
 
 ### 查看效果
 访问 http://{EXTERNAL-IP}/productpage 注意：这里最后不能有/，否则将找不到页面
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1ad2jg6p3j21g90mxgo7.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1ad2jg6p3j21g90mxgo7.jpg)
 多次刷新浏览器，将在 ```productpage``` 中看到评论的不同的版本，它们会按照 round robin（红星、黑星、没有星星）的方式展现，这三个展示分来来自```v1```、```v2```和```v3```版本，因为还没有使用 Istio 来控制版本的路由，所以这里显示的是以轮询的负载均衡算法进行展示。
 
 ### 请求路由
@@ -198,7 +198,7 @@ $ kubectl get virtualservices -o yaml
 
 在浏览器中打开 Bookinfo 应用程序的URL: http://{EXTERNAL-IP}/productpage。
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adqyf9dej21g70oitbd.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1adqyf9dej21g70oitbd.jpg)
 
 可以看到 Bookinfo 应用程序的 ```productpage``` 页面，显示的内容中不包含带星的评价信息，这是因为 ```reviews:v1``` 服务不会访问ratings服务。
 
@@ -252,7 +252,7 @@ http:
 
 这里登录用户名为 ```jason``` ，密码随便输入即可
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1adtjugp3j21gb0iygoa.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1adtjugp3j21gb0iygoa.jpg)
 
 ### 流量转移
 除了基于内容的路由，Istio还支持基于权重的路由规则。
@@ -284,28 +284,28 @@ $ kubectl replace -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
 
 为了方便测试 Bookinfo 应用在华为云上提供了一键体验应用，点击即可省去刚刚那一系列的 ```kubectl``` 操作
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afbs7oq4j21g90id0vv.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afbs7oq4j21g90id0vv.jpg)
 <center>一键创建体验应用</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afgth1cgj219b0a7tb1.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afgth1cgj219b0a7tb1.jpg)
 <center>点击灰度发布即可</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afjc5hvgj21fv0o1q6q.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afjc5hvgj21fv0o1q6q.jpg)
 <center>创建金丝雀发布</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afnqyqlhj20ze0o00vl.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afnqyqlhj20ze0o00vl.jpg)
 <center>选择灰度发布的组件</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afp1c5ltj20zk0le765.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afp1c5ltj20zk0le765.jpg)
 <center>填写版本号</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afq846bjj20z80nowgl.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afq846bjj20z80nowgl.jpg)
 <center>选择镜像版本</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afra8rmhj21050mfgpb.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afra8rmhj21050mfgpb.jpg)
 <center>版本创建完成后配置灰度策略</center>
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65ly1g1afwpan6qj21090mste1.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65ly1g1afwpan6qj21090mste1.jpg)
 <center>选择相应策略，策略下发即可</center>
 
 总的来说，华为云的 Istio 确实已经是商业化应用，这里只是展示了部分灰度发布的功能。其他比如流量治理，流量监控等功能还没展示，这些功能做的十分细致，值得尝试。

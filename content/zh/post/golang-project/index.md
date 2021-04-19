@@ -3,7 +3,7 @@ title: "Golang 装逼指南：在 GitHub 上构建一个看上去正规的 Golan
 date: 2019-07-19T10:38:26+08:00
 draft: false
 type: blog
-banner: "https://ws2.sinaimg.cn/large/ad5fbf65gy1g55b5m53wjj21qf15oq62.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g55b5m53wjj21qf15oq62.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -32,7 +32,7 @@ Go 开发环境的安装网上教程很多，这里就不做介绍了。这里�
 `vgo` 是基于 Go Module 规范的包管理工具，同官方的 go mod 命令工具类似。
 
 1. 开启 `vgo`，`GoLand`->`Preferences`->`GO`->`Go Modules(vgo)`
-![image](https://ws2.sinaimg.cn/large/ad5fbf65gy1g556yudwh8j20s20jhgn4.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g556yudwh8j20s20jhgn4.jpg)
 
 2. 手动修改 `go.mod`
     
@@ -72,7 +72,7 @@ Go 开发环境的安装网上教程很多，这里就不做介绍了。这里�
 如果要选出 golang 最劝退一个原因，那么依赖下载难肯定得票最高！这个时候一个合适的梯子就很重要了，如果没有这个梯子，上面的这步就完全无法完成。这里主要介绍 GoLand 上的配置，Shadowsocks 的安装和配置就不做介绍了。
 
 `GoLand`->`Preferences`->`Appearance & Behavior`->`System Settings`->`HTTP Proxy` 这里设置好之后，别忘了点击 `Check connection` 测试一下梯子搭成没有。
-![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g557j6it07j20s20je40p.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g557j6it07j20s20je40p.jpg)
 
 ### 配置 `go fmt`、 `goimports` 和 `golangci-lint`
 
@@ -101,7 +101,7 @@ go install
 
 GoLand 配置 `golint`，修改 `Name`, `Program`, `Arguments` 三项配置，其中 `Arguments` 需要加上 `-set_exit_status` 参数，如图所示：
 
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g557z8a5jgj20ln0i0t9z.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g557z8a5jgj20ln0i0t9z.jpg)
 
 ## Travis CI 持续集成
 
@@ -126,7 +126,7 @@ script:
 
 __装逼重点：__ 你以为使用 Travis CI 就是为了持续集成吗？那就太天真了！使用 Travis CI 当然为了他的 Badges ，将 `RESULT` 拷贝到你的 `README.md` 里面就好了。
 
-![image](https://ws2.sinaimg.cn/large/ad5fbf65gy1g558xf6io4j22dk15an4t.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g558xf6io4j22dk15an4t.jpg)
 
 ## GO Report Card
 
@@ -169,12 +169,12 @@ git push origin v0.0.3
 goreleaser
 ```
 `goreleaser` 配合 CI 食用，效果更佳，这里就不做介绍了。
-![image](https://wx2.sinaimg.cn/large/ad5fbf65gy1g55a7t8bq4j20sq0liacm.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g55a7t8bq4j20sq0liacm.jpg)
 
 ## Badges 展示神器
 
 这里介绍一个展示 Badges 的神器：[https://shields.io/](https://shields.io/) 。这个网站提供各种各样的 Badges ，如果你愿意，完全可以把你的 GitHub README.md 填满，有兴趣的同学可以自取。
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g55aendhrwj22fg19igz0.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g55aendhrwj22fg19igz0.jpg)
 
 ## 后记
 

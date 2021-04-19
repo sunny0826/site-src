@@ -5,7 +5,7 @@ draft: false
 type: blog
 tags: ["容器","阿里云","rancher"]
 categories: ["问题解决"]
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65ly1g0t1au03u7j21qf15ogr2.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65ly1g0t1au03u7j21qf15ogr2.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "近期由于公司需要将部署在ucloud上的rancher迁移到阿里云上，所以将部署到阿里云的图中遇到的问题和踩到的坑在这里进行记录。"

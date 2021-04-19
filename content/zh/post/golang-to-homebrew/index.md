@@ -44,7 +44,7 @@ Homebrew 给自己贴了个一句话简介：The missing package manager for OS 
 
 首先进入 release 页面，拷贝 macOS 的 Darwin 包地址
 
-![image](https://ws4.sinaimg.cn/large/ad5fbf65gy1g5c7b4mi5fj21lq0se4ck.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g5c7b4mi5fj21lq0se4ck.jpg)
 
 然后通过命令在本地创建 Formula
 

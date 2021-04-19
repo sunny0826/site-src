@@ -3,7 +3,7 @@ title: "阿里云容器服务新建集群优化方案(更新版)"
 date: 2019-04-25T22:26:06+08:00
 draft: false
 type: blog
-banner: "https://wx4.sinaimg.cn/large/ad5fbf65gy1g1ltc0evxsj20rs0ijq4s.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g1ltc0evxsj20rs0ijq4s.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "这里记录了在工作中遇到阿里云容器服务的调优优化方案，帮助您绕过阿里云容器服务中的一些坑，来使用更好更优质的阿里云容器服务。"
@@ -47,9 +47,9 @@ image:
 #### 1. 创建新的 SLB 
 
 - 这里需要创建一个新的 SLB 用来代替自动创建的不符合要求的 SLB。这里可以先私网 SLB 先不绑定弹性IP。***这里要注意的事，新建的 SLB 需要与 k8s集群处于同一 VPC 内，否则在后续会绑定失败***。
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1ma5lxgvdj21ws0s6qa5.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1ma5lxgvdj21ws0s6qa5.jpg)
 - 查看新购买 SLB 的 ID
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1ma8zuq1gj20sa0hoq4b.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1ma8zuq1gj20sa0hoq4b.jpg)
 
 #### 2. 在创建集群后重新绑定 ```ingress-controller``` 的 ```Service```
 
@@ -89,25 +89,25 @@ selector:
 ```
 
 创建成功后，可以进到 SLB 页面查看，可以看到 ```80``` 和 ```443``` 端口的监听已经被添加了
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1maej57c1j21ru0rwq8b.jpg) 
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1maej57c1j21ru0rwq8b.jpg) 
 
 #### 3. 绑定符合要求的弹性IP
 
 确定 SLB 创建成功并且已经成功监听后，这里就可以为 SLB 绑定符合您需求的弹性IP了，这里我们绑定一个按宽带计费2M的弹性IP
 
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1mak2r0p3j207k07mq33.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1mak2r0p3j207k07mq33.jpg)
 
 #### 4. 验证连通性
 
 到上面这步，我们的 ingress 入口 SLB 已经创建完成，这里我们验证一下是否联通。
 
 - 在k8s集群中部署一个 ```nginx``` ，直接在阿里云容器服务控制台操作即可
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1mant7ec6j21s40qegpr.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1mant7ec6j21s40qegpr.jpg)
     这里创建 ingress 路由，**注意：这里的域名需要解析到刚才创建的 SLB 绑定的弹性IP**
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1maqf7gdjj21ns0kymz8.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1maqf7gdjj21ns0kymz8.jpg)
 
 - 访问该域名，显示 ```nginx``` 欢迎页，则证明修改成功
-    ![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g1mat8srhnj21ak0hmact.jpg)
+    ![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g1mat8srhnj21ak0hmact.jpg)
 
 ### 方法二： 使用阿里云容器服务控制台配置
 
@@ -120,13 +120,13 @@ selector:
 - 并添加端口映射
 - 点击创建
 
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g2g4fwfgevj20i50hsgmp.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2g4fwfgevj20i50hsgmp.jpg)
 
 #### 2. 进入负载均衡查看 SLB 是否创建
 
 可见 SLB 已经成功创建
 
-![image](https://wx4.sinaimg.cn/large/ad5fbf65gy1g2g4pb1d45j215303c74r.jpg)
+![image](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2g4pb1d45j215303c74r.jpg)
 
 #### 3. 绑定符合要求的弹性IP
 同方法一

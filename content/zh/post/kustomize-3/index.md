@@ -3,7 +3,7 @@ title: "使用 Kustomize 帮你管理 kubernetes 应用（三）：将 Kustomize
 date: 2019-05-06T16:46:28+08:00
 draft: false
 type: blog
-banner: "https://wx4.sinaimg.cn/large/ad5fbf65gy1g2smcy97ooj21qi15o7bb.jpg"
+banner: "https://tva2.sinaimg.cn/large/ad5fbf65gy1g2smcy97ooj21qi15o7bb.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 # translator: "郭旭东"
@@ -69,11 +69,11 @@ image:
 
 Jenkins 的配置相对简单，只需要新建一个 pipeline 类型的 job
 
-![WX20190506-180159](https://wx4.sinaimg.cn/large/ad5fbf65gy1g2rr57oixbj20tn0ogq6v.jpg)
+![WX20190506-180159](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2rr57oixbj20tn0ogq6v.jpg)
 
 增加参数化构建，**注**：参数化构建需要安装 Jenkins 插件
 
-![WX20190506-180918](https://ws4.sinaimg.cn/large/ad5fbf65gy1g2rrcb5ic9j21470q7mz8.jpg)
+![WX20190506-180918](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2rrcb5ic9j21470q7mz8.jpg)
 
 然后配置代码仓库即可
 
@@ -165,11 +165,11 @@ image:
 
 这里选择环境、分支，填入版本即可开始构建，**注意：**这里的版本将已 tag 的形式标记 docker 镜像。
 
-![WX20190507-095142](https://ws2.sinaimg.cn/large/ad5fbf65gy1g2sikst7tuj20ob0evabw.jpg)
+![WX20190507-095142](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2sikst7tuj20ob0evabw.jpg)
 
 这里就可以看到构建成功了
 
-![WX20190507-103721](https://ws2.sinaimg.cn/large/ad5fbf65ly1g2sjw9w22ej20v80km0w3.jpg)
+![WX20190507-103721](https://tva2.sinaimg.cn/large/ad5fbf65ly1g2sjw9w22ej20v80km0w3.jpg)
 
 ### 查看结果
 
@@ -179,13 +179,13 @@ image:
 
 这里看到这个服务正常启动了
 
-![WX20190507-104154](https://ws2.sinaimg.cn/large/ad5fbf65ly1g2sk11dnzxj20av027jrn.jpg)
+![WX20190507-104154](https://tva2.sinaimg.cn/large/ad5fbf65ly1g2sk11dnzxj20av027jrn.jpg)
 
 ### 发布新版本
 
 更新 web 服务并提交
 
-![WX20190507-104936](https://ws4.sinaimg.cn/large/ad5fbf65gy1g2sk94v1c5j209702vwej.jpg)
+![WX20190507-104936](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2sk94v1c5j209702vwej.jpg)
 
 
 按照上面步骤在 jenkins 中重新构建，当然也可以配置钩子，每次代码提交后自动构建
@@ -194,7 +194,7 @@ image:
 
 同上面一样，在构建成功后查看服务是否更新
 
-![WX20190507-105539](https://wx4.sinaimg.cn/large/ad5fbf65gy1g2skfczaz4j20by01smx7.jpg)
+![WX20190507-105539](https://tva2.sinaimg.cn/large/ad5fbf65gy1g2skfczaz4j20by01smx7.jpg)
 
 可以看到，版本已经更新了
 

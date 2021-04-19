@@ -3,7 +3,7 @@ title: "自动合并Kubeconfig，实现多k8s集群切换"
 date: 2019-03-17T10:45:02+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g15zla19o4j21y013ete4.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g15zla19o4j21y013ete4.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "随着kubernetes集群的增加，集群管理的问题就凸显出来，不同的环境存在不同的集群，不同的业务线不同的集群，甚至有些开发人员都有自己的集群。这里介绍一款工具来自动合并Kubeconfig，实现多k8s集群切换。"

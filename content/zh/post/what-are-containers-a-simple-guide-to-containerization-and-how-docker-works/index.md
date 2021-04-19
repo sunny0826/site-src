@@ -3,7 +3,7 @@ title: "什么的容器？Docker 工作原理及容器化简易指南"
 date: 2019-04-20T19:54:50+08:00
 draft: false
 type: blog
-banner: "http://wx4.sinaimg.cn/large/ad5fbf65gy1g2adn11fe3j20rs0ijju6.jpg"
+banner: "http://tva2.sinaimg.cn/large/ad5fbf65gy1g2adn11fe3j20rs0ijju6.jpg"
 authors: ["guoxudong"]
 authorlink: "https://github.com/sunny0826"
 summary: "Docker 非常棒！ 它使软件开发者无需担心配置和依赖性，在任何地方打包，发送和运行他们的应用程序。而在与 kubernetes 相结合后，它使应用集群部署和管理变得更方便。这使得 Docker 深受软件开发者的喜爱，越来越多的开发者开始使用 Docker。"
@@ -39,7 +39,7 @@ image:
 
 简而言之，Docker 通过使用 Linux namespace 和 cgroup（以及其他一些命令）来协调配置容器，将应用程序文件复制到为容器分配的磁盘，然后运行启动命令。Docker 还附带了许多其他用于管理容器的工具，例如：列出正在运行的容器，停止容器，发布容器镜像等许多其他工具。
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65gy1g2a8h1rc6lj211a0rcjsu.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65gy1g2a8h1rc6lj211a0rcjsu.jpg)
 
 与虚拟机相比，容器更轻量且速度更快，因为它利用了 Linux 底层操作系统在隔离的环境中运行。虚拟机的 hypervisor 创建了一个非常牢固的边界，以防止应用程序突破它，而[容器的边界不那么强大](https://sysdig.com/blog/container-isolation-gone-wrong/)。另一个区别是，由于 namespace 和 cgroups 功能仅在 Linux 上可用，因此容器无法在其他操作系统上运行。此时您可能想知道 Docker 如何在 macOS 或 Windows 上运行？ Docker 实际上使用了一个技巧，并在非 Linux 操作系统上安装 Linux 虚拟机，然后在虚拟机内运行容器。
 
@@ -104,7 +104,7 @@ Successfully tagged codeahoydocker:latest
 1. 文件系统快照（Alpine Linux 和 我们安装的 Web 服务）
 2. 启动命令（```./tiny 8092```）
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65gy1g2aakgpe16j20zo0bqjt5.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65gy1g2aakgpe16j20zo0bqjt5.jpg)
 
 既然成功构建了镜像，那么我们可以使用如下命令运行容器。
 
@@ -116,7 +116,7 @@ umermansoor:dockerprj$ docker run -p 8082:8082 codeahoydocker:latest
 
 通过 ```docker run``` 命令，我们请求 Docker 基于 ```codeahoydocker:latest``` 镜像创建和启动一个容器。```-p 8082:8082``` 将本地的8082端口映射到容器的8082端口（容器内的 Web 服务器正在监听8082端口上的连接）。打开你的浏览器并访问 localhost:8082/index.html 。你将可以看到 ***Hello World*** 信息。
 
-![image](http://wx4.sinaimg.cn/large/ad5fbf65gy1g2aazadeamj20yo0rcq5e.jpg)
+![image](http://tva2.sinaimg.cn/large/ad5fbf65gy1g2aazadeamj20yo0rcq5e.jpg)
 
 最后我想补充一点，虽然 Docker 非常棒，而且对于大多数项目来说它是一个不错的选择，但我们并非处处都要使用它。在我的工作中，Docker 与 Kubernetes 结合使用，可以非常轻松地部署和管理后端微服务，我们不必为每个服务配置新的运行环境。另一方面，对于性能密集型应用程序，Docker 可能不是最佳选择。我经手的其中一个项目必须处理来自移动游戏客户端的 TCP 长连接（每台机器1000个），这时 Docker 网络出现了很多问题，导致无法将它用于该项目。
 
